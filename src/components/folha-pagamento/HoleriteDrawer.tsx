@@ -64,6 +64,7 @@ function NumField({ label, value, onChange, min = 0, step = "1" }: {
 export function HoleriteDrawer({ holerite, open, onClose, competenciaId, canEdit }: Props) {
   const [editing, setEditing] = useState(false);
   const editMut = useEditarHolerite();
+  const { data: parametrosFolha } = useParametrosFolha();
   const [form, setForm] = useState<EditForm>({
     horasExtras50Qtd: 0, horasExtras100Qtd: 0, faltasDias: 0,
     descontoVT: true, descontoVR: 0, descontoPlanoSaude: 0,
