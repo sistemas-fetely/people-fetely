@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Search, MoreHorizontal, Eye, Edit,
-  UserCheck, Briefcase, Building2,
+  UserCheck, Briefcase, Building2, Plus, ChevronDown,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,11 +121,28 @@ export default function Pessoas() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Pessoas</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Visão unificada de colaboradores CLT e prestadores PJ
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Pessoas</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Visão unificada de colaboradores CLT e prestadores PJ
+          </p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" /> Novo Cadastro <ChevronDown className="h-3.5 w-3.5 ml-1" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => navigate("/colaboradores/novo")}>
+              <Building2 className="mr-2 h-4 w-4" /> Colaborador CLT
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/contratos-pj?novo=true")}>
+              <Briefcase className="mr-2 h-4 w-4" /> Contrato PJ
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-4">
