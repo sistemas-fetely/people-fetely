@@ -245,13 +245,21 @@ export function CadastroContratoPJ() {
             {currentStep === 4 && <StepDadosBancarios />}
             {currentStep === 5 && <StepDadosEmpresa />}
             {currentStep === 6 && <StepDependentes />}
+            {currentStep === 7 && (
+              <StepUploadDocumentos
+                tipo="pj"
+                folderKey={uploadFolderRef.current}
+                uploadedFiles={uploadedFiles}
+                onFilesChange={setUploadedFiles}
+              />
+            )}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={currentStep === 1 ? () => navigate("/contratos-pj") : goBack} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               {currentStep === 1 ? "Cancelar" : "Voltar"}
             </Button>
-            {currentStep < 6 ? (
+            {currentStep < 7 ? (
               <Button type="button" onClick={goNext} className="gap-2">
                 Próximo
                 <ArrowRight className="h-4 w-4" />
