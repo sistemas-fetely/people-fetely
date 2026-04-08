@@ -39,8 +39,16 @@ export function useUpdatePosicao() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...data }: PosicaoUpdate) => {
-      const { error } = await supabase.from("posicoes").update(data as any).eq("id", id);
-      if (error) throw error;
+      // If it's a virtual node, create a real position instead
+      if (id.startsWith("virtual-")) {
+        const { error } = await supabase.from("posicoes").insert({
+          ...data,
+        } as any);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("posicoes").update(data as any).eq("id", id);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["organograma"] });
@@ -54,6 +62,7 @@ export function useDeletePosicao() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
+      if (id.startsWith("virtual-")) return; // Can't delete virtual nodes
       const { error } = await supabase.from("posicoes").delete().eq("id", id);
       if (error) throw error;
     },
@@ -68,9 +77,28 @@ export function useDeletePosicao() {
 export function useMovePosicao() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, newParentId }: { id: string; newParentId: string | null }) => {
-      const { error } = await supabase.from("posicoes").update({ id_pai: newParentId } as any).eq("id", id);
-      if (error) throw error;
+    mutationFn: async ({ id, newParentId, node }: { id: string; newParentId: string | null; node?: any }) => {
+      if (id.startsWith("virtual-")) {
+        // Create a real position for virtual node
+        const isColab = id.startsWith("virtual-clt-");
+        const realId = id.replace("virtual-clt-", "").replace("virtual-pj-", "");
+        
+        const insert: any = {
+          titulo_cargo: node?.titulo_cargo || "Sem cargo",
+          departamento: node?.departamento || "Geral",
+          nivel_hierarquico: node?.nivel_hierarquico || 1,
+          status: "ocupado",
+          id_pai: newParentId?.startsWith("virtual-") ? null : newParentId,
+          ...(isColab ? { colaborador_id: realId } : { contrato_pj_id: realId }),
+        };
+
+        const { error } = await supabase.from("posicoes").insert(insert);
+        if (error) throw error;
+      } else {
+        const parentId = newParentId?.startsWith("virtual-") ? null : newParentId;
+        const { error } = await supabase.from("posicoes").update({ id_pai: parentId } as any).eq("id", id);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["organograma"] });
