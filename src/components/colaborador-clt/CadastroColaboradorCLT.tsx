@@ -120,7 +120,7 @@ export function CadastroColaboradorCLT() {
   };
 
   const handleFinalSubmit = async () => {
-    const valid = await methods.trigger();
+    const valid = await validateCurrentStep();
     if (!valid) return;
     methods.handleSubmit(onSubmit)();
   };
