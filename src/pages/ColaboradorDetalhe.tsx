@@ -326,7 +326,18 @@ export default function ColaboradorDetalhe() {
             </CardContent></Card>
           </TabsContent>
 
-          <TabsContent value="dependentes">
+          <TabsContent value="empresa">
+            <Card><CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <InfoField label="Email Corporativo" value={(colaborador as any).email_corporativo} />
+                <InfoField label="Ramal" value={(colaborador as any).ramal} />
+                <InfoField label="Data de Integração" value={(colaborador as any).data_integracao ? format(parseISO((colaborador as any).data_integracao), "dd/MM/yyyy") : ""} />
+              </div>
+              <h3 className="font-semibold mb-3">Acesso aos Sistemas</h3>
+              <p className="text-xs text-muted-foreground mb-4">Dados carregados na edição do colaborador.</p>
+            </CardContent></Card>
+          </TabsContent>
+
             <Card><CardContent className="pt-6">
               {dependentes.length === 0 ? (
                 <p className="text-muted-foreground text-sm text-center py-8">Nenhum dependente cadastrado.</p>
