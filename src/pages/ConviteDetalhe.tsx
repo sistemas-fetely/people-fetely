@@ -44,7 +44,7 @@ export default function ConviteDetalhe() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [exporting, setExporting] = useState(false);
+  const [exporting] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
 
