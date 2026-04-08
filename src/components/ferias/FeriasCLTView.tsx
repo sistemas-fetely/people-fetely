@@ -49,10 +49,13 @@ export function FeriasCLTView({ canManage }: Props) {
   const criarPeriodoMut = useCriarPeriodo();
   const criarProgMut = useCriarProgramacao();
   const atualizarStatusMut = useAtualizarStatusProgramacao();
+  const editarProgMut = useEditarProgramacao();
 
   const [showNovoPeriodo, setShowNovoPeriodo] = useState(false);
   const [showNovaProg, setShowNovaProg] = useState(false);
+  const [showEditProg, setShowEditProg] = useState(false);
   const [selectedPeriodo, setSelectedPeriodo] = useState<PeriodoComColaborador | null>(null);
+  const [editingProg, setEditingProg] = useState<Tables<"ferias_programacoes"> | null>(null);
   const [busca, setBusca] = useState("");
 
   // Form state - novo período
