@@ -33,6 +33,7 @@ import { useParametros } from "@/hooks/useParametros";
 
 const statusStyles: Record<string, string> = {
   pendente: "bg-amber-100 text-amber-700 border-0",
+  email_enviado: "bg-sky-100 text-sky-700 border-0",
   preenchido: "bg-emerald-100 text-emerald-700 border-0",
   cadastrado: "bg-blue-100 text-blue-700 border-0",
   expirado: "bg-muted text-muted-foreground border-0",
@@ -40,6 +41,7 @@ const statusStyles: Record<string, string> = {
 };
 const statusLabels: Record<string, string> = {
   pendente: "Pendente",
+  email_enviado: "Email Enviado",
   preenchido: "Preenchido",
   cadastrado: "Cadastrado",
   expirado: "Expirado",
@@ -138,7 +140,7 @@ export default function ConvitesCadastro() {
         body: {
           templateName: "convite-cadastro",
           recipientEmail: convite.email,
-          idempotencyKey: `convite-${convite.id}`,
+          idempotencyKey: `convite-${convite.id}-${Date.now()}`,
           templateData: {
             nome: convite.nome,
             tipo: convite.tipo,
@@ -149,6 +151,17 @@ export default function ConvitesCadastro() {
         },
       });
       if (error) throw error;
+
+      // Update status to email_enviado
+      await supabase
+        .from("convites_cadastro")
+        .update({ status: "email_enviado" })
+        .eq("id", convite.id);
+
+      setConvites((prev) =>
+        prev.map((c) => (c.id === convite.id ? { ...c, status: "email_enviado" } : c))
+      );
+
       toast.success(`E-mail enviado para ${convite.email}!`);
     } catch (err: any) {
       toast.error(err.message || "Erro ao enviar e-mail");

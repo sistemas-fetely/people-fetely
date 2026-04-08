@@ -97,21 +97,32 @@ export default function ConviteDetalhe() {
     try {
       const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
-          templateName: "cadastro-recebido",
+          templateName: "convite-cadastro",
           recipientEmail: convite.email,
-          idempotencyKey: `cadastro-recebido-resend-${convite.id}-${Date.now()}`,
+          idempotencyKey: `convite-resend-${convite.id}-${Date.now()}`,
           templateData: {
             nome: convite.nome,
             tipo: convite.tipo,
             cargo: convite.cargo || "",
             departamento: convite.departamento || "",
+            link: `${window.location.origin}/cadastro/${convite.token}`,
           },
         },
       });
       if (error) throw error;
-      toast.success("Email de confirmação reenviado para " + convite.email);
+
+      // Update status to email_enviado if still pendente
+      if (convite.status === "pendente") {
+        await supabase
+          .from("convites_cadastro")
+          .update({ status: "email_enviado" })
+          .eq("id", convite.id);
+        setConvite({ ...convite, status: "email_enviado" });
+      }
+
+      toast.success("Email enviado para " + convite.email);
     } catch (err: any) {
-      toast.error("Erro ao reenviar email: " + err.message);
+      toast.error("Erro ao enviar email: " + err.message);
     } finally {
       setSendingEmail(false);
     }
@@ -273,7 +284,18 @@ export default function ConviteDetalhe() {
   const hasDados = Object.keys(formData).length > 0;
   const expired = convite.status === "pendente" && new Date(convite.expira_em) <= new Date();
   const displayStatus = expired ? "expirado" : convite.status;
-  const canExport = hasDados && !convite.colaborador_id && !convite.contrato_pj_id && convite.status !== "cadastrado";
+  const isCadastrado = convite.status === "cadastrado";
+  const canExport = hasDados && !convite.colaborador_id && !convite.contrato_pj_id && !isCadastrado;
+  const canEdit = !isCadastrado;
+
+  const statusLabels: Record<string, string> = {
+    pendente: "Pendente",
+    email_enviado: "Email Enviado",
+    preenchido: "Preenchido",
+    cadastrado: "Cadastrado com Sucesso",
+    expirado: "Expirado",
+    cancelado: "Cancelado",
+  };
 
   return (
     <div className="space-y-6">
@@ -287,7 +309,7 @@ export default function ConviteDetalhe() {
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-bold">{convite.nome}</h1>
               <Badge variant="outline" className={statusStyles[displayStatus] || ""}>
-                {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
+                {statusLabels[displayStatus] || displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
               </Badge>
               <Badge variant="outline" className="text-xs">{convite.tipo.toUpperCase()}</Badge>
             </div>
@@ -309,23 +331,25 @@ export default function ConviteDetalhe() {
               </Button>
             </>
           ) : (
-            hasDados && (
-              <>
+            <>
+              {hasDados && !isCadastrado && (
                 <Button variant="outline" size="sm" onClick={handleResendEmail} disabled={sendingEmail}>
                   {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
                   Reenviar Email
                 </Button>
+              )}
+              {canEdit && hasDados && (
                 <Button variant="outline" onClick={() => setEditing(true)}>
                   <Edit className="h-4 w-4 mr-2" /> Editar Dados
                 </Button>
-                {canExport && (
-                  <Button onClick={handleExportToCadastro} disabled={exporting}>
-                    {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
-                    {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
-                  </Button>
-                )}
-              </>
-            )
+              )}
+              {canExport && (
+                <Button onClick={handleExportToCadastro} disabled={exporting}>
+                  {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                  {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
