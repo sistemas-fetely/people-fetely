@@ -6,8 +6,9 @@ import { format, parseISO } from "date-fns";
 import {
   ArrowLeft, Edit, Save, Loader2, X, User, FileText, Briefcase,
   Building2, Users as UsersIcon, Monitor, UserCheck, UserX, ArrowUpDown,
-  CreditCard, Plus, MoreHorizontal, Trash2,
+  CreditCard, Plus, MoreHorizontal, Trash2, DollarSign,
 } from "lucide-react";
+import { CustoResumoCard } from "@/components/CustoResumoCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -364,6 +365,7 @@ export default function ContratoPJDetalhe() {
             <TabsTrigger value="notas" className="gap-1"><FileText className="h-3.5 w-3.5" /> Notas Fiscais</TabsTrigger>
             <TabsTrigger value="pagamentos" className="gap-1"><CreditCard className="h-3.5 w-3.5" /> Pagamentos</TabsTrigger>
             <TabsTrigger value="movimentacoes" className="gap-1"><ArrowUpDown className="h-3.5 w-3.5" /> Movimentações</TabsTrigger>
+            <TabsTrigger value="custos" className="gap-1"><DollarSign className="h-3.5 w-3.5" /> Custos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pessoais">
@@ -493,6 +495,10 @@ export default function ContratoPJDetalhe() {
 
           <TabsContent value="movimentacoes">
             <HistoricoMovimentacoes contratoId={id!} />
+          </TabsContent>
+
+          <TabsContent value="custos">
+            <CustoResumoCard tipo="pj" salarioBase={Number(contrato.valor_mensal)} />
           </TabsContent>
         </Tabs>
 

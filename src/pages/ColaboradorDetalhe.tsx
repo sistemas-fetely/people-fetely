@@ -9,6 +9,7 @@ import {
   Building2, Users as UsersIcon, Monitor, UserCheck, UserX, ArrowUpDown,
   TrendingUp, ArrowRightLeft, DollarSign,
 } from "lucide-react";
+import { CustoResumoCard } from "@/components/CustoResumoCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -329,6 +330,7 @@ export default function ColaboradorDetalhe() {
             <TabsTrigger value="empresa" className="gap-1"><Monitor className="h-3.5 w-3.5" /> Empresa</TabsTrigger>
             <TabsTrigger value="dependentes" className="gap-1"><UsersIcon className="h-3.5 w-3.5" /> Dependentes</TabsTrigger>
             <TabsTrigger value="movimentacoes" className="gap-1"><ArrowUpDown className="h-3.5 w-3.5" /> Movimentações</TabsTrigger>
+            <TabsTrigger value="custos" className="gap-1"><DollarSign className="h-3.5 w-3.5" /> Custos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pessoais">
@@ -483,6 +485,14 @@ export default function ColaboradorDetalhe() {
 
           <TabsContent value="movimentacoes">
             <HistoricoMovimentacoes colaboradorId={id!} />
+          </TabsContent>
+
+          <TabsContent value="custos">
+            <CustoResumoCard
+              tipo="clt"
+              salarioBase={Number(colaborador.salario_base)}
+              dependentesIRRF={dependentes.filter(d => d.incluir_irrf).length}
+            />
           </TabsContent>
         </Tabs>
 
