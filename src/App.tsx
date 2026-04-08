@@ -39,6 +39,7 @@ const App = () => (
             {/* Protected routes */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/pessoas" element={<Pessoas />} />
               <Route path="/colaboradores" element={<Colaboradores />} />
               <Route path="/colaboradores/novo" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
