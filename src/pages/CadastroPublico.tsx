@@ -649,10 +649,11 @@ export default function CadastroPublico() {
 
     try {
       const formData = isClt ? cltMethods.getValues() : pjMethods.getValues();
+      const dataWithDocs = { ...formData, documentos_upload: uploadedFiles };
 
       const { error: rpcErr } = await supabase.rpc("submit_convite_cadastro", {
         _token: convite.token,
-        _dados: formData as any,
+        _dados: dataWithDocs as any,
       });
 
       if (rpcErr) throw rpcErr;
