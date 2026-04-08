@@ -243,7 +243,7 @@ export default function ConvitesCadastro() {
                       <TableRow
                         key={c.id}
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => window.open(getLink(c.token), '_blank')}
+                        onClick={() => navigate(`/convites-cadastro/${c.id}`)}
                       >
                         <TableCell className="font-medium text-primary">{c.nome}</TableCell>
                         <TableCell className="text-sm">{c.email}</TableCell>
