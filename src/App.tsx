@@ -19,6 +19,7 @@ import SemPermissao from "@/pages/SemPermissao";
 import NotFound from "@/pages/NotFound";
 import Parametros from "@/pages/Parametros";
 import ContratosPJ from "@/pages/ContratosPJ";
+import ContratoPJDetalhe from "@/pages/ContratoPJDetalhe";
 
 const queryClient = new QueryClient();
 
