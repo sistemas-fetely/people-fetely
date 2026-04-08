@@ -57,6 +57,7 @@ const App = () => (
               } />
               <Route path="/colaboradores/:id" element={<ColaboradorDetalhe />} />
               <Route path="/organograma" element={<Organograma />} />
+              <Route path="/movimentacoes" element={<Movimentacoes />} />
 
               {/* CLT - Gestor RH, Super Admin, Financeiro */}
               <Route path="/folha-pagamento" element={
