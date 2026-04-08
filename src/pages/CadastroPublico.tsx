@@ -89,37 +89,46 @@ const pjDocumentosSchema = z.object({
 
 const pjPessoaisSchema = z.object({
   contato_nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
-  contato_telefone: z.string().optional().or(z.literal("")),
-  contato_email: z.string().email("Email inválido").optional().or(z.literal("")),
-  cpf: z.string().optional().or(z.literal("")),
-  rg: z.string().optional().or(z.literal("")),
-  orgao_emissor: z.string().optional().or(z.literal("")),
-  data_nascimento: z.string().optional().or(z.literal("")),
-  genero: z.string().optional().or(z.literal("")),
-  estado_civil: z.string().optional().or(z.literal("")),
-  nacionalidade: z.string().default("Brasileira"),
-  etnia: z.string().optional().or(z.literal("")),
+  contato_telefone: z.string().min(1, "Telefone é obrigatório"),
+  contato_email: z.string().email("Email inválido"),
+  cpf: z.string().min(11, "CPF é obrigatório"),
+  rg: z.string().min(1, "RG é obrigatório"),
+  orgao_emissor: z.string().min(1, "Órgão Emissor é obrigatório"),
+  data_nascimento: z.string().min(1, "Data de nascimento é obrigatória"),
+  genero: z.string().min(1, "Gênero é obrigatório"),
+  estado_civil: z.string().min(1, "Estado civil é obrigatório"),
+  nacionalidade: z.string().min(1, "Nacionalidade é obrigatória").default("Brasileira"),
+  etnia: z.string().min(1, "Etnia é obrigatória"),
   nome_mae: z.string().optional().or(z.literal("")),
   nome_pai: z.string().optional().or(z.literal("")),
-  cep: z.string().optional().or(z.literal("")),
-  logradouro: z.string().optional().or(z.literal("")),
-  numero: z.string().optional().or(z.literal("")),
+  cep: z.string().min(1, "CEP é obrigatório"),
+  logradouro: z.string().min(1, "Logradouro é obrigatório"),
+  numero: z.string().min(1, "Número é obrigatório"),
   complemento: z.string().optional().or(z.literal("")),
-  bairro: z.string().optional().or(z.literal("")),
-  cidade: z.string().optional().or(z.literal("")),
-  uf: z.string().optional().or(z.literal("")),
-  telefone: z.string().optional().or(z.literal("")),
-  email_pessoal: z.string().email("Email inválido").optional().or(z.literal("")),
-  contato_emergencia_nome: z.string().optional().or(z.literal("")),
-  contato_emergencia_telefone: z.string().optional().or(z.literal("")),
+  bairro: z.string().min(1, "Bairro é obrigatório"),
+  cidade: z.string().min(1, "Cidade é obrigatória"),
+  uf: z.string().min(1, "UF é obrigatória"),
+  telefone: z.string().min(1, "Telefone pessoal é obrigatório"),
+  email_pessoal: z.string().email("Email inválido"),
+  contato_emergencia_nome: z.string().min(1, "Nome do contato de emergência é obrigatório"),
+  contato_emergencia_telefone: z.string().min(1, "Telefone de emergência é obrigatório"),
   cnpj: z.string().min(14, "CNPJ é obrigatório"),
   razao_social: z.string().min(2, "Razão Social é obrigatória"),
-  nome_fantasia: z.string().optional().or(z.literal("")),
+  nome_fantasia: z.string().min(1, "Nome Fantasia é obrigatório"),
   inscricao_municipal: z.string().optional().or(z.literal("")),
   inscricao_estadual: z.string().optional().or(z.literal("")),
 });
 
-const pjSchema = pjPessoaisSchema.merge(pjDocumentosSchema).merge(bancariosPublicoSchema);
+const pjBancariosSchema = z.object({
+  banco_nome: z.string().min(1, "Banco é obrigatório"),
+  banco_codigo: z.string().min(1, "Código do banco é obrigatório"),
+  agencia: z.string().min(1, "Agência é obrigatória"),
+  conta: z.string().min(1, "Conta é obrigatória"),
+  tipo_conta: z.string().default("corrente"),
+  chave_pix: z.string().min(1, "Chave PIX é obrigatória"),
+});
+
+const pjSchema = pjPessoaisSchema.merge(pjDocumentosSchema).merge(pjBancariosSchema);
 
 type CltFormData = z.infer<typeof cltSchema>;
 type PjFormData = z.infer<typeof pjSchema>;
@@ -321,28 +330,30 @@ function StepDocumentosCLT() {
   );
 }
 
-function StepBancarios() {
-  const { register, setValue, watch } = useFormContext<any>();
+function StepBancarios({ isPj = false }: { isPj?: boolean }) {
+  const { register, setValue, watch, formState: { errors } } = useFormContext<any>();
   const handleBancoChange = (codigo: string) => {
     const banco = bancos.find(b => b.codigo === codigo);
     setValue("banco_codigo", codigo);
     setValue("banco_nome", banco?.nome || "");
   };
+  const r = isPj ? " *" : "";
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold mb-4">Dados Bancários</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label>Banco</Label>
+          <Label>Banco{r}</Label>
           <Select value={watch("banco_codigo") || ""} onValueChange={handleBancoChange}>
             <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
             <SelectContent>{bancos.map(b => <SelectItem key={b.codigo} value={b.codigo}>{b.codigo} - {b.nome}</SelectItem>)}</SelectContent>
           </Select>
+          {isPj && errors.banco_codigo && <p className="text-xs text-destructive mt-1">{String(errors.banco_codigo.message)}</p>}
         </div>
-        <div><Label htmlFor="agencia">Agência</Label><Input id="agencia" {...register("agencia")} placeholder="0000" /></div>
-        <div><Label htmlFor="conta">Conta</Label><Input id="conta" {...register("conta")} placeholder="00000-0" /></div>
+        <div><Label htmlFor="agencia">Agência{r}</Label><Input id="agencia" {...register("agencia")} placeholder="0000" />{isPj && errors.agencia && <p className="text-xs text-destructive mt-1">{String(errors.agencia.message)}</p>}</div>
+        <div><Label htmlFor="conta">Conta{r}</Label><Input id="conta" {...register("conta")} placeholder="00000-0" />{isPj && errors.conta && <p className="text-xs text-destructive mt-1">{String(errors.conta.message)}</p>}</div>
         <div>
-          <Label>Tipo de Conta</Label>
+          <Label>Tipo de Conta{r}</Label>
           <Select value={watch("tipo_conta") || "corrente"} onValueChange={(v) => setValue("tipo_conta", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -352,7 +363,7 @@ function StepBancarios() {
             </SelectContent>
           </Select>
         </div>
-        <div className="md:col-span-2"><Label htmlFor="chave_pix">Chave PIX</Label><Input id="chave_pix" {...register("chave_pix")} placeholder="CPF, email, telefone ou chave aleatória" /></div>
+        <div className="md:col-span-2"><Label htmlFor="chave_pix">Chave PIX{r}</Label><Input id="chave_pix" {...register("chave_pix")} placeholder="CPF, email, telefone ou chave aleatória" />{isPj && errors.chave_pix && <p className="text-xs text-destructive mt-1">{String(errors.chave_pix.message)}</p>}</div>
       </div>
     </div>
   );
@@ -437,12 +448,12 @@ function StepPessoaisPJ() {
         <h3 className="text-lg font-semibold mb-4">Dados do Responsável</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2"><Label>Nome Completo *</Label><Input {...register("contato_nome")} />{errors.contato_nome && <p className="text-xs text-destructive mt-1">{errors.contato_nome.message}</p>}</div>
-          <div><Label>CPF</Label><Input {...register("cpf")} placeholder="000.000.000-00" /></div>
-          <div><Label>RG</Label><Input {...register("rg")} /></div>
-          <div><Label>Órgão Emissor</Label><Input {...register("orgao_emissor")} /></div>
-          <div><Label>Data de Nascimento</Label><Input type="date" {...register("data_nascimento")} /></div>
+          <div><Label>CPF *</Label><Input {...register("cpf")} placeholder="000.000.000-00" />{errors.cpf && <p className="text-xs text-destructive mt-1">{errors.cpf.message}</p>}</div>
+          <div><Label>RG *</Label><Input {...register("rg")} />{errors.rg && <p className="text-xs text-destructive mt-1">{errors.rg.message}</p>}</div>
+          <div><Label>Órgão Emissor *</Label><Input {...register("orgao_emissor")} />{errors.orgao_emissor && <p className="text-xs text-destructive mt-1">{errors.orgao_emissor.message}</p>}</div>
+          <div><Label>Data de Nascimento *</Label><Input type="date" {...register("data_nascimento")} />{errors.data_nascimento && <p className="text-xs text-destructive mt-1">{errors.data_nascimento.message}</p>}</div>
           <div>
-            <Label>Gênero</Label>
+            <Label>Gênero *</Label>
             <Select value={watch("genero") || ""} onValueChange={(v) => setValue("genero", v)}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
@@ -452,9 +463,10 @@ function StepPessoaisPJ() {
                 <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
               </SelectContent>
             </Select>
+            {errors.genero && <p className="text-xs text-destructive mt-1">{errors.genero.message}</p>}
           </div>
           <div>
-            <Label>Estado Civil</Label>
+            <Label>Estado Civil *</Label>
             <Select value={watch("estado_civil") || ""} onValueChange={(v) => setValue("estado_civil", v)}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
@@ -465,10 +477,11 @@ function StepPessoaisPJ() {
                 <SelectItem value="uniao_estavel">União Estável</SelectItem>
               </SelectContent>
             </Select>
+            {errors.estado_civil && <p className="text-xs text-destructive mt-1">{errors.estado_civil.message}</p>}
           </div>
-          <div><Label>Nacionalidade</Label><Input {...register("nacionalidade")} /></div>
+          <div><Label>Nacionalidade *</Label><Input {...register("nacionalidade")} />{errors.nacionalidade && <p className="text-xs text-destructive mt-1">{errors.nacionalidade.message}</p>}</div>
           <div>
-            <Label>Etnia</Label>
+            <Label>Etnia *</Label>
             <Select value={watch("etnia") || ""} onValueChange={(v) => setValue("etnia", v)}>
               <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
               <SelectContent>
@@ -480,6 +493,7 @@ function StepPessoaisPJ() {
                 <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
               </SelectContent>
             </Select>
+            {errors.etnia && <p className="text-xs text-destructive mt-1">{errors.etnia.message}</p>}
           </div>
           <div><Label>Nome da Mãe</Label><Input {...register("nome_mae")} /></div>
           <div><Label>Nome do Pai</Label><Input {...register("nome_pai")} /></div>
@@ -489,37 +503,39 @@ function StepPessoaisPJ() {
         <h3 className="text-lg font-semibold mb-4">Endereço</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label>CEP</Label>
+            <Label>CEP *</Label>
             <div className="flex gap-2">
               <Input {...register("cep")} placeholder="00000-000" />
               <Button type="button" variant="outline" size="icon" onClick={handleCepSearch} disabled={loadingCep}>
                 {loadingCep ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
               </Button>
             </div>
+            {errors.cep && <p className="text-xs text-destructive mt-1">{errors.cep.message}</p>}
           </div>
-          <div><Label>Logradouro</Label><Input {...register("logradouro")} /></div>
-          <div><Label>Número</Label><Input {...register("numero")} /></div>
+          <div><Label>Logradouro *</Label><Input {...register("logradouro")} />{errors.logradouro && <p className="text-xs text-destructive mt-1">{errors.logradouro.message}</p>}</div>
+          <div><Label>Número *</Label><Input {...register("numero")} />{errors.numero && <p className="text-xs text-destructive mt-1">{errors.numero.message}</p>}</div>
           <div><Label>Complemento</Label><Input {...register("complemento")} /></div>
-          <div><Label>Bairro</Label><Input {...register("bairro")} /></div>
-          <div><Label>Cidade</Label><Input {...register("cidade")} /></div>
+          <div><Label>Bairro *</Label><Input {...register("bairro")} />{errors.bairro && <p className="text-xs text-destructive mt-1">{errors.bairro.message}</p>}</div>
+          <div><Label>Cidade *</Label><Input {...register("cidade")} />{errors.cidade && <p className="text-xs text-destructive mt-1">{errors.cidade.message}</p>}</div>
           <div>
-            <Label>UF</Label>
+            <Label>UF *</Label>
             <Select value={watch("uf") || ""} onValueChange={(v) => setValue("uf", v)}>
               <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
               <SelectContent>{UF_LIST.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
             </Select>
+            {errors.uf && <p className="text-xs text-destructive mt-1">{errors.uf.message}</p>}
           </div>
         </div>
       </div>
       <div>
         <h3 className="text-lg font-semibold mb-4">Contato</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><Label>Telefone</Label><Input {...register("contato_telefone")} placeholder="(00) 00000-0000" /></div>
-          <div><Label>Email</Label><Input type="email" {...register("contato_email")} />{errors.contato_email && <p className="text-xs text-destructive mt-1">{errors.contato_email.message}</p>}</div>
-          <div><Label>Email Pessoal</Label><Input type="email" {...register("email_pessoal")} /></div>
-          <div><Label>Telefone Pessoal</Label><Input {...register("telefone")} placeholder="(00) 00000-0000" /></div>
-          <div><Label>Contato Emergência</Label><Input {...register("contato_emergencia_nome")} placeholder="Nome" /></div>
-          <div><Label>Telefone Emergência</Label><Input {...register("contato_emergencia_telefone")} placeholder="(00) 00000-0000" /></div>
+          <div><Label>Telefone *</Label><Input {...register("contato_telefone")} placeholder="(00) 00000-0000" />{errors.contato_telefone && <p className="text-xs text-destructive mt-1">{errors.contato_telefone.message}</p>}</div>
+          <div><Label>Email *</Label><Input type="email" {...register("contato_email")} />{errors.contato_email && <p className="text-xs text-destructive mt-1">{errors.contato_email.message}</p>}</div>
+          <div><Label>Email Pessoal *</Label><Input type="email" {...register("email_pessoal")} />{errors.email_pessoal && <p className="text-xs text-destructive mt-1">{errors.email_pessoal.message}</p>}</div>
+          <div><Label>Telefone Pessoal *</Label><Input {...register("telefone")} placeholder="(00) 00000-0000" />{errors.telefone && <p className="text-xs text-destructive mt-1">{errors.telefone.message}</p>}</div>
+          <div><Label>Contato Emergência *</Label><Input {...register("contato_emergencia_nome")} placeholder="Nome" />{errors.contato_emergencia_nome && <p className="text-xs text-destructive mt-1">{errors.contato_emergencia_nome.message}</p>}</div>
+          <div><Label>Telefone Emergência *</Label><Input {...register("contato_emergencia_telefone")} placeholder="(00) 00000-0000" />{errors.contato_emergencia_telefone && <p className="text-xs text-destructive mt-1">{errors.contato_emergencia_telefone.message}</p>}</div>
         </div>
       </div>
     </div>
@@ -539,7 +555,7 @@ function StepEmpresaPJ() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><Label>CNPJ *</Label><Input value={watch("cnpj") || ""} onChange={(e) => setValue("cnpj", formatCNPJ(e.target.value), { shouldValidate: true })} maxLength={18} />{errors.cnpj && <p className="text-xs text-destructive mt-1">{errors.cnpj.message}</p>}</div>
           <div><Label>Razão Social *</Label><Input {...register("razao_social")} />{errors.razao_social && <p className="text-xs text-destructive mt-1">{errors.razao_social.message}</p>}</div>
-          <div><Label>Nome Fantasia</Label><Input {...register("nome_fantasia")} /></div>
+          <div><Label>Nome Fantasia *</Label><Input {...register("nome_fantasia")} />{errors.nome_fantasia && <p className="text-xs text-destructive mt-1">{errors.nome_fantasia.message}</p>}</div>
           <div><Label>Inscrição Municipal</Label><Input {...register("inscricao_municipal")} /></div>
           <div><Label>Inscrição Estadual</Label><Input {...register("inscricao_estadual")} /></div>
         </div>
@@ -684,8 +700,9 @@ export default function CadastroPublico() {
     if (isClt) {
       if (step === 0) fieldsToValidate = ["nome_completo", "cpf", "data_nascimento"];
     } else {
-      if (step === 0) fieldsToValidate = ["contato_nome"];
-      if (step === 1) fieldsToValidate = ["cnpj", "razao_social"];
+      if (step === 0) fieldsToValidate = ["contato_nome", "contato_telefone", "contato_email", "cpf", "rg", "orgao_emissor", "data_nascimento", "genero", "estado_civil", "nacionalidade", "etnia", "cep", "logradouro", "numero", "bairro", "cidade", "uf", "telefone", "email_pessoal", "contato_emergencia_nome", "contato_emergencia_telefone"];
+      if (step === 1) fieldsToValidate = ["cnpj", "razao_social", "nome_fantasia"];
+      if (step === 3) fieldsToValidate = ["banco_codigo", "banco_nome", "agencia", "conta", "chave_pix"];
     }
 
     if (fieldsToValidate.length > 0) {
@@ -698,6 +715,17 @@ export default function CadastroPublico() {
 
   const handleSubmit = async () => {
     if (!convite) return;
+
+    // Validate required uploads for PJ
+    if (!isClt) {
+      const requiredUploads = ["rg_cnh_frente", "contrato_social"];
+      const missing = requiredUploads.filter(key => !uploadedFiles.find(f => f.key === key));
+      if (missing.length > 0) {
+        toast.error("Envie os documentos obrigatórios: RG/CNH (Frente) e Contrato Social.");
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
@@ -805,7 +833,7 @@ export default function CadastroPublico() {
                     {step === 0 && <StepPessoaisPJPublic />}
                     {step === 1 && <StepEmpresaPJ />}
                     {step === 2 && <StepDocumentosPJPublic />}
-                    {step === 3 && <StepBancarios />}
+                    {step === 3 && <StepBancarios isPj />}
                     {step === 4 && <StepUploadDocumentos tipo="pj" token={convite?.token || ""} uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} />}
                   </>
                 )}
