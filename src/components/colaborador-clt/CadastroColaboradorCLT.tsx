@@ -66,16 +66,16 @@ export function CadastroColaboradorCLT() {
   const onSubmit = async (data: AllFormData) => {
     setSaving(true);
     try {
-      const { dependentes, ...colaboradorData } = data;
+      const { dependentes, salario_base, jornada_semanal, ...colaboradorData } = data;
 
       const { data: inserted, error } = await supabase
         .from("colaboradores_clt")
         .insert({
           ...colaboradorData,
-          salario_base: Number(colaboradorData.salario_base),
-          jornada_semanal: Number(colaboradorData.jornada_semanal) || 44,
+          salario_base: Number(salario_base),
+          jornada_semanal: Number(jornada_semanal) || 44,
           created_by: user?.id,
-        })
+        } as any)
         .select("id")
         .single();
 
