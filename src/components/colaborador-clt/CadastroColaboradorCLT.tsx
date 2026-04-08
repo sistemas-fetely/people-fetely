@@ -14,16 +14,19 @@ import { StepDocumentos } from "./StepDocumentos";
 import { StepDadosProfissionais } from "./StepDadosProfissionais";
 import { StepDadosBancarios } from "./StepDadosBancarios";
 import { StepDependentes } from "./StepDependentes";
+import { StepDadosEmpresa } from "./StepDadosEmpresa";
 import {
   dadosPessoaisSchema,
   documentosSchema,
   dadosProfissionaisSchema,
   dadosBancariosSchema,
+  dadosEmpresaSchema,
   dependentesSchema,
   type DadosPessoaisForm,
   type DocumentosForm,
   type DadosProfissionaisForm,
   type DadosBancariosForm,
+  type DadosEmpresaForm,
   type DependentesForm,
 } from "@/lib/validations/colaborador-clt";
 
@@ -32,10 +35,11 @@ const stepSchemas = [
   documentosSchema,
   dadosProfissionaisSchema,
   dadosBancariosSchema,
+  dadosEmpresaSchema,
   dependentesSchema,
 ];
 
-type AllFormData = DadosPessoaisForm & DocumentosForm & DadosProfissionaisForm & DadosBancariosForm & DependentesForm;
+type AllFormData = DadosPessoaisForm & DocumentosForm & DadosProfissionaisForm & DadosBancariosForm & DadosEmpresaForm & DependentesForm;
 
 export function CadastroColaboradorCLT() {
   const [currentStep, setCurrentStep] = useState(1);
