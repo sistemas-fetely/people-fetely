@@ -396,7 +396,7 @@ export default function ColaboradorDetalhe() {
                 <InfoField label="Matrícula" value={colaborador.matricula} />
                 <InfoField label="Cargo" value={colaborador.cargo} />
                 <InfoField label="Data de Admissão" value={safeFormatDate(colaborador.data_admissao)} />
-                <InfoField label="Data de Desligamento" value={(colaborador as any).data_desligamento ? format(parseISO((colaborador as any).data_desligamento), "dd/MM/yyyy") : "—"} />
+                <InfoField label="Data de Desligamento" value={(colaborador as any).data_desligamento ? safeFormatDate((colaborador as any).data_desligamento) : "—"} />
                 <InfoField label="Tipo de Contrato" value={colaborador.tipo_contrato} />
                 <InfoField label="Salário Base" value={`R$ ${Number(colaborador.salario_base).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
                 <InfoField label="Jornada Semanal" value={colaborador.jornada_semanal ? `${colaborador.jornada_semanal}h` : ""} />
