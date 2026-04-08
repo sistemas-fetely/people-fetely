@@ -290,16 +290,48 @@ function NotaFiscalFormDialog({ open, onClose, nota, contratos, onSaved }: {
       data_vencimento: form.data_vencimento || null, competencia: form.competencia.trim(),
       descricao: form.descricao.trim() || null, status: form.status, observacoes: form.observacoes.trim() || null,
     };
+    const previousStatus = nota?.status;
+    const isChangingToEnviada = form.status === "enviada_pagamento" && previousStatus !== "enviada_pagamento";
     try {
+      let notaId = nota?.id;
       if (nota) {
         const { error } = await supabase.from("notas_fiscais_pj").update(payload as any).eq("id", nota.id);
         if (error) throw error;
         toast.success("Nota fiscal atualizada!");
       } else {
-        const { error } = await supabase.from("notas_fiscais_pj").insert(payload as any);
+        const { data: inserted, error } = await supabase.from("notas_fiscais_pj").insert(payload as any).select("id").single();
         if (error) throw error;
+        notaId = inserted?.id;
         toast.success("Nota fiscal cadastrada!");
       }
+
+      // Auto-create payment when status changes to "enviada_pagamento"
+      if (isChangingToEnviada && notaId) {
+        // Fetch contract to get forma_pagamento
+        const { data: contrato } = await supabase
+          .from("contratos_pj")
+          .select("forma_pagamento")
+          .eq("id", form.contrato_id)
+          .single();
+
+        const pagPayload = {
+          contrato_id: form.contrato_id,
+          nota_fiscal_id: notaId,
+          valor: Number(form.valor),
+          competencia: form.competencia.trim(),
+          data_prevista: form.data_vencimento || form.data_emissao,
+          forma_pagamento: contrato?.forma_pagamento || "transferencia",
+          status: "pendente",
+          observacoes: `Pagamento gerado automaticamente a partir da NF ${form.numero.trim()}`,
+        };
+        const { error: pagError } = await supabase.from("pagamentos_pj").insert(pagPayload as any);
+        if (pagError) {
+          toast.error("NF salva, mas erro ao criar pagamento: " + pagError.message);
+        } else {
+          toast.success("Pagamento PJ criado automaticamente!");
+        }
+      }
+
       onSaved(); onClose();
     } catch (err: any) { toast.error(err.message); } finally { setSaving(false); }
   };
