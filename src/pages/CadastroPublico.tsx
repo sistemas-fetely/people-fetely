@@ -5,7 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, CheckCircle2, AlertTriangle, Clock, ChevronLeft, ChevronRight, Users, Plus, Trash2, Search } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, Clock, ChevronLeft, ChevronRight, Users, Plus, Trash2, Search, Upload } from "lucide-react";
+import StepUploadDocumentos from "@/components/cadastro-publico/StepUploadDocumentos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -554,8 +555,8 @@ interface ConviteData {
   dados_preenchidos: Record<string, any> | null;
 }
 
-const CLT_STEPS = ["Dados Pessoais", "Documentos", "Dados Bancários", "Dependentes"];
-const PJ_STEPS = ["Dados Pessoais", "Dados da Empresa", "Dados Bancários"];
+const CLT_STEPS = ["Dados Pessoais", "Documentos", "Dados Bancários", "Dependentes", "Upload de Documentos"];
+const PJ_STEPS = ["Dados Pessoais", "Dados da Empresa", "Dados Bancários", "Upload de Documentos"];
 
 export default function CadastroPublico() {
   const { token } = useParams<{ token: string }>();
@@ -565,6 +566,7 @@ export default function CadastroPublico() {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<{ key: string; name: string; url: string }[]>([]);
 
   const isClt = convite?.tipo === "clt";
   const steps = isClt ? CLT_STEPS : PJ_STEPS;
@@ -596,8 +598,13 @@ export default function CadastroPublico() {
       // Pre-fill with previously saved data if available, otherwise use invite defaults
       if (conviteData.dados_preenchidos && conviteData.status === "preenchido") {
         const saved = conviteData.dados_preenchidos as Record<string, any>;
+        // Restore uploaded files
+        if (saved.documentos_upload && Array.isArray(saved.documentos_upload)) {
+          setUploadedFiles(saved.documentos_upload);
+        }
         if (conviteData.tipo === "clt") {
           Object.entries(saved).forEach(([key, value]) => {
+            if (key === "documentos_upload") return;
             if (key === "dependentes" && Array.isArray(value)) {
               cltMethods.setValue("dependentes", value);
             } else {
@@ -606,6 +613,7 @@ export default function CadastroPublico() {
           });
         } else {
           Object.entries(saved).forEach(([key, value]) => {
+            if (key === "documentos_upload") return;
             pjMethods.setValue(key as any, value);
           });
         }
@@ -647,10 +655,11 @@ export default function CadastroPublico() {
 
     try {
       const formData = isClt ? cltMethods.getValues() : pjMethods.getValues();
+      const dataWithDocs = { ...formData, documentos_upload: uploadedFiles };
 
       const { error: rpcErr } = await supabase.rpc("submit_convite_cadastro", {
         _token: convite.token,
-        _dados: formData as any,
+        _dados: dataWithDocs as any,
       });
 
       if (rpcErr) throw rpcErr;
@@ -742,12 +751,14 @@ export default function CadastroPublico() {
                     {step === 1 && <StepDocumentosCLT />}
                     {step === 2 && <StepBancarios />}
                     {step === 3 && <StepDependentesCLT />}
+                    {step === 4 && <StepUploadDocumentos tipo="clt" token={convite?.token || ""} uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} />}
                   </>
                 ) : (
                   <>
                     {step === 0 && <StepPessoaisPJPublic />}
                     {step === 1 && <StepEmpresaPJ />}
                     {step === 2 && <StepBancarios />}
+                    {step === 3 && <StepUploadDocumentos tipo="pj" token={convite?.token || ""} uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} />}
                   </>
                 )}
               </CardContent>
