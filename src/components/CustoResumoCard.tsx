@@ -51,8 +51,8 @@ export function CustoResumoCard({ tipo, salarioBase, dependentesIRRF = 0 }: Cust
 
   // CLT calculations
   const inss = calcularINSS(salarioBase, params.faixasINSS);
-  const baseIRRF = salarioBase - inss - (dependentesIRRF * params.deducaoDependenteIRRF);
-  const irrf = calcularIRRF(Math.max(baseIRRF, 0), params.faixasIRRF);
+  const baseIRRF = salarioBase - inss;
+  const irrf = calcularIRRF(baseIRRF, dependentesIRRF, params.faixasIRRF, params.deducaoDependenteIRRF);
   const fgts = Math.round(salarioBase * params.aliquotaFGTS * 100) / 100;
   const inssPatronal = Math.round(salarioBase * params.aliquotaINSSPatronal * 100) / 100;
   const totalEncargos = fgts + inssPatronal;
