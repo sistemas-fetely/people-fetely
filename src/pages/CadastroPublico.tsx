@@ -288,21 +288,22 @@ function StepPessoaisCLT() {
 }
 
 function StepDocumentosCLT() {
-  const { register, setValue, watch } = useFormContext<CltFormData>();
+  const { register, setValue, watch, formState: { errors } } = useFormContext<CltFormData>();
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-4">PIS/PASEP e CTPS</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><Label htmlFor="pis_pasep">PIS/PASEP</Label><Input id="pis_pasep" {...register("pis_pasep")} /></div>
-          <div><Label htmlFor="ctps_numero">CTPS Número</Label><Input id="ctps_numero" {...register("ctps_numero")} /></div>
-          <div><Label htmlFor="ctps_serie">CTPS Série</Label><Input id="ctps_serie" {...register("ctps_serie")} /></div>
+          <div><Label htmlFor="pis_pasep">PIS/PASEP *</Label><Input id="pis_pasep" {...register("pis_pasep")} />{errors.pis_pasep && <p className="text-xs text-destructive mt-1">{errors.pis_pasep.message}</p>}</div>
+          <div><Label htmlFor="ctps_numero">CTPS Número *</Label><Input id="ctps_numero" {...register("ctps_numero")} />{errors.ctps_numero && <p className="text-xs text-destructive mt-1">{errors.ctps_numero.message}</p>}</div>
+          <div><Label htmlFor="ctps_serie">CTPS Série *</Label><Input id="ctps_serie" {...register("ctps_serie")} />{errors.ctps_serie && <p className="text-xs text-destructive mt-1">{errors.ctps_serie.message}</p>}</div>
           <div>
-            <Label>CTPS UF</Label>
+            <Label>CTPS UF *</Label>
             <Select value={watch("ctps_uf") || ""} onValueChange={(v) => setValue("ctps_uf", v)}>
               <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
               <SelectContent>{UF_LIST.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
             </Select>
+            {errors.ctps_uf && <p className="text-xs text-destructive mt-1">{errors.ctps_uf.message}</p>}
           </div>
         </div>
       </div>
