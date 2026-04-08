@@ -15,7 +15,9 @@ interface Props {
   onCreatePosition?: () => void;
 }
 
-export function OrgToolbar({ viewMode, onViewModeChange, filters, onFiltersChange, allNodes }: Props) {
+export function OrgToolbar({ viewMode, onViewModeChange, filters, onFiltersChange, allNodes, onCreatePosition }: Props) {
+  const { hasAnyRole } = useAuth();
+  const canManage = hasAnyRole(["super_admin", "gestor_rh"]);
   const departamentos = [...new Set(allNodes.map(n => n.departamento))].sort();
   const filiais = [...new Set(allNodes.map(n => n.filial).filter(Boolean))].sort();
 
