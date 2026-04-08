@@ -715,6 +715,17 @@ export default function CadastroPublico() {
 
   const handleSubmit = async () => {
     if (!convite) return;
+
+    // Validate required uploads for PJ
+    if (!isClt) {
+      const requiredUploads = ["rg_cnh_frente", "contrato_social"];
+      const missing = requiredUploads.filter(key => !uploadedFiles.find(f => f.key === key));
+      if (missing.length > 0) {
+        toast.error("Envie os documentos obrigatórios: RG/CNH (Frente) e Contrato Social.");
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
