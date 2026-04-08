@@ -109,8 +109,24 @@ export function StepDadosProfissionais() {
           <Input id="horario_trabalho" {...register("horario_trabalho")} placeholder="08:00 - 17:00" />
         </div>
         <div>
-          <Label htmlFor="local_trabalho">Local de Trabalho</Label>
-          <Input id="local_trabalho" {...register("local_trabalho")} placeholder="Escritório sede / Remoto" />
+          <Label>Local de Trabalho</Label>
+          {loadingLocais ? (
+            <div className="flex items-center h-10"><Loader2 className="h-4 w-4 animate-spin" /></div>
+          ) : (
+            <Select value={watch("local_trabalho") || ""} onValueChange={(v) => setValue("local_trabalho", v)}>
+              <SelectTrigger><SelectValue placeholder="Selecione o local" /></SelectTrigger>
+              <SelectContent>
+                {(locaisTrabalho || []).map((l) => (
+                  <SelectItem key={l.id} value={l.label}>
+                    <div>
+                      <span>{l.label}</span>
+                      {l.descricao && <span className="text-muted-foreground ml-2 text-xs">— {l.descricao}</span>}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
