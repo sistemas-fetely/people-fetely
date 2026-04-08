@@ -14,6 +14,7 @@ export function StepDadosProfissionais() {
   const { data: cargos, isLoading: loadingCargos } = useParametros("cargo");
   const { data: tiposContrato, isLoading: loadingTipos } = useParametros("tipo_contrato");
   const { data: jornadas, isLoading: loadingJornadas } = useParametros("jornada");
+  const { data: locaisTrabalho, isLoading: loadingLocais } = useParametros("local_trabalho");
 
   const { fields, append, remove } = useFieldArray({
     control,
