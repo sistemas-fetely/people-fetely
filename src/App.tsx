@@ -23,6 +23,7 @@ import ContratosPJ from "@/pages/ContratosPJ";
 import ContratoPJDetalhe from "@/pages/ContratoPJDetalhe";
 import NotasFiscais from "@/pages/NotasFiscais";
 import NotaFiscalDetalhe from "@/pages/NotaFiscalDetalhe";
+import FolhaPagamento from "@/pages/FolhaPagamento";
 
 
 const queryClient = new QueryClient();
