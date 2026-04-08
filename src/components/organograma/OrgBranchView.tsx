@@ -244,7 +244,7 @@ export function OrgBranchView({ colaboradorId, contratoPjId }: Props) {
             </div>
           )}
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
   );
 }
