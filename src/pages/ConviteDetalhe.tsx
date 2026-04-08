@@ -128,145 +128,49 @@ export default function ConviteDetalhe() {
     }
   };
 
-  const handleExportToCadastro = async () => {
+  const handleExportToCadastro = () => {
     if (!convite || !formData) return;
-    setExporting(true);
-    try {
-      if (convite.tipo === "clt") {
-        const { dependentes, ...rest } = formData;
-        const cltFields = [
-          "nome_completo","cpf","rg","orgao_emissor","data_nascimento","genero","estado_civil",
-          "nacionalidade","etnia","nome_mae","nome_pai","cep","logradouro","numero","complemento",
-          "bairro","cidade","uf","telefone","email_pessoal","contato_emergencia_nome",
-          "contato_emergencia_telefone","pis_pasep","ctps_numero","ctps_serie","ctps_uf",
-          "titulo_eleitor","zona_eleitoral","secao_eleitoral","cnh_numero","cnh_categoria",
-          "cnh_validade","certificado_reservista","banco_nome","banco_codigo","agencia",
-          "conta","tipo_conta","chave_pix",
-        ];
-        const dadosClt: Record<string, any> = {};
-        for (const k of cltFields) {
-          if (rest[k] !== undefined && rest[k] !== "") dadosClt[k] = rest[k];
-        }
-        const insertData = {
-          ...dadosClt,
-          nome_completo: dadosClt.nome_completo || convite.nome,
-          cpf: dadosClt.cpf || "000.000.000-00",
-          data_nascimento: dadosClt.data_nascimento || "2000-01-01",
-          cargo: rest.cargo || convite.cargo || "A definir",
-          departamento: rest.departamento || convite.departamento || "A definir",
-          data_admissao: rest.data_admissao || new Date().toISOString().split("T")[0],
-          salario_base: Number(rest.salario_base) || 0,
-          tipo_contrato: rest.tipo_contrato || "indeterminado",
-          jornada_semanal: rest.jornada_semanal ? Number(rest.jornada_semanal) : 44,
-          horario_trabalho: rest.horario_trabalho || null,
-          local_trabalho: rest.local_trabalho || null,
-          matricula: rest.matricula || null,
-          email_corporativo: rest.email_corporativo || null,
-          ramal: rest.ramal || null,
-          data_integracao: rest.data_integracao || null,
-          status: "ativo",
-        } as any;
-        const { data: colaborador, error } = await supabase
-          .from("colaboradores_clt")
-          .insert(insertData)
-          .select("id")
-          .single();
-        if (error) throw error;
+    const { dependentes, ...rest } = formData;
 
-        if (dependentes && dependentes.length > 0) {
-          const depsInsert = dependentes
-            .filter((d: any) => d.nome_completo && d.data_nascimento && d.parentesco)
-            .map((d: any) => ({
-              colaborador_id: colaborador.id,
-              nome_completo: d.nome_completo,
-              cpf: d.cpf || null,
-              data_nascimento: d.data_nascimento,
-              parentesco: d.parentesco,
-              incluir_irrf: d.incluir_irrf || false,
-              incluir_plano_saude: d.incluir_plano_saude || false,
-            }));
-          if (depsInsert.length > 0) {
-            const { error: depsError } = await supabase.from("dependentes").insert(depsInsert);
-            if (depsError) console.error("Erro ao inserir dependentes:", depsError);
-          }
-        }
-
-        await supabase
-          .from("convites_cadastro")
-          .update({ colaborador_id: colaborador.id, status: "cadastrado" })
-          .eq("id", convite.id);
-        setConvite({ ...convite, colaborador_id: colaborador.id, status: "cadastrado" });
-
-        toast.success("Colaborador CLT criado com sucesso!");
-        navigate(`/colaboradores/${colaborador.id}`);
-      } else {
-        const insertData = {
-          contato_nome: formData.contato_nome || convite.nome,
-          contato_telefone: formData.contato_telefone || null,
-          contato_email: formData.contato_email || convite.email,
-          cpf: formData.cpf || null,
-          rg: formData.rg || null,
-          orgao_emissor: formData.orgao_emissor || null,
-          data_nascimento: formData.data_nascimento || null,
-          genero: formData.genero || null,
-          estado_civil: formData.estado_civil || null,
-          nacionalidade: formData.nacionalidade || null,
-          etnia: formData.etnia || null,
-          nome_mae: formData.nome_mae || null,
-          nome_pai: formData.nome_pai || null,
-          cep: formData.cep || null,
-          logradouro: formData.logradouro || null,
-          numero: formData.numero || null,
-          complemento: formData.complemento || null,
-          bairro: formData.bairro || null,
-          cidade: formData.cidade || null,
-          uf: formData.uf || null,
-          telefone: formData.telefone || null,
-          email_pessoal: formData.email_pessoal || null,
-          contato_emergencia_nome: formData.contato_emergencia_nome || null,
-          contato_emergencia_telefone: formData.contato_emergencia_telefone || null,
-          cnpj: formData.cnpj,
-          razao_social: formData.razao_social,
-          nome_fantasia: formData.nome_fantasia || null,
-          inscricao_municipal: formData.inscricao_municipal || null,
-          inscricao_estadual: formData.inscricao_estadual || null,
-          banco_nome: formData.banco_nome || null,
-          banco_codigo: formData.banco_codigo || null,
-          agencia: formData.agencia || null,
-          conta: formData.conta || null,
-          tipo_conta: formData.tipo_conta || "corrente",
-          chave_pix: formData.chave_pix || null,
-          tipo_servico: formData.tipo_servico || convite.cargo || "Consultoria",
-          departamento: formData.departamento || convite.departamento || "A definir",
-          valor_mensal: Number(formData.valor_mensal) || 0,
-          forma_pagamento: formData.forma_pagamento || "transferencia",
-          dia_vencimento: formData.dia_vencimento ? Number(formData.dia_vencimento) : 10,
-          data_inicio: formData.data_inicio || new Date().toISOString().split("T")[0],
-          data_fim: formData.data_fim || null,
-          renovacao_automatica: !!formData.renovacao_automatica,
-          status: formData.status || "ativo",
-        };
-
-        const { data: contrato, error } = await supabase
-          .from("contratos_pj")
-          .insert(insertData)
-          .select("id")
-          .single();
-        if (error) throw error;
-
-        await supabase
-          .from("convites_cadastro")
-          .update({ contrato_pj_id: contrato.id, status: "cadastrado" })
-          .eq("id", convite.id);
-        setConvite({ ...convite, contrato_pj_id: contrato.id, status: "cadastrado" });
-
-        toast.success("Contrato PJ criado com sucesso!");
-        navigate(`/contratos-pj/${contrato.id}`);
-      }
-    } catch (err: any) {
-      toast.error("Erro ao exportar: " + err.message);
-    } finally {
-      setExporting(false);
+    if (convite.tipo === "clt") {
+      navigate("/colaboradores/novo", {
+        state: {
+          conviteId: convite.id,
+          initialData: {
+            ...rest,
+            nome_completo: rest.nome_completo || convite.nome,
+            cpf: rest.cpf || "",
+            data_nascimento: rest.data_nascimento || "",
+            cargo: rest.cargo || convite.cargo || "",
+            departamento: rest.departamento || convite.departamento || "",
+            data_admissao: rest.data_admissao || new Date().toISOString().split("T")[0],
+            salario_base: rest.salario_base || 0,
+            tipo_contrato: rest.tipo_contrato || "indeterminado",
+            jornada_semanal: rest.jornada_semanal || 44,
+            dependentes: dependentes || [],
+          },
+        },
+      });
+    } else {
+      navigate("/contratos-pj/novo", {
+        state: {
+          conviteId: convite.id,
+          initialData: {
+            ...rest,
+            contato_nome: rest.contato_nome || convite.nome,
+            contato_email: rest.contato_email || convite.email,
+            cnpj: rest.cnpj || "",
+            razao_social: rest.razao_social || "",
+            tipo_servico: rest.tipo_servico || convite.cargo || "",
+            departamento: rest.departamento || convite.departamento || "",
+            valor_mensal: rest.valor_mensal || 0,
+            forma_pagamento: rest.forma_pagamento || "transferencia",
+            dia_vencimento: rest.dia_vencimento || 10,
+            data_inicio: rest.data_inicio || new Date().toISOString().split("T")[0],
+            status: rest.status || "ativo",
+          },
+        },
+      });
     }
   };
 
