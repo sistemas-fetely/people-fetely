@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParametros } from "@/hooks/useParametros";
 import {
   FileText, Search, MoreHorizontal, Eye, Edit, Trash2, Plus, Loader2,
 } from "lucide-react";
@@ -29,11 +30,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 
-const statusMap: Record<string, string> = {
-  pendente: "Pendente", paga: "Paga", cancelada: "Cancelada", vencida: "Vencida",
+const defaultStatusMap: Record<string, string> = {
+  pendente: "Pendente", aprovada: "Aprovada", paga: "Paga", cancelada: "Cancelada", vencida: "Vencida",
 };
 const statusStyles: Record<string, string> = {
   pendente: "bg-warning/10 text-warning border-0",
+  aprovada: "bg-info/10 text-info border-0",
   paga: "bg-success/10 text-success border-0",
   cancelada: "bg-destructive/10 text-destructive border-0",
   vencida: "bg-destructive/10 text-destructive border-0",
@@ -64,6 +66,13 @@ interface ContratoPJOption {
 
 export default function NotasFiscais() {
   const navigate = useNavigate();
+  const { data: statusParams } = useParametros("status_nota_fiscal");
+  const statusMap = useMemo(() => {
+    if (statusParams && statusParams.length > 0) {
+      return Object.fromEntries(statusParams.map((p) => [p.valor, p.label]));
+    }
+    return defaultStatusMap;
+  }, [statusParams]);
   const [notas, setNotas] = useState<NotaComContrato[]>([]);
   const [contratos, setContratos] = useState<ContratoPJOption[]>([]);
   const [loading, setLoading] = useState(true);
@@ -252,6 +261,13 @@ export default function NotasFiscais() {
 function NotaFiscalFormDialog({ open, onClose, nota, contratos, onSaved }: {
   open: boolean; onClose: () => void; nota: NotaComContrato | null; contratos: ContratoPJOption[]; onSaved: () => void;
 }) {
+  const { data: statusParams } = useParametros("status_nota_fiscal");
+  const statusMap = useMemo(() => {
+    if (statusParams && statusParams.length > 0) {
+      return Object.fromEntries(statusParams.map((p) => [p.valor, p.label]));
+    }
+    return defaultStatusMap;
+  }, [statusParams]);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     contrato_id: nota?.contrato_id || "",
