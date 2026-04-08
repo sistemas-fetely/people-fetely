@@ -16,7 +16,7 @@ const routeNames: Record<string, string> = {
   "/beneficios": "Benefícios",
   "/contratos-pj": "Contratos PJ",
   "/notas-fiscais": "Notas Fiscais",
-  "/pagamentos-pj": "Pagamentos PJ",
+  
   "/recrutamento": "Recrutamento",
   "/avaliacoes": "Avaliações",
   "/treinamentos": "Treinamentos",
