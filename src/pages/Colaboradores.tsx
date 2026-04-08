@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Plus, Search, MoreHorizontal, Eye, Edit, Trash2,
-  UserCheck, Briefcase,
+  UserCheck, Briefcase, DollarSign,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
