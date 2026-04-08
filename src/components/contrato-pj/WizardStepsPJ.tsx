@@ -8,6 +8,7 @@ const steps = [
   { label: "Bancário", number: 4 },
   { label: "Empresa", number: 5 },
   { label: "Dependentes", number: 6 },
+  { label: "Anexos", number: 7 },
 ];
 
 interface WizardStepsPJProps {

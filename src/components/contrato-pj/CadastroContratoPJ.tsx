@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save, Loader2 } from "lucide-react";
+import { StepUploadDocumentos, type UploadedFile } from "@/components/colaborador-clt/StepUploadDocumentosCLT";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { WizardStepsPJ } from "./WizardStepsPJ";
@@ -44,6 +45,11 @@ export function CadastroContratoPJ() {
   const conviteId = (location.state as any)?.conviteId || null;
   const initialData = (location.state as any)?.initialData || null;
 
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(
+    () => (initialData?.documentos_upload as any) || []
+  );
+  const uploadFolderRef = useRef(initialData?.upload_folder || crypto.randomUUID());
+
   const methods = useForm<AllPJFormData>({
     mode: "onBlur",
     defaultValues: {
@@ -79,7 +85,7 @@ export function CadastroContratoPJ() {
   const goNext = async () => {
     const valid = await validateCurrentStep();
     if (!valid) return;
-    setCurrentStep((s) => Math.min(s + 1, 6));
+    setCurrentStep((s) => Math.min(s + 1, 7));
   };
 
   const goBack = () => setCurrentStep((s) => Math.max(s - 1, 1));
@@ -239,13 +245,21 @@ export function CadastroContratoPJ() {
             {currentStep === 4 && <StepDadosBancarios />}
             {currentStep === 5 && <StepDadosEmpresa />}
             {currentStep === 6 && <StepDependentes />}
+            {currentStep === 7 && (
+              <StepUploadDocumentos
+                tipo="pj"
+                folderKey={uploadFolderRef.current}
+                uploadedFiles={uploadedFiles}
+                onFilesChange={setUploadedFiles}
+              />
+            )}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={currentStep === 1 ? () => navigate("/contratos-pj") : goBack} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               {currentStep === 1 ? "Cancelar" : "Voltar"}
             </Button>
-            {currentStep < 6 ? (
+            {currentStep < 7 ? (
               <Button type="button" onClick={goNext} className="gap-2">
                 Próximo
                 <ArrowRight className="h-4 w-4" />
