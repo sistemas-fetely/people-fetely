@@ -51,6 +51,7 @@ export function CadastroColaboradorCLT() {
       jornada_semanal: 44,
       tipo_conta: "corrente",
       dependentes: [],
+      departamentos_rateio: [{ departamento: "", percentual_rateio: 100 }],
     },
   });
 
