@@ -84,7 +84,7 @@ export default function Colaboradores() {
           <h1 className="text-2xl font-bold tracking-tight">Colaboradores</h1>
           <p className="text-muted-foreground text-sm mt-1">Gerenciamento de colaboradores CLT e PJ</p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => navigate("/colaboradores/novo")}>
           <Plus className="h-4 w-4" />
           Novo Colaborador
         </Button>
