@@ -73,6 +73,7 @@ interface MenuGroupProps {
 }
 
 function MenuGroup({ label, items, collapsed, userRoles }: MenuGroupProps) {
+  const location = useLocation();
   const visibleItems = items.filter((item) => {
     if (item.roles.length === 0) return true;
     return item.roles.some((r) => userRoles.includes(r));
@@ -80,26 +81,39 @@ function MenuGroup({ label, items, collapsed, userRoles }: MenuGroupProps) {
 
   if (visibleItems.length === 0) return null;
 
+  const isItemActive = (url: string) => {
+    if (url.includes("?")) {
+      const [path, query] = url.split("?");
+      return location.pathname === path && location.search === `?${query}`;
+    }
+    return url === "/" ? location.pathname === "/" : location.pathname === url;
+  };
+
   return (
     <SidebarGroup>
       {!collapsed && <SidebarGroupLabel className="text-sidebar-muted text-xs uppercase tracking-wider">{label}</SidebarGroupLabel>}
       <SidebarGroupContent>
         <SidebarMenu>
-          {visibleItems.map((item) => (
-            <SidebarMenuItem key={item.url}>
-              <SidebarMenuButton asChild>
-                <NavLink
-                  to={item.url}
-                  end={item.url === "/"}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-                  activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
-                >
-                  <item.icon className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span>{item.title}</span>}
-                </NavLink>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {visibleItems.map((item) => {
+            const active = isItemActive(item.url);
+            return (
+              <SidebarMenuItem key={item.url}>
+                <SidebarMenuButton asChild>
+                  <NavLink
+                    to={item.url}
+                    end={item.url === "/"}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent transition-colors",
+                      active && "bg-sidebar-accent text-sidebar-primary font-medium"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span>{item.title}</span>}
+                  </NavLink>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
