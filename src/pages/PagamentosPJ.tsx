@@ -193,12 +193,13 @@ export default function PagamentosPJ() {
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></TableCell></TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum pagamento encontrado.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhum pagamento encontrado.</TableCell></TableRow>
                 ) : filtered.map((p) => (
                   <TableRow key={p.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => p.nota_fiscal_id ? navigate(`/notas-fiscais/${p.nota_fiscal_id}`) : navigate(`/contratos-pj/${p.contrato_id}`)}>
                     <TableCell className="font-medium text-sm">{p.contrato_nome}</TableCell>
+                    <TableCell className="text-sm hidden md:table-cell">{p.nf_numero || "—"}</TableCell>
                     <TableCell className="text-sm hidden md:table-cell">{p.competencia}</TableCell>
                     <TableCell className="text-sm">{format(parseISO(p.data_prevista), "dd/MM/yyyy")}</TableCell>
                     <TableCell className="text-sm hidden md:table-cell">{p.data_pagamento ? format(parseISO(p.data_pagamento), "dd/MM/yyyy") : "—"}</TableCell>
