@@ -77,14 +77,14 @@ const statusPagMap: Record<string, string> = {
   vencida: "Vencida",
 };
 const statusPagStyles: Record<string, string> = {
-  pendente: "bg-warning/10 text-warning border-0",
-  aprovada: "bg-info/10 text-info border-0",
-  enviada_pagamento: "bg-primary/10 text-primary border-0",
-  paga: "bg-success/10 text-success border-0",
-  pago: "bg-success/10 text-success border-0",
-  cancelada: "bg-destructive/10 text-destructive border-0",
-  cancelado: "bg-destructive/10 text-destructive border-0",
-  vencida: "bg-destructive/10 text-destructive border-0",
+  pendente: "bg-amber-100 text-amber-700 border-0 min-w-[140px] justify-center",
+  aprovada: "bg-blue-100 text-blue-700 border-0 min-w-[140px] justify-center",
+  enviada_pagamento: "bg-violet-100 text-violet-700 border-0 min-w-[140px] justify-center",
+  paga: "bg-emerald-100 text-emerald-700 border-0 min-w-[140px] justify-center",
+  pago: "bg-emerald-100 text-emerald-700 border-0 min-w-[140px] justify-center",
+  cancelada: "bg-red-100 text-red-700 border-0 min-w-[140px] justify-center",
+  cancelado: "bg-red-100 text-red-700 border-0 min-w-[140px] justify-center",
+  vencida: "bg-orange-100 text-orange-700 border-0 min-w-[140px] justify-center",
 };
 
 function InfoItem({ label, value, icon: Icon }: { label: string; value: React.ReactNode; icon?: React.ComponentType<{ className?: string }> }) {
