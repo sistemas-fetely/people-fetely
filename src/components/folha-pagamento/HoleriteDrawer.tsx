@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Pencil, Save, X } from "lucide-react";
 import { calcularFolha, type DadosCalculo } from "@/lib/calculo-folha";
 import { useEditarHolerite, type HoleriteComColaborador } from "@/hooks/useFolhaPagamento";
+import { useParametrosFolha } from "@/hooks/useParametrosFolha";
 
 const fmt = (v: number | null) =>
   (v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
