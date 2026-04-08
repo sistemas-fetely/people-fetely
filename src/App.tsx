@@ -8,6 +8,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Colaboradores from "@/pages/Colaboradores";
+import Pessoas from "@/pages/Pessoas";
 import ColaboradorDetalhe from "@/pages/ColaboradorDetalhe";
 import { CadastroColaboradorCLTWrapper } from "@/components/colaborador-clt/CadastroColaboradorCLT";
 import PlaceholderPage from "@/pages/PlaceholderPage";
@@ -38,6 +39,7 @@ const App = () => (
             {/* Protected routes */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/pessoas" element={<Pessoas />} />
               <Route path="/colaboradores" element={<Colaboradores />} />
               <Route path="/colaboradores/novo" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
