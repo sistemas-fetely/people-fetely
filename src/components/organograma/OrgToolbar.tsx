@@ -32,13 +32,20 @@ export function OrgToolbar({ viewMode, onViewModeChange, filters, onFiltersChang
           <h1 className="text-2xl font-bold text-foreground">Organograma</h1>
           <p className="text-sm text-muted-foreground">Estrutura organizacional da empresa</p>
         </div>
-        <Tabs value={viewMode} onValueChange={(v) => onViewModeChange(v as ViewMode)}>
-          <TabsList>
-            <TabsTrigger value="visual">🌳 Visual</TabsTrigger>
-            <TabsTrigger value="sintetico">📋 Sintético</TabsTrigger>
-            <TabsTrigger value="analitico">📊 Analítico</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-2">
+          {canManage && onCreatePosition && (
+            <Button size="sm" onClick={onCreatePosition} className="h-9">
+              <Plus className="h-3.5 w-3.5 mr-1" /> Nova Posição
+            </Button>
+          )}
+          <Tabs value={viewMode} onValueChange={(v) => onViewModeChange(v as ViewMode)}>
+            <TabsList>
+              <TabsTrigger value="visual">🌳 Visual</TabsTrigger>
+              <TabsTrigger value="sintetico">📋 Sintético</TabsTrigger>
+              <TabsTrigger value="analitico">📊 Analítico</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
