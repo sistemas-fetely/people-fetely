@@ -119,8 +119,10 @@ export default function ConvitesCadastro() {
     setDeleteTarget(null);
   };
 
+  const publicBaseUrl = "https://people-fetely.lovable.app";
+
   const copyLink = (token: string) => {
-    const url = `${window.location.origin}/cadastro/${token}`;
+    const url = `${publicBaseUrl}/cadastro/${token}`;
     navigator.clipboard.writeText(url);
     toast.success("Link copiado para a área de transferência!");
   };
