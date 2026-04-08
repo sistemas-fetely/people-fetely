@@ -88,6 +88,32 @@ export default function ConviteDetalhe() {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleResendEmail = async () => {
+    if (!convite) return;
+    setSendingEmail(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "cadastro-recebido",
+          recipientEmail: convite.email,
+          idempotencyKey: `cadastro-recebido-resend-${convite.id}-${Date.now()}`,
+          templateData: {
+            nome: convite.nome,
+            tipo: convite.tipo,
+            cargo: convite.cargo || "",
+            departamento: convite.departamento || "",
+          },
+        },
+      });
+      if (error) throw error;
+      toast.success("Email de confirmação reenviado para " + convite.email);
+    } catch (err: any) {
+      toast.error("Erro ao reenviar email: " + err.message);
+    } finally {
+      setSendingEmail(false);
+    }
+  };
+
   const handleExportToCadastro = async () => {
     if (!convite || !formData) return;
     setExporting(true);
