@@ -116,7 +116,7 @@ export function useCalcularFolha() {
           outrosProventos: 0,
           outrosDescontos: 0,
         };
-        const calc = calcularFolha(dados);
+        const calc = calcularFolha(dados, parametros);
         return {
           competencia_id: competenciaId,
           colaborador_id: col.id,
