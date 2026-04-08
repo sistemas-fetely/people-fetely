@@ -32,6 +32,7 @@ export default function Dashboard() {
     clt, pj, headcount, ferias, aniversariantes,
     statusClt, turnover, folha, nfPendentes, pagPjPendentes,
     experienciaVencendo, docsVencendo, aniversariosEmpresa, semBeneficio,
+    contratosPendentes,
     isLoading,
   } = useDashboardData();
 
@@ -98,6 +99,15 @@ export default function Dashboard() {
       titulo: `${semBeneficio.length} colaborador(es) sem benefícios`,
       detalhe: semBeneficio.slice(0, 3).map((s) => s.nome).join(", ") + (semBeneficio.length > 3 ? "..." : ""),
       prioridade: "media",
+    });
+  }
+
+  // Contratos PJ sem assinatura
+  if (contratosPendentes.length > 0) {
+    alertas.push({
+      titulo: `${contratosPendentes.length} contrato(s) PJ pendente(s) de assinatura`,
+      detalhe: contratosPendentes.slice(0, 3).map((c) => c.nome).join(", ") + (contratosPendentes.length > 3 ? "..." : ""),
+      prioridade: "alta",
     });
   }
 

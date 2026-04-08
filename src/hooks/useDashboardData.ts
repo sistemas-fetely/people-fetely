@@ -340,6 +340,24 @@ export function useDashboardData() {
     },
   });
 
+  // Contratos PJ sem assinatura
+  const contratosPendentesQuery = useQuery({
+    queryKey: ["dashboard_contratos_pendentes"],
+    queryFn: async () => {
+      const { data } = await (supabase
+        .from("contratos_pj")
+        .select("id, razao_social, contato_nome, departamento, contrato_assinado") as any)
+        .in("status", ["ativo", "rascunho"])
+        .eq("contrato_assinado", false);
+
+      return (data || []).map((c: any) => ({
+        id: c.id,
+        nome: c.razao_social || c.contato_nome,
+        depto: c.departamento,
+      }));
+    },
+  });
+
   const isLoading = cltQuery.isLoading || pjQuery.isLoading || headcountQuery.isLoading;
 
   return {
@@ -357,6 +375,7 @@ export function useDashboardData() {
     docsVencendo: docsVencendoQuery.data ?? [],
     aniversariosEmpresa: anivEmpresaQuery.data ?? [],
     semBeneficio: semBeneficioQuery.data ?? [],
+    contratosPendentes: contratosPendentesQuery.data ?? [],
     isLoading,
   };
 }

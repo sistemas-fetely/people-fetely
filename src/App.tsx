@@ -21,6 +21,7 @@ import NotFound from "@/pages/NotFound";
 import Parametros from "@/pages/Parametros";
 import ContratosPJ from "@/pages/ContratosPJ";
 import ContratoPJDetalhe from "@/pages/ContratoPJDetalhe";
+import { CadastroContratoPJ } from "@/components/contrato-pj/CadastroContratoPJ";
 import NotasFiscais from "@/pages/NotasFiscais";
 import NotaFiscalDetalhe from "@/pages/NotaFiscalDetalhe";
 import FolhaPagamento from "@/pages/FolhaPagamento";
@@ -74,6 +75,11 @@ const App = () => (
               <Route path="/contratos-pj" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
                   <ContratosPJ />
+                </ProtectedRoute>
+              } />
+              <Route path="/contratos-pj/novo" element={
+                <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
+                  <CadastroContratoPJ />
                 </ProtectedRoute>
               } />
               <Route path="/contratos-pj/:id" element={
