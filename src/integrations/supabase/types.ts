@@ -495,6 +495,147 @@ export type Database = {
           },
         ]
       }
+      folha_competencias: {
+        Row: {
+          competencia: string
+          created_at: string
+          id: string
+          observacoes: string | null
+          status: string
+          total_bruto: number | null
+          total_colaboradores: number | null
+          total_encargos: number | null
+          total_liquido: number | null
+          updated_at: string
+        }
+        Insert: {
+          competencia: string
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          status?: string
+          total_bruto?: number | null
+          total_colaboradores?: number | null
+          total_encargos?: number | null
+          total_liquido?: number | null
+          updated_at?: string
+        }
+        Update: {
+          competencia?: string
+          created_at?: string
+          id?: string
+          observacoes?: string | null
+          status?: string
+          total_bruto?: number | null
+          total_colaboradores?: number | null
+          total_encargos?: number | null
+          total_liquido?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      holerites: {
+        Row: {
+          adicional_noturno: number | null
+          colaborador_id: string
+          competencia_id: string
+          created_at: string
+          faltas_desconto: number | null
+          faltas_dias: number | null
+          fgts: number | null
+          horas_extras_100: number | null
+          horas_extras_100_qtd: number | null
+          horas_extras_50: number | null
+          horas_extras_50_qtd: number | null
+          id: string
+          inss: number | null
+          inss_patronal: number | null
+          irrf: number | null
+          outros_descontos: number | null
+          outros_proventos: number | null
+          plano_saude: number | null
+          salario_base: number
+          salario_liquido: number | null
+          total_descontos: number | null
+          total_encargos: number | null
+          total_proventos: number | null
+          updated_at: string
+          vr_desconto: number | null
+          vt_desconto: number | null
+        }
+        Insert: {
+          adicional_noturno?: number | null
+          colaborador_id: string
+          competencia_id: string
+          created_at?: string
+          faltas_desconto?: number | null
+          faltas_dias?: number | null
+          fgts?: number | null
+          horas_extras_100?: number | null
+          horas_extras_100_qtd?: number | null
+          horas_extras_50?: number | null
+          horas_extras_50_qtd?: number | null
+          id?: string
+          inss?: number | null
+          inss_patronal?: number | null
+          irrf?: number | null
+          outros_descontos?: number | null
+          outros_proventos?: number | null
+          plano_saude?: number | null
+          salario_base?: number
+          salario_liquido?: number | null
+          total_descontos?: number | null
+          total_encargos?: number | null
+          total_proventos?: number | null
+          updated_at?: string
+          vr_desconto?: number | null
+          vt_desconto?: number | null
+        }
+        Update: {
+          adicional_noturno?: number | null
+          colaborador_id?: string
+          competencia_id?: string
+          created_at?: string
+          faltas_desconto?: number | null
+          faltas_dias?: number | null
+          fgts?: number | null
+          horas_extras_100?: number | null
+          horas_extras_100_qtd?: number | null
+          horas_extras_50?: number | null
+          horas_extras_50_qtd?: number | null
+          id?: string
+          inss?: number | null
+          inss_patronal?: number | null
+          irrf?: number | null
+          outros_descontos?: number | null
+          outros_proventos?: number | null
+          plano_saude?: number | null
+          salario_base?: number
+          salario_liquido?: number | null
+          total_descontos?: number | null
+          total_encargos?: number | null
+          total_proventos?: number | null
+          updated_at?: string
+          vr_desconto?: number | null
+          vt_desconto?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holerites_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores_clt"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "holerites_competencia_id_fkey"
+            columns: ["competencia_id"]
+            isOneToOne: false
+            referencedRelation: "folha_competencias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notas_fiscais_pj: {
         Row: {
           arquivo_url: string | null
