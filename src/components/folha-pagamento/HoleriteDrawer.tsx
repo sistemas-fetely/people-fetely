@@ -260,8 +260,8 @@ export function HoleriteDrawer({ holerite, open, onClose, competenciaId, canEdit
           {/* Encargos */}
           <div>
             <h4 className="text-sm font-semibold mb-2">Encargos Patronais</h4>
-            <Linha label="FGTS (8%)" valor={d.fgts} tipo="neutro" />
-            <Linha label="INSS Patronal (20%)" valor={d.inss_patronal} tipo="neutro" />
+            <Linha label={`FGTS (${((parametrosFolha?.aliquotaFGTS ?? 0.08) * 100).toFixed(0)}%)`} valor={d.fgts} tipo="neutro" />
+            <Linha label={`INSS Patronal (${((parametrosFolha?.aliquotaINSSPatronal ?? 0.20) * 100).toFixed(0)}%)`} valor={d.inss_patronal} tipo="neutro" />
             <Separator />
             <div className="flex justify-between font-semibold text-sm py-1">
               <span>Total Encargos</span>
