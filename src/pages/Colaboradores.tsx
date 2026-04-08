@@ -261,7 +261,7 @@ export default function Colaboradores() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={() => navigate(`/colaboradores/${c.id}`)}><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => navigate(`/colaboradores/${c.id}?edit=true`)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-                            <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
+                            <DropdownMenuItem className="text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
