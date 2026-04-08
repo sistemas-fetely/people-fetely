@@ -58,7 +58,7 @@ const App = () => (
               {/* CLT - Gestor RH, Super Admin, Financeiro */}
               <Route path="/folha-pagamento" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
-                  <PlaceholderPage title="Folha de Pagamento" description="Gestão da folha de pagamento CLT" />
+                  <FolhaPagamento />
                 </ProtectedRoute>
               } />
               <Route path="/ferias" element={<PlaceholderPage title="Férias" description="Controle de férias e períodos aquisitivos" />} />
