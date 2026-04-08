@@ -52,7 +52,8 @@ export function FeriasCLTView({ canManage, isAdmin }: Props) {
   const criarProgMut = useCriarProgramacao();
   const atualizarStatusMut = useAtualizarStatusProgramacao();
   const editarProgMut = useEditarProgramacao();
-
+  const excluirProgMut = useExcluirProgramacao();
+  const excluirPeriodoMut = useExcluirPeriodo();
   const [showNovoPeriodo, setShowNovoPeriodo] = useState(false);
   const [showNovaProg, setShowNovaProg] = useState(false);
   const [showEditProg, setShowEditProg] = useState(false);
