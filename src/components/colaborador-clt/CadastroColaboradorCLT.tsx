@@ -82,13 +82,18 @@ export function CadastroColaboradorCLT() {
     try {
       const { dependentes, departamentos_rateio, salario_base, jornada_semanal, ...colaboradorData } = data;
 
+      // Convert empty strings to null for optional fields (especially dates)
+      const cleaned = Object.fromEntries(
+        Object.entries(colaboradorData).map(([k, v]) => [k, v === "" ? null : v])
+      );
+
       // Use first department as primary
       const primaryDept = departamentos_rateio?.[0]?.departamento || "";
 
       const { data: inserted, error } = await supabase
         .from("colaboradores_clt")
         .insert({
-          ...colaboradorData,
+          ...cleaned,
           departamento: primaryDept,
           salario_base: Number(salario_base),
           jornada_semanal: Number(jornada_semanal) || 44,
