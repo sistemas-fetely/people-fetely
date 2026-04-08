@@ -411,6 +411,109 @@ export type Database = {
           },
         ]
       }
+      contrato_pj_acessos_sistemas: {
+        Row: {
+          contrato_pj_id: string
+          created_at: string
+          data_concessao: string | null
+          id: string
+          observacoes: string | null
+          sistema: string
+          tem_acesso: boolean
+          updated_at: string
+          usuario: string | null
+        }
+        Insert: {
+          contrato_pj_id: string
+          created_at?: string
+          data_concessao?: string | null
+          id?: string
+          observacoes?: string | null
+          sistema: string
+          tem_acesso?: boolean
+          updated_at?: string
+          usuario?: string | null
+        }
+        Update: {
+          contrato_pj_id?: string
+          created_at?: string
+          data_concessao?: string | null
+          id?: string
+          observacoes?: string | null
+          sistema?: string
+          tem_acesso?: boolean
+          updated_at?: string
+          usuario?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_pj_acessos_sistemas_contrato_pj_id_fkey"
+            columns: ["contrato_pj_id"]
+            isOneToOne: false
+            referencedRelation: "contratos_pj"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contrato_pj_equipamentos: {
+        Row: {
+          contrato_pj_id: string
+          created_at: string
+          data_devolucao: string | null
+          data_entrega: string | null
+          estado: string
+          id: string
+          marca: string | null
+          modelo: string | null
+          numero_patrimonio: string | null
+          numero_serie: string | null
+          observacoes: string | null
+          termo_responsabilidade_url: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          contrato_pj_id: string
+          created_at?: string
+          data_devolucao?: string | null
+          data_entrega?: string | null
+          estado?: string
+          id?: string
+          marca?: string | null
+          modelo?: string | null
+          numero_patrimonio?: string | null
+          numero_serie?: string | null
+          observacoes?: string | null
+          termo_responsabilidade_url?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          contrato_pj_id?: string
+          created_at?: string
+          data_devolucao?: string | null
+          data_entrega?: string | null
+          estado?: string
+          id?: string
+          marca?: string | null
+          modelo?: string | null
+          numero_patrimonio?: string | null
+          numero_serie?: string | null
+          observacoes?: string | null
+          termo_responsabilidade_url?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contrato_pj_equipamentos_contrato_pj_id_fkey"
+            columns: ["contrato_pj_id"]
+            isOneToOne: false
+            referencedRelation: "contratos_pj"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contratos_pj: {
         Row: {
           agencia: string | null

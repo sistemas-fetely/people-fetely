@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, Building2, FileText, CreditCard, Plus, MoreHorizontal, Trash2, Eye, ArrowUpDown } from "lucide-react";
+import { ArrowLeft, Edit, Building2, FileText, CreditCard, Plus, MoreHorizontal, Trash2, Eye, ArrowUpDown, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +66,18 @@ interface PagamentoPJ {
   valor: number; data_pagamento: string | null; data_prevista: string;
   competencia: string; forma_pagamento: string; comprovante_url: string | null;
   observacoes: string | null; status: string;
+}
+
+interface AcessoSistema {
+  id: string; contrato_pj_id: string; sistema: string; tem_acesso: boolean;
+  usuario: string | null; observacoes: string | null; data_concessao: string | null;
+}
+
+interface Equipamento {
+  id: string; contrato_pj_id: string; tipo: string; marca: string | null;
+  modelo: string | null; numero_patrimonio: string | null; numero_serie: string | null;
+  data_entrega: string | null; data_devolucao: string | null; estado: string;
+  termo_responsabilidade_url: string | null; observacoes: string | null;
 }
 
 function InfoItem({ label, value }: { label: string; value: React.ReactNode }) {
@@ -134,17 +146,386 @@ function TabDados({ contrato }: { contrato: ContratoPJ }) {
           </CardContent>
         </Card>
       )}
-
-      {(contrato.objeto || contrato.observacoes) && (
-        <Card>
-          <CardHeader><CardTitle className="text-sm text-muted-foreground">DETALHES</CardTitle></CardHeader>
-          <CardContent className="space-y-3">
-            {contrato.objeto && <InfoItem label="Objeto do Contrato" value={contrato.objeto} />}
-            {contrato.observacoes && <InfoItem label="Observações" value={contrato.observacoes} />}
-          </CardContent>
-        </Card>
-      )}
     </div>
+  );
+}
+
+// ─── Tab: Documentos (Contrato de Trabalho) ───
+function TabDocumentos({ contrato }: { contrato: ContratoPJ }) {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader><CardTitle className="text-sm text-muted-foreground">CONTRATO DE TRABALHO</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <InfoItem label="Tipo de Serviço" value={contrato.tipo_servico} />
+          <InfoItem label="Departamento" value={contrato.departamento} />
+          <InfoItem label="Valor Mensal" value={`R$ ${Number(contrato.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+          <InfoItem label="Forma de Pagamento" value={contrato.forma_pagamento} />
+          <InfoItem label="Dia Vencimento" value={contrato.dia_vencimento} />
+          <InfoItem label="Status" value={<Badge variant="outline" className={statusContratoStyles[contrato.status] || ""}>{statusContratoMap[contrato.status] || contrato.status}</Badge>} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm text-muted-foreground">VIGÊNCIA DO CONTRATO</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <InfoItem label="Data de Início" value={format(parseISO(contrato.data_inicio), "dd/MM/yyyy")} />
+          <InfoItem label="Data de Término" value={contrato.data_fim ? format(parseISO(contrato.data_fim), "dd/MM/yyyy") : "Indeterminado"} />
+          <InfoItem label="Renovação Automática" value={contrato.renovacao_automatica ? "Sim" : "Não"} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm text-muted-foreground">OBJETO E OBSERVAÇÕES</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <InfoItem label="Objeto do Contrato" value={contrato.objeto || "Não informado"} />
+          <InfoItem label="Observações" value={contrato.observacoes || "Nenhuma observação"} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-sm text-muted-foreground">DADOS DA EMPRESA CONTRATADA</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <InfoItem label="CNPJ" value={contrato.cnpj} />
+          <InfoItem label="Razão Social" value={contrato.razao_social} />
+          <InfoItem label="Nome Fantasia" value={contrato.nome_fantasia} />
+          <InfoItem label="Inscrição Municipal" value={contrato.inscricao_municipal} />
+          <InfoItem label="Inscrição Estadual" value={contrato.inscricao_estadual} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// ─── Tab: Empresa (Acessos + Equipamentos) ───
+function TabEmpresa({ contratoId, contrato }: { contratoId: string; contrato: ContratoPJ }) {
+  const [acessos, setAcessos] = useState<AcessoSistema[]>([]);
+  const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Acesso form
+  const [acessoFormOpen, setAcessoFormOpen] = useState(false);
+  const [editAcesso, setEditAcesso] = useState<AcessoSistema | null>(null);
+  const [deleteAcesso, setDeleteAcesso] = useState<AcessoSistema | null>(null);
+
+  // Equipamento form
+  const [equipFormOpen, setEquipFormOpen] = useState(false);
+  const [editEquip, setEditEquip] = useState<Equipamento | null>(null);
+  const [deleteEquip, setDeleteEquip] = useState<Equipamento | null>(null);
+
+  const fetchData = async () => {
+    const [{ data: a }, { data: e }] = await Promise.all([
+      supabase.from("contrato_pj_acessos_sistemas").select("*").eq("contrato_pj_id", contratoId),
+      supabase.from("contrato_pj_equipamentos").select("*").eq("contrato_pj_id", contratoId),
+    ]);
+    setAcessos((a as AcessoSistema[]) || []);
+    setEquipamentos((e as Equipamento[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchData(); }, [contratoId]);
+
+  const handleDeleteAcesso = async () => {
+    if (!deleteAcesso) return;
+    const { error } = await supabase.from("contrato_pj_acessos_sistemas").delete().eq("id", deleteAcesso.id);
+    if (error) toast.error(error.message);
+    else { toast.success("Acesso removido"); fetchData(); }
+    setDeleteAcesso(null);
+  };
+
+  const handleDeleteEquip = async () => {
+    if (!deleteEquip) return;
+    const { error } = await supabase.from("contrato_pj_equipamentos").delete().eq("id", deleteEquip.id);
+    if (error) toast.error(error.message);
+    else { toast.success("Equipamento removido"); fetchData(); }
+    setDeleteEquip(null);
+  };
+
+  if (loading) return <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">Carregando...</CardContent></Card>;
+
+  return (
+    <div className="space-y-6">
+      {/* Contact info */}
+      <Card>
+        <CardHeader><CardTitle className="text-sm text-muted-foreground">INFORMAÇÕES DE CONTATO CORPORATIVO</CardTitle></CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <InfoItem label="Responsável" value={contrato.contato_nome} />
+          <InfoItem label="Email" value={contrato.contato_email} />
+          <InfoItem label="Telefone" value={contrato.contato_telefone} />
+        </CardContent>
+      </Card>
+
+      {/* Acessos a Sistemas */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-sm text-muted-foreground">🔐 ACESSO AOS SISTEMAS</CardTitle>
+          <Button size="sm" variant="outline" className="gap-1" onClick={() => { setEditAcesso(null); setAcessoFormOpen(true); }}>
+            <Plus className="h-3.5 w-3.5" /> Adicionar
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {acessos.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Nenhum acesso cadastrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {acessos.map((a) => (
+                <div key={a.id} className="border rounded-lg p-3 flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-sm">{a.sistema}</p>
+                    {a.usuario && <p className="text-xs text-muted-foreground">Usuário: {a.usuario}</p>}
+                    {a.observacoes && <p className="text-xs text-muted-foreground">{a.observacoes}</p>}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={a.tem_acesso ? "default" : "secondary"} className="text-xs">
+                      {a.tem_acesso ? "Ativo" : "Sem acesso"}
+                    </Badge>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-3.5 w-3.5" /></Button></DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => { setEditAcesso(a); setAcessoFormOpen(true); }}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => setDeleteAcesso(a)}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Equipamentos */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-sm text-muted-foreground">💻 EQUIPAMENTOS</CardTitle>
+          <Button size="sm" variant="outline" className="gap-1" onClick={() => { setEditEquip(null); setEquipFormOpen(true); }}>
+            <Plus className="h-3.5 w-3.5" /> Adicionar
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {equipamentos.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">Nenhum equipamento cadastrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {equipamentos.map((e) => (
+                <div key={e.id} className="border rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-medium text-sm">{e.tipo}{e.marca ? ` — ${e.marca}` : ""}{e.modelo ? ` ${e.modelo}` : ""}</p>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-3.5 w-3.5" /></Button></DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => { setEditEquip(e); setEquipFormOpen(true); }}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => setDeleteEquip(e)}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <InfoItem label="Nº Patrimônio" value={e.numero_patrimonio} />
+                    <InfoItem label="Nº Série" value={e.numero_serie} />
+                    <InfoItem label="Estado" value={e.estado} />
+                    <InfoItem label="Data Entrega" value={e.data_entrega ? format(parseISO(e.data_entrega), "dd/MM/yyyy") : null} />
+                    <InfoItem label="Data Devolução" value={e.data_devolucao ? format(parseISO(e.data_devolucao), "dd/MM/yyyy") : null} />
+                  </div>
+                  {e.observacoes && <p className="text-xs text-muted-foreground mt-2">{e.observacoes}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Acesso Form Dialog */}
+      {acessoFormOpen && (
+        <AcessoSistemaForm
+          open={acessoFormOpen}
+          onClose={() => setAcessoFormOpen(false)}
+          acesso={editAcesso}
+          contratoId={contratoId}
+          onSaved={fetchData}
+        />
+      )}
+
+      {/* Equipamento Form Dialog */}
+      {equipFormOpen && (
+        <EquipamentoForm
+          open={equipFormOpen}
+          onClose={() => setEquipFormOpen(false)}
+          equipamento={editEquip}
+          contratoId={contratoId}
+          onSaved={fetchData}
+        />
+      )}
+
+      {/* Delete Acesso Confirm */}
+      <AlertDialog open={!!deleteAcesso} onOpenChange={(o) => !o && setDeleteAcesso(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>Excluir o acesso ao sistema <strong>{deleteAcesso?.sistema}</strong>?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteAcesso} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Equipamento Confirm */}
+      <AlertDialog open={!!deleteEquip} onOpenChange={(o) => !o && setDeleteEquip(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>Excluir este equipamento?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteEquip} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function AcessoSistemaForm({ open, onClose, acesso, contratoId, onSaved }: {
+  open: boolean; onClose: () => void; acesso: AcessoSistema | null; contratoId: string; onSaved: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    sistema: acesso?.sistema || "",
+    tem_acesso: acesso?.tem_acesso ?? true,
+    usuario: acesso?.usuario || "",
+    observacoes: acesso?.observacoes || "",
+    data_concessao: acesso?.data_concessao || new Date().toISOString().slice(0, 10),
+  });
+  const set = (k: string, v: any) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleSave = async () => {
+    if (!form.sistema.trim()) { toast.error("Informe o sistema"); return; }
+    setSaving(true);
+    const payload = {
+      contrato_pj_id: contratoId,
+      sistema: form.sistema.trim(),
+      tem_acesso: form.tem_acesso,
+      usuario: form.usuario.trim() || null,
+      observacoes: form.observacoes.trim() || null,
+      data_concessao: form.data_concessao || null,
+    };
+    try {
+      if (acesso) {
+        const { error } = await supabase.from("contrato_pj_acessos_sistemas").update(payload as any).eq("id", acesso.id);
+        if (error) throw error;
+        toast.success("Acesso atualizado!");
+      } else {
+        const { error } = await supabase.from("contrato_pj_acessos_sistemas").insert(payload as any);
+        if (error) throw error;
+        toast.success("Acesso cadastrado!");
+      }
+      onSaved(); onClose();
+    } catch (err: any) { toast.error(err.message); } finally { setSaving(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader><DialogTitle>{acesso ? "Editar Acesso" : "Novo Acesso a Sistema"}</DialogTitle></DialogHeader>
+        <div className="space-y-4 py-2">
+          <div><Label>Sistema *</Label><Input value={form.sistema} onChange={(e) => set("sistema", e.target.value)} placeholder="Ex: ERP, CRM, Email..." /></div>
+          <div><Label>Usuário</Label><Input value={form.usuario} onChange={(e) => set("usuario", e.target.value)} /></div>
+          <div><Label>Data Concessão</Label><Input type="date" value={form.data_concessao} onChange={(e) => set("data_concessao", e.target.value)} /></div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" checked={form.tem_acesso} onChange={(e) => set("tem_acesso", e.target.checked)} id="tem_acesso" className="rounded" />
+            <Label htmlFor="tem_acesso">Acesso ativo</Label>
+          </div>
+          <div><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => set("observacoes", e.target.value)} rows={2} /></div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Salvar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EquipamentoForm({ open, onClose, equipamento, contratoId, onSaved }: {
+  open: boolean; onClose: () => void; equipamento: Equipamento | null; contratoId: string; onSaved: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    tipo: equipamento?.tipo || "",
+    marca: equipamento?.marca || "",
+    modelo: equipamento?.modelo || "",
+    numero_patrimonio: equipamento?.numero_patrimonio || "",
+    numero_serie: equipamento?.numero_serie || "",
+    data_entrega: equipamento?.data_entrega || "",
+    data_devolucao: equipamento?.data_devolucao || "",
+    estado: equipamento?.estado || "novo",
+    observacoes: equipamento?.observacoes || "",
+  });
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleSave = async () => {
+    if (!form.tipo.trim()) { toast.error("Informe o tipo do equipamento"); return; }
+    setSaving(true);
+    const payload = {
+      contrato_pj_id: contratoId,
+      tipo: form.tipo.trim(),
+      marca: form.marca.trim() || null,
+      modelo: form.modelo.trim() || null,
+      numero_patrimonio: form.numero_patrimonio.trim() || null,
+      numero_serie: form.numero_serie.trim() || null,
+      data_entrega: form.data_entrega || null,
+      data_devolucao: form.data_devolucao || null,
+      estado: form.estado,
+      observacoes: form.observacoes.trim() || null,
+    };
+    try {
+      if (equipamento) {
+        const { error } = await supabase.from("contrato_pj_equipamentos").update(payload as any).eq("id", equipamento.id);
+        if (error) throw error;
+        toast.success("Equipamento atualizado!");
+      } else {
+        const { error } = await supabase.from("contrato_pj_equipamentos").insert(payload as any);
+        if (error) throw error;
+        toast.success("Equipamento cadastrado!");
+      }
+      onSaved(); onClose();
+    } catch (err: any) { toast.error(err.message); } finally { setSaving(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>{equipamento ? "Editar Equipamento" : "Novo Equipamento"}</DialogTitle></DialogHeader>
+        <div className="grid grid-cols-2 gap-4 py-2">
+          <div><Label>Tipo *</Label><Input value={form.tipo} onChange={(e) => set("tipo", e.target.value)} placeholder="Ex: Notebook, Monitor..." /></div>
+          <div><Label>Marca</Label><Input value={form.marca} onChange={(e) => set("marca", e.target.value)} /></div>
+          <div><Label>Modelo</Label><Input value={form.modelo} onChange={(e) => set("modelo", e.target.value)} /></div>
+          <div><Label>Nº Patrimônio</Label><Input value={form.numero_patrimonio} onChange={(e) => set("numero_patrimonio", e.target.value)} /></div>
+          <div><Label>Nº Série</Label><Input value={form.numero_serie} onChange={(e) => set("numero_serie", e.target.value)} /></div>
+          <div>
+            <Label>Estado</Label>
+            <Select value={form.estado} onValueChange={(v) => set("estado", v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="novo">Novo</SelectItem>
+                <SelectItem value="bom">Bom</SelectItem>
+                <SelectItem value="regular">Regular</SelectItem>
+                <SelectItem value="desgastado">Desgastado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div><Label>Data Entrega</Label><Input type="date" value={form.data_entrega} onChange={(e) => set("data_entrega", e.target.value)} /></div>
+          <div><Label>Data Devolução</Label><Input type="date" value={form.data_devolucao} onChange={(e) => set("data_devolucao", e.target.value)} /></div>
+          <div className="col-span-2"><Label>Observações</Label><Textarea value={form.observacoes} onChange={(e) => set("observacoes", e.target.value)} rows={2} /></div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}Salvar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -542,14 +923,22 @@ export default function ContratoPJDetalhe() {
 
       {/* Tabs */}
       <Tabs defaultValue="dados" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 max-w-lg">
+        <TabsList className="w-full justify-start">
           <TabsTrigger value="dados" className="gap-2"><Building2 className="h-4 w-4" /> Dados</TabsTrigger>
+          <TabsTrigger value="documentos" className="gap-2"><FileText className="h-4 w-4" /> Documentos</TabsTrigger>
+          <TabsTrigger value="empresa" className="gap-2"><Monitor className="h-4 w-4" /> Empresa</TabsTrigger>
           <TabsTrigger value="notas" className="gap-2"><FileText className="h-4 w-4" /> Notas Fiscais</TabsTrigger>
           <TabsTrigger value="pagamentos" className="gap-2"><CreditCard className="h-4 w-4" /> Pagamentos</TabsTrigger>
           <TabsTrigger value="movimentacoes" className="gap-2"><ArrowUpDown className="h-4 w-4" /> Movimentações</TabsTrigger>
         </TabsList>
         <TabsContent value="dados" className="mt-6">
           <TabDados contrato={contrato} />
+        </TabsContent>
+        <TabsContent value="documentos" className="mt-6">
+          <TabDocumentos contrato={contrato} />
+        </TabsContent>
+        <TabsContent value="empresa" className="mt-6">
+          <TabEmpresa contratoId={contrato.id} contrato={contrato} />
         </TabsContent>
         <TabsContent value="notas" className="mt-6">
           <TabNotasFiscais contratoId={contrato.id} />
