@@ -237,7 +237,7 @@ export default function ConviteDetalhe() {
   const hasDados = Object.keys(formData).length > 0;
   const expired = convite.status === "pendente" && new Date(convite.expira_em) <= new Date();
   const displayStatus = expired ? "expirado" : convite.status;
-  const canExport = hasDados && !convite.colaborador_id && !convite.contrato_pj_id;
+  const canExport = hasDados && !convite.colaborador_id && !convite.contrato_pj_id && convite.status !== "cadastrado";
 
   return (
     <div className="space-y-6">
