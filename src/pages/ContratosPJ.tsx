@@ -85,7 +85,7 @@ function ContratoPJForm({
   contrato: ContratoPJ | null;
   onSaved: () => void;
 }) {
-  const { data: tiposServico, isLoading: loadingTipos } = useParametros("tipo_servico");
+  const { data: cargos, isLoading: loadingCargos } = useParametros("cargo");
   const { data: formasPagamento, isLoading: loadingFormas } = useParametros("forma_pagamento");
   const { data: departamentos, isLoading: loadingDepts } = useParametros("departamento");
 
@@ -124,7 +124,7 @@ function ContratoPJForm({
     if (!form.cnpj.trim()) { toast.error("CNPJ é obrigatório"); return; }
     if (!form.razao_social.trim()) { toast.error("Razão Social é obrigatória"); return; }
     if (!form.contato_nome.trim()) { toast.error("Nome do contato é obrigatório"); return; }
-    if (!form.tipo_servico) { toast.error("Tipo de serviço é obrigatório"); return; }
+    if (!form.tipo_servico) { toast.error("Cargo é obrigatório"); return; }
     if (!form.departamento) { toast.error("Departamento é obrigatório"); return; }
     if (!form.valor_mensal) { toast.error("Valor mensal é obrigatório"); return; }
     if (!form.data_inicio) { toast.error("Data de início é obrigatória"); return; }
@@ -236,12 +236,12 @@ function ContratoPJForm({
             <h3 className="text-sm font-semibold text-muted-foreground mb-3">CONTRATO</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <Label>Tipo de Serviço *</Label>
-                {loadingTipos ? <Loader2 className="h-4 w-4 animate-spin mt-2" /> : (
+                <Label>Cargo *</Label>
+                {loadingCargos ? <Loader2 className="h-4 w-4 animate-spin mt-2" /> : (
                   <Select value={form.tipo_servico} onValueChange={(v) => set("tipo_servico", v)}>
                     <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                     <SelectContent>
-                      {(tiposServico || []).map((t) => (
+                      {(cargos || []).map((t) => (
                         <SelectItem key={t.id} value={t.label}>{t.label}</SelectItem>
                       ))}
                     </SelectContent>
@@ -642,7 +642,7 @@ export default function ContratosPJ() {
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground mb-3">CONTRATO</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div><p className="text-xs text-muted-foreground">Tipo de Serviço</p><p className="text-sm font-medium">{viewContrato.tipo_servico}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Cargo</p><p className="text-sm font-medium">{viewContrato.tipo_servico}</p></div>
                   <div><p className="text-xs text-muted-foreground">Departamento</p><p className="text-sm font-medium">{viewContrato.departamento}</p></div>
                   <div><p className="text-xs text-muted-foreground">Valor Mensal</p><p className="text-sm font-medium">R$ {Number(viewContrato.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p></div>
                   <div><p className="text-xs text-muted-foreground">Forma de Pagamento</p><p className="text-sm font-medium">{viewContrato.forma_pagamento}</p></div>
