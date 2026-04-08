@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, FileText, Building2, Calendar, DollarSign, Hash, Clock, ExternalLink } from "lucide-react";
+import { ArrowLeft, Edit, FileText, Building2, Calendar, DollarSign, Hash, Clock, ExternalLink, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
