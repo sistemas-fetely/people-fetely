@@ -338,6 +338,7 @@ export default function ColaboradorDetalhe() {
             </CardContent></Card>
           </TabsContent>
 
+          <TabsContent value="dependentes">
             <Card><CardContent className="pt-6">
               {dependentes.length === 0 ? (
                 <p className="text-muted-foreground text-sm text-center py-8">Nenhum dependente cadastrado.</p>
