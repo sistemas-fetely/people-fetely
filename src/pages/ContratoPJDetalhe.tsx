@@ -496,6 +496,10 @@ export default function ContratoPJDetalhe() {
           <TabsContent value="movimentacoes">
             <HistoricoMovimentacoes contratoId={id!} />
           </TabsContent>
+
+          <TabsContent value="custos">
+            <CustoResumoCard tipo="pj" salarioBase={Number(contrato.valor_mensal)} />
+          </TabsContent>
         </Tabs>
 
         <AlertDialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
