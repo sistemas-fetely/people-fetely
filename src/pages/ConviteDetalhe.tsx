@@ -248,8 +248,8 @@ export default function ConviteDetalhe() {
                 </Button>
               )}
               {canExport && (
-                <Button onClick={handleExportToCadastro} disabled={exporting}>
-                  {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                <Button onClick={handleExportToCadastro}>
+                  <UserPlus className="h-4 w-4 mr-2" />
                   {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
                 </Button>
               )}
