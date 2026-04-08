@@ -58,6 +58,8 @@ interface NotaComContrato {
   contrato_id: string;
   contrato_nome: string;
   contrato_cnpj: string;
+  pagamento_data_prevista: string | null;
+  pagamento_forma: string | null;
 }
 
 interface ContratoPJOption {
