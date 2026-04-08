@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, FileText, Calendar, ClipboardList, Award,
   GraduationCap, Building2, GitBranch, BarChart3, Settings, UserCircle,
-  Briefcase, LogOut, ArrowUpDown,
+  Briefcase, LogOut, ArrowUpDown, Send,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
