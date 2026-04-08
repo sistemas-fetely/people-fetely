@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/sem-permissao" element={<SemPermissao />} />
             <Route path="/cadastro/:token" element={<CadastroPublico />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
