@@ -43,6 +43,7 @@ interface Props {
 }
 
 export function FeriasCLTView({ canManage }: Props) {
+  const navigate = useNavigate();
   const { data: periodos = [], isLoading } = useFeriasPeriodos();
   const criarPeriodoMut = useCriarPeriodo();
   const criarProgMut = useCriarProgramacao();
