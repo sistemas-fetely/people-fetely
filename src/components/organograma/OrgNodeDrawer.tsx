@@ -91,7 +91,7 @@ export function OrgNodeDrawer({ node, open, onClose, allNodes, onEditPosition }:
 
   const handleLinkSubordinate = (subordinate: PosicaoNode) => {
     moveMutation.mutate(
-      { id: subordinate.id, newParentId: node.id, node: subordinate },
+      { id: subordinate.id, newParentId: node.id, node: subordinate, parentNode: node },
       {
         onSuccess: () => {
           setLinkDialogOpen(false);
