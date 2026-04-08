@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, addDays } from "date-fns";
-import { Calendar, Plus, Check, X, Eye, Pencil } from "lucide-react";
+import { Calendar, Plus, Check, X, Eye, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import {
   useFeriasPeriodosPJ, useCriarPeriodoPJ, useCriarFeriasPJ, useAtualizarStatusFeriasPJ, useEditarFeriasPJ,
+  useExcluirFeriasPJ, useExcluirPeriodoPJ,
   type PeriodoPJComContrato,
 } from "@/hooks/useFerias";
 import type { Tables } from "@/integrations/supabase/types";
@@ -37,16 +38,17 @@ const STATUS_PROG: Record<string, { label: string; variant: "default" | "seconda
   cancelada: { label: "Cancelada", variant: "destructive" },
 };
 
-interface Props { canManage: boolean; }
+interface Props { canManage: boolean; isAdmin: boolean; }
 
-export function FeriasPJView({ canManage }: Props) {
+export function FeriasPJView({ canManage, isAdmin }: Props) {
   const navigate = useNavigate();
   const { data: periodos = [], isLoading } = useFeriasPeriodosPJ();
   const criarPeriodoMut = useCriarPeriodoPJ();
   const criarProgMut = useCriarFeriasPJ();
   const atualizarStatusMut = useAtualizarStatusFeriasPJ();
   const editarMut = useEditarFeriasPJ();
-
+  const excluirProgMut = useExcluirFeriasPJ();
+  const excluirPeriodoMut = useExcluirPeriodoPJ();
   const [showNovoPeriodo, setShowNovoPeriodo] = useState(false);
   const [showNovaProg, setShowNovaProg] = useState(false);
   const [showEditProg, setShowEditProg] = useState(false);
@@ -249,6 +251,11 @@ export function FeriasPJView({ canManage }: Props) {
                                     <X className="h-3 w-3 text-red-600" />
                                   </Button>
                                 )}
+                                {isAdmin && (
+                                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => excluirProgMut.mutate(pr.id)}>
+                                    <Trash2 className="h-3 w-3 text-destructive" />
+                                  </Button>
+                                )}
                               </div>
                             );
                           })}
@@ -262,6 +269,11 @@ export function FeriasPJView({ canManage }: Props) {
                         <Button variant="outline" size="sm" onClick={() => { setSelectedPeriodo(p); setShowNovaProg(true); }}>
                           <Plus className="h-3.5 w-3.5 mr-1" /> Programar
                         </Button>
+                        {isAdmin && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => excluirPeriodoMut.mutate(p.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
                       </TableCell>
                     )}
                   </TableRow>
