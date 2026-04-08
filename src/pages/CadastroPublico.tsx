@@ -128,7 +128,7 @@ const pjBancariosSchema = z.object({
   chave_pix: z.string().min(1, "Chave PIX é obrigatória"),
 });
 
-const pjSchema = pjPessoaisSchema.merge(pjDocumentosSchema).merge(bancariosPublicoSchema);
+const pjSchema = pjPessoaisSchema.merge(pjDocumentosSchema).merge(pjBancariosSchema);
 
 type CltFormData = z.infer<typeof cltSchema>;
 type PjFormData = z.infer<typeof pjSchema>;
