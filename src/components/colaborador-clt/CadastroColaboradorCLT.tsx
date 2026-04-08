@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Save, Loader2 } from "lucide-react";
+import { StepUploadDocumentos, type UploadedFile } from "./StepUploadDocumentosCLT";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { WizardSteps } from "./WizardSteps";
