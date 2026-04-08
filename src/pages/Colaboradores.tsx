@@ -137,7 +137,7 @@ export default function Colaboradores() {
         </Button>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="card-shadow">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -168,6 +168,17 @@ export default function Colaboradores() {
             <div>
               <p className="text-2xl font-bold">{totalInativos}</p>
               <p className="text-xs text-muted-foreground">Inativos</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-shadow">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
+              <DollarSign className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-lg font-bold">{fmtBRL(totalCustoMensal)}</p>
+              <p className="text-xs text-muted-foreground">Custo mensal (salário + encargos)</p>
             </div>
           </CardContent>
         </Card>
