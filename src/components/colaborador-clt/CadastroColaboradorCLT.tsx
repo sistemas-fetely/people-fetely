@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,11 @@ export function CadastroColaboradorCLT() {
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  const conviteId = (location.state as any)?.conviteId || null;
+  const initialData = (location.state as any)?.initialData || null;
 
   const methods = useForm<AllFormData>({
     mode: "onBlur",
@@ -58,6 +62,7 @@ export function CadastroColaboradorCLT() {
       dependentes: [],
       acessos_sistemas: [],
       equipamentos: [],
+      ...(initialData || {}),
     },
   });
 
@@ -156,8 +161,16 @@ export function CadastroColaboradorCLT() {
         if (depError) throw depError;
       }
 
+      // Update convite status if created from invitation
+      if (conviteId) {
+        await supabase
+          .from("convites_cadastro")
+          .update({ colaborador_id: inserted.id, status: "cadastrado" })
+          .eq("id", conviteId);
+      }
+
       toast.success("Colaborador cadastrado com sucesso!");
-      navigate("/colaboradores");
+      navigate(`/colaboradores/${inserted.id}`);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Erro ao cadastrar colaborador");

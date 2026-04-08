@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,11 @@ export function CadastroContratoPJ() {
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  const conviteId = (location.state as any)?.conviteId || null;
+  const initialData = (location.state as any)?.initialData || null;
 
   const methods = useForm<AllPJFormData>({
     mode: "onBlur",
@@ -54,6 +58,7 @@ export function CadastroContratoPJ() {
       dependentes: [],
       acessos_sistemas: [],
       equipamentos: [],
+      ...(initialData || {}),
     },
   });
 
@@ -192,8 +197,16 @@ export function CadastroContratoPJ() {
         if (eErr) throw eErr;
       }
 
+      // Update convite status if created from invitation
+      if (conviteId) {
+        await supabase
+          .from("convites_cadastro")
+          .update({ contrato_pj_id: inserted.id, status: "cadastrado" })
+          .eq("id", conviteId);
+      }
+
       toast.success("Contrato PJ cadastrado com sucesso!");
-      navigate("/contratos-pj");
+      navigate(`/contratos-pj/${inserted.id}`);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Erro ao cadastrar contrato PJ");
