@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import {
-  ArrowLeft, Edit, Save, Loader2, X, User, FileText, Building2, CreditCard, Users, UserPlus, Mail, Briefcase, Building,
+  ArrowLeft, Edit, Save, Loader2, X, User, FileText, Building2, CreditCard, Users, UserPlus, Mail, Briefcase, Building, Paperclip, CheckCircle2, ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,50 @@ interface Convite {
   dados_preenchidos: Record<string, any> | null;
   colaborador_id: string | null;
   contrato_pj_id: string | null;
+}
+
+function ConviteAnexos({ documentos }: { documentos?: { key: string; name: string; url: string }[] }) {
+  if (!documentos || documentos.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <Paperclip className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">Nenhum documento anexado pelo candidato.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const labelMap: Record<string, string> = {
+    rg_cnh_frente: "RG ou CNH (Frente)",
+    rg_cnh_verso: "RG ou CNH (Verso)",
+    contrato_social: "Contrato Social",
+    cartao_cnpj: "Cartão CNPJ",
+  };
+
+  return (
+    <Card>
+      <CardContent className="p-6 space-y-3">
+        <h3 className="text-lg font-semibold mb-4">Documentos Anexados</h3>
+        {documentos.map((doc) => (
+          <div key={doc.key} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+              <div>
+                <p className="text-sm font-medium">{labelMap[doc.key] || doc.key}</p>
+                <p className="text-xs text-muted-foreground">{doc.name}</p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" asChild className="gap-2">
+              <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-3.5 w-3.5" /> Visualizar
+              </a>
+            </Button>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function ConviteDetalhe() {
@@ -130,7 +174,7 @@ export default function ConviteDetalhe() {
 
   const handleExportToCadastro = () => {
     if (!convite || !formData) return;
-    const { dependentes, ...rest } = formData;
+    const { dependentes, documentos_upload, ...rest } = formData;
 
     if (convite.tipo === "clt") {
       navigate("/colaboradores/novo", {
@@ -148,6 +192,8 @@ export default function ConviteDetalhe() {
             tipo_contrato: rest.tipo_contrato || "indeterminado",
             jornada_semanal: rest.jornada_semanal || 44,
             dependentes: dependentes || [],
+            documentos_upload: documentos_upload || [],
+            upload_folder: convite.token,
           },
         },
       });
@@ -168,6 +214,8 @@ export default function ConviteDetalhe() {
             dia_vencimento: rest.dia_vencimento || 10,
             data_inicio: rest.data_inicio || new Date().toISOString().split("T")[0],
             status: rest.status || "ativo",
+            documentos_upload: documentos_upload || [],
+            upload_folder: convite.token,
           },
         },
       });
@@ -274,6 +322,7 @@ export default function ConviteDetalhe() {
             <TabsTrigger value="empresa" className="gap-2"><Building className="h-4 w-4" /> Empresa</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
             <TabsTrigger value="dependentes" className="gap-2"><Users className="h-4 w-4" /> Dependentes</TabsTrigger>
+            <TabsTrigger value="anexos" className="gap-2"><Paperclip className="h-4 w-4" /> Anexos</TabsTrigger>
           </TabsList>
           <TabsContent value="pessoais">
             <ConviteDadosPessoaisCLT dados={formData} editing={editing} updateField={updateField} />
@@ -293,6 +342,9 @@ export default function ConviteDetalhe() {
           <TabsContent value="dependentes">
             <ConviteDependentes dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
+          <TabsContent value="anexos">
+            <ConviteAnexos documentos={formData.documentos_upload} />
+          </TabsContent>
         </Tabs>
       ) : (
         <Tabs defaultValue="pessoais">
@@ -301,6 +353,7 @@ export default function ConviteDetalhe() {
             <TabsTrigger value="empresa" className="gap-2"><Building2 className="h-4 w-4" /> Dados da Empresa</TabsTrigger>
             <TabsTrigger value="profissionais" className="gap-2"><Briefcase className="h-4 w-4" /> Dados do Contrato</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
+            <TabsTrigger value="anexos" className="gap-2"><Paperclip className="h-4 w-4" /> Anexos</TabsTrigger>
           </TabsList>
           <TabsContent value="pessoais">
             <ConviteDadosEmpresaPJ dados={formData} editing={editing} updateField={updateField} />
@@ -313,6 +366,9 @@ export default function ConviteDetalhe() {
           </TabsContent>
           <TabsContent value="bancarios">
             <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
+          <TabsContent value="anexos">
+            <ConviteAnexos documentos={formData.documentos_upload} />
           </TabsContent>
         </Tabs>
       )}
