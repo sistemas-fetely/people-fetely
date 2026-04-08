@@ -416,6 +416,8 @@ export default function ContratosPJ() {
     setDeleteTarget(null);
   };
 
+  const [viewContrato, setViewContrato] = useState<ContratoPJ | null>(null);
+
   const openNew = () => { setEditContrato(null); setFormOpen(true); };
   const openEdit = (c: ContratoPJ) => { setEditContrato(c); setFormOpen(true); };
 
