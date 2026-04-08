@@ -148,6 +148,7 @@ function TabDados({ contrato }: { contrato: ContratoPJ }) {
 
 // ─── Tab: Notas Fiscais ───
 function TabNotasFiscais({ contratoId }: { contratoId: string }) {
+  const navigate = useNavigate();
   const [notas, setNotas] = useState<NotaFiscal[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -202,7 +203,7 @@ function TabNotasFiscais({ contratoId }: { contratoId: string }) {
               ) : notas.length === 0 ? (
                 <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhuma nota fiscal cadastrada.</TableCell></TableRow>
               ) : notas.map((n) => (
-                <TableRow key={n.id}>
+                <TableRow key={n.id} className="cursor-pointer hover:bg-muted/30" onClick={() => navigate(`/notas-fiscais/${n.id}`)}>
                   <TableCell className="font-medium">{n.numero}{n.serie ? `/${n.serie}` : ""}</TableCell>
                   <TableCell>{n.competencia}</TableCell>
                   <TableCell>{format(parseISO(n.data_emissao), "dd/MM/yyyy")}</TableCell>
@@ -210,7 +211,7 @@ function TabNotasFiscais({ contratoId }: { contratoId: string }) {
                   <TableCell><Badge variant="outline" className={statusNFStyles[n.status] || ""}>{statusNFMap[n.status] || n.status}</Badge></TableCell>
                   <TableCell>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                      <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => { setEditNota(n); setFormOpen(true); }}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive" onClick={() => setDeleteTarget(n)}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
