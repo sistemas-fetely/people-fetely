@@ -66,7 +66,7 @@ const App = () => (
               <Route path="/ferias" element={<Ferias />} />
               <Route path="/ferias/colaborador/:id" element={<FeriasColaborador />} />
               <Route path="/ponto" element={<PlaceholderPage title="Controle de Ponto" description="Apuração de horas e banco de horas" />} />
-              <Route path="/beneficios" element={<PlaceholderPage title="Benefícios" description="Gestão de benefícios CLT" />} />
+              <Route path="/beneficios" element={<Beneficios />} />
 
               {/* PJ */}
               <Route path="/contratos-pj" element={
