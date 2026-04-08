@@ -355,13 +355,21 @@ export default function ConviteDetalhe() {
           </TabsContent>
         </Tabs>
       ) : (
-        <Tabs defaultValue="empresa">
-          <TabsList>
+        <Tabs defaultValue="pessoais">
+          <TabsList className="flex-wrap">
+            <TabsTrigger value="pessoais" className="gap-2"><User className="h-4 w-4" /> Dados Pessoais</TabsTrigger>
             <TabsTrigger value="empresa" className="gap-2"><Building2 className="h-4 w-4" /> Dados da Empresa</TabsTrigger>
+            <TabsTrigger value="profissionais" className="gap-2"><Briefcase className="h-4 w-4" /> Dados do Contrato</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
           </TabsList>
+          <TabsContent value="pessoais">
+            <ConviteDadosEmpresaPJ dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
           <TabsContent value="empresa">
             <ConviteDadosEmpresaPJ dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
+          <TabsContent value="profissionais">
+            <ConviteDadosProfissionaisPJ dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
           <TabsContent value="bancarios">
             <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
