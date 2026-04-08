@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import {
-  ArrowLeft, Edit, Save, Loader2, X, User, FileText, Building2, CreditCard, Users, UserPlus, Mail,
+  ArrowLeft, Edit, Save, Loader2, X, User, FileText, Building2, CreditCard, Users, UserPlus, Mail, Briefcase, Building,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,9 @@ import { ConviteDocumentosCLT } from "@/components/convite-detalhe/ConviteDocume
 import { ConviteDadosBancarios } from "@/components/convite-detalhe/ConviteDadosBancarios";
 import { ConviteDependentes } from "@/components/convite-detalhe/ConviteDependentes";
 import { ConviteDadosEmpresaPJ } from "@/components/convite-detalhe/ConviteDadosEmpresaPJ";
+import { ConviteDadosProfissionaisCLT } from "@/components/convite-detalhe/ConviteDadosProfissionaisCLT";
+import { ConviteDadosEmpresaCLT } from "@/components/convite-detalhe/ConviteDadosEmpresaCLT";
+import { ConviteDadosProfissionaisPJ } from "@/components/convite-detalhe/ConviteDadosProfissionaisPJ";
 
 interface Convite {
   id: string;
@@ -138,10 +141,18 @@ export default function ConviteDetalhe() {
           nome_completo: dadosClt.nome_completo || convite.nome,
           cpf: dadosClt.cpf || "000.000.000-00",
           data_nascimento: dadosClt.data_nascimento || "2000-01-01",
-          cargo: convite.cargo || "A definir",
-          departamento: convite.departamento || "A definir",
+          cargo: rest.cargo || convite.cargo || "A definir",
+          departamento: rest.departamento || convite.departamento || "A definir",
           data_admissao: rest.data_admissao || new Date().toISOString().split("T")[0],
           salario_base: Number(rest.salario_base) || 0,
+          tipo_contrato: rest.tipo_contrato || "indeterminado",
+          jornada_semanal: rest.jornada_semanal ? Number(rest.jornada_semanal) : 44,
+          horario_trabalho: rest.horario_trabalho || null,
+          local_trabalho: rest.local_trabalho || null,
+          matricula: rest.matricula || null,
+          email_corporativo: rest.email_corporativo || null,
+          ramal: rest.ramal || null,
+          data_integracao: rest.data_integracao || null,
           status: "ativo",
         } as any;
         const { data: colaborador, error } = await supabase
@@ -214,11 +225,15 @@ export default function ConviteDetalhe() {
           conta: formData.conta || null,
           tipo_conta: formData.tipo_conta || "corrente",
           chave_pix: formData.chave_pix || null,
-          tipo_servico: convite.cargo || "Consultoria",
-          departamento: convite.departamento || "A definir",
-          valor_mensal: formData.valor_mensal || 0,
+          tipo_servico: formData.tipo_servico || convite.cargo || "Consultoria",
+          departamento: formData.departamento || convite.departamento || "A definir",
+          valor_mensal: Number(formData.valor_mensal) || 0,
+          forma_pagamento: formData.forma_pagamento || "transferencia",
+          dia_vencimento: formData.dia_vencimento ? Number(formData.dia_vencimento) : 10,
           data_inicio: formData.data_inicio || new Date().toISOString().split("T")[0],
-          status: "ativo",
+          data_fim: formData.data_fim || null,
+          renovacao_automatica: !!formData.renovacao_automatica,
+          status: formData.status || "ativo",
         };
 
         const { data: contrato, error } = await supabase
@@ -324,9 +339,11 @@ export default function ConviteDetalhe() {
         </Card>
       ) : isClt ? (
         <Tabs defaultValue="pessoais">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="pessoais" className="gap-2"><User className="h-4 w-4" /> Dados Pessoais</TabsTrigger>
             <TabsTrigger value="documentos" className="gap-2"><FileText className="h-4 w-4" /> Documentos</TabsTrigger>
+            <TabsTrigger value="profissionais" className="gap-2"><Briefcase className="h-4 w-4" /> Profissionais</TabsTrigger>
+            <TabsTrigger value="empresa" className="gap-2"><Building className="h-4 w-4" /> Empresa</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
             <TabsTrigger value="dependentes" className="gap-2"><Users className="h-4 w-4" /> Dependentes</TabsTrigger>
           </TabsList>
@@ -336,6 +353,12 @@ export default function ConviteDetalhe() {
           <TabsContent value="documentos">
             <ConviteDocumentosCLT dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
+          <TabsContent value="profissionais">
+            <ConviteDadosProfissionaisCLT dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
+          <TabsContent value="empresa">
+            <ConviteDadosEmpresaCLT dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
           <TabsContent value="bancarios">
             <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
@@ -344,13 +367,21 @@ export default function ConviteDetalhe() {
           </TabsContent>
         </Tabs>
       ) : (
-        <Tabs defaultValue="empresa">
-          <TabsList>
+        <Tabs defaultValue="pessoais">
+          <TabsList className="flex-wrap">
+            <TabsTrigger value="pessoais" className="gap-2"><User className="h-4 w-4" /> Dados Pessoais</TabsTrigger>
             <TabsTrigger value="empresa" className="gap-2"><Building2 className="h-4 w-4" /> Dados da Empresa</TabsTrigger>
+            <TabsTrigger value="profissionais" className="gap-2"><Briefcase className="h-4 w-4" /> Dados do Contrato</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
           </TabsList>
+          <TabsContent value="pessoais">
+            <ConviteDadosEmpresaPJ dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
           <TabsContent value="empresa">
             <ConviteDadosEmpresaPJ dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
+          <TabsContent value="profissionais">
+            <ConviteDadosProfissionaisPJ dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
           <TabsContent value="bancarios">
             <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
