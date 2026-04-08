@@ -22,7 +22,7 @@ import ContratosPJ from "@/pages/ContratosPJ";
 import ContratoPJDetalhe from "@/pages/ContratoPJDetalhe";
 import NotasFiscais from "@/pages/NotasFiscais";
 import NotaFiscalDetalhe from "@/pages/NotaFiscalDetalhe";
-import PagamentosPJ from "@/pages/PagamentosPJ";
+
 
 const queryClient = new QueryClient();
 
@@ -82,11 +82,6 @@ const App = () => (
               <Route path="/notas-fiscais/:id" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
                   <NotaFiscalDetalhe />
-                </ProtectedRoute>
-              } />
-              <Route path="/pagamentos-pj" element={
-                <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
-                  <PagamentosPJ />
                 </ProtectedRoute>
               } />
 

@@ -58,6 +58,8 @@ interface NotaComContrato {
   contrato_id: string;
   contrato_nome: string;
   contrato_cnpj: string;
+  pagamento_data_prevista: string | null;
+  pagamento_forma: string | null;
 }
 
 interface ContratoPJOption {
@@ -86,18 +88,23 @@ export default function NotasFiscais() {
   const [deleteTarget, setDeleteTarget] = useState<NotaComContrato | null>(null);
 
   const fetchData = async () => {
-    const [{ data: nfs }, { data: cps }] = await Promise.all([
+    const [{ data: nfs }, { data: cps }, { data: pags }] = await Promise.all([
       supabase.from("notas_fiscais_pj").select("*").order("data_emissao", { ascending: false }),
       supabase.from("contratos_pj").select("id, razao_social, nome_fantasia, cnpj").order("razao_social"),
+      supabase.from("pagamentos_pj").select("nota_fiscal_id, data_prevista, forma_pagamento"),
     ]);
 
     const contratoMap = new Map((cps || []).map((c) => [c.id, c]));
+    const pagMap = new Map((pags || []).map((p: any) => [p.nota_fiscal_id, p]));
     const mapped: NotaComContrato[] = (nfs || []).map((n: any) => {
       const c = contratoMap.get(n.contrato_id);
+      const pag = pagMap.get(n.id);
       return {
         ...n,
         contrato_nome: c ? (c.nome_fantasia || c.razao_social) : "—",
         contrato_cnpj: c?.cnpj || "—",
+        pagamento_data_prevista: pag?.data_prevista || null,
+        pagamento_forma: pag?.forma_pagamento || null,
       };
     });
     setNotas(mapped);
@@ -130,9 +137,11 @@ export default function NotasFiscais() {
     return matchSearch && matchStatus && matchContrato;
   });
 
-  const totalPendentes = notas.filter((n) => n.status === "pendente").length;
+  const totalPendentes = notas.filter((n) => ["pendente", "aprovada", "enviada_pagamento"].includes(n.status)).length;
   const totalPagas = notas.filter((n) => n.status === "paga").length;
   const totalValor = notas.reduce((acc, n) => acc + Number(n.valor), 0);
+  const totalValorPago = notas.filter((n) => n.status === "paga").reduce((acc, n) => acc + Number(n.valor), 0);
+  const totalValorPendente = notas.filter((n) => ["pendente", "aprovada", "enviada_pagamento"].includes(n.status)).reduce((acc, n) => acc + Number(n.valor), 0);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -166,11 +175,11 @@ export default function NotasFiscais() {
         </CardContent></Card>
         <Card className="card-shadow"><CardContent className="p-4 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10 text-success"><FileText className="h-5 w-5" /></div>
-          <div><p className="text-2xl font-bold">{totalPagas}</p><p className="text-xs text-muted-foreground">Pagas</p></div>
+          <div><p className="text-2xl font-bold">R$ {totalValorPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p><p className="text-xs text-muted-foreground">Total Pago</p></div>
         </CardContent></Card>
         <Card className="card-shadow"><CardContent className="p-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-info/10 text-info"><FileText className="h-5 w-5" /></div>
-          <div><p className="text-2xl font-bold">R$ {totalValor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p><p className="text-xs text-muted-foreground">Valor Total</p></div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive"><FileText className="h-5 w-5" /></div>
+          <div><p className="text-2xl font-bold">R$ {totalValorPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p><p className="text-xs text-muted-foreground">A Pagar</p></div>
         </CardContent></Card>
       </div>
 
@@ -207,15 +216,17 @@ export default function NotasFiscais() {
                   <TableHead className="font-semibold hidden md:table-cell">Competência</TableHead>
                   <TableHead className="font-semibold hidden md:table-cell">Emissão</TableHead>
                   <TableHead className="font-semibold">Valor</TableHead>
+                  <TableHead className="font-semibold hidden lg:table-cell">Vencimento</TableHead>
+                  <TableHead className="font-semibold hidden lg:table-cell">Forma Pgto</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin mx-auto" /></TableCell></TableRow>
                 ) : filtered.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma nota fiscal encontrada.</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nenhuma nota fiscal encontrada.</TableCell></TableRow>
                 ) : filtered.map((n) => (
                   <TableRow key={n.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/notas-fiscais/${n.id}`)}>
                     <TableCell className="font-medium">{n.numero}{n.serie ? `/${n.serie}` : ""}</TableCell>
@@ -223,6 +234,8 @@ export default function NotasFiscais() {
                     <TableCell className="text-sm hidden md:table-cell">{n.competencia}</TableCell>
                     <TableCell className="text-sm hidden md:table-cell">{format(parseISO(n.data_emissao), "dd/MM/yyyy")}</TableCell>
                     <TableCell>R$ {Number(n.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</TableCell>
+                    <TableCell className="text-sm hidden lg:table-cell">{n.data_vencimento ? format(parseISO(n.data_vencimento), "dd/MM/yyyy") : "—"}</TableCell>
+                    <TableCell className="text-sm hidden lg:table-cell capitalize">{n.pagamento_forma || "—"}</TableCell>
                     <TableCell><Badge variant="outline" className={statusStyles[n.status] || ""}>{statusMap[n.status] || n.status}</Badge></TableCell>
                     <TableCell>
                       <DropdownMenu>
