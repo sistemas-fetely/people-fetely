@@ -38,9 +38,9 @@ const STATUS_PROG: Record<string, { label: string; variant: "default" | "seconda
   cancelada: { label: "Cancelada", variant: "destructive" },
 };
 
-interface Props { canManage: boolean; }
+interface Props { canManage: boolean; isAdmin: boolean; }
 
-export function FeriasPJView({ canManage }: Props) {
+export function FeriasPJView({ canManage, isAdmin }: Props) {
   const navigate = useNavigate();
   const { data: periodos = [], isLoading } = useFeriasPeriodosPJ();
   const criarPeriodoMut = useCriarPeriodoPJ();
