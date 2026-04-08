@@ -10,6 +10,7 @@ import {
   TrendingUp, ArrowRightLeft, DollarSign,
 } from "lucide-react";
 import { CustoResumoCard } from "@/components/CustoResumoCard";
+import { HistoricoCustosChart } from "@/components/HistoricoCustosChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
