@@ -4,72 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import {
-  ArrowLeft, Edit, Save, Loader2, X, User, FileText, Building2, CreditCard, Users,
+  ArrowLeft, Edit, Save, Loader2, X, User, FileText, Building2, CreditCard, Users, UserPlus,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-
-const statusStyles: Record<string, string> = {
-  pendente: "bg-amber-100 text-amber-700 border-0",
-  preenchido: "bg-emerald-100 text-emerald-700 border-0",
-  expirado: "bg-muted text-muted-foreground border-0",
-  cancelado: "bg-red-100 text-red-700 border-0",
-};
-
-const UF_LIST = ["AC","AL","AM","AP","BA","CE","DF","ES","GO","MA","MG","MS","MT","PA","PB","PE","PI","PR","RJ","RN","RO","RR","RS","SC","SE","SP","TO"];
-const bancos = [
-  { codigo: "001", nome: "Banco do Brasil" }, { codigo: "033", nome: "Santander" },
-  { codigo: "104", nome: "Caixa Econômica" }, { codigo: "237", nome: "Bradesco" },
-  { codigo: "341", nome: "Itaú Unibanco" }, { codigo: "077", nome: "Inter" },
-  { codigo: "260", nome: "Nubank" }, { codigo: "336", nome: "C6 Bank" },
-  { codigo: "290", nome: "PagSeguro" }, { codigo: "380", nome: "PicPay" },
-  { codigo: "756", nome: "Sicoob" }, { codigo: "422", nome: "Safra" },
-];
-
-const fieldLabels: Record<string, string> = {
-  nome_completo: "Nome Completo", cpf: "CPF", rg: "RG", orgao_emissor: "Órgão Emissor",
-  data_nascimento: "Data de Nascimento", genero: "Gênero", estado_civil: "Estado Civil",
-  nacionalidade: "Nacionalidade", etnia: "Etnia", nome_mae: "Nome da Mãe", nome_pai: "Nome do Pai",
-  cep: "CEP", logradouro: "Logradouro", numero: "Número", complemento: "Complemento",
-  bairro: "Bairro", cidade: "Cidade", uf: "UF", telefone: "Telefone",
-  email_pessoal: "Email Pessoal", contato_emergencia_nome: "Contato Emergência",
-  contato_emergencia_telefone: "Tel. Emergência",
-  pis_pasep: "PIS/PASEP", ctps_numero: "CTPS Número", ctps_serie: "CTPS Série",
-  ctps_uf: "CTPS UF", titulo_eleitor: "Título de Eleitor", zona_eleitoral: "Zona Eleitoral",
-  secao_eleitoral: "Seção Eleitoral", cnh_numero: "CNH Número", cnh_categoria: "CNH Categoria",
-  cnh_validade: "CNH Validade", certificado_reservista: "Certificado Reservista",
-  banco_nome: "Banco", banco_codigo: "Código Banco", agencia: "Agência", conta: "Conta",
-  tipo_conta: "Tipo de Conta", chave_pix: "Chave PIX",
-  contato_nome: "Nome do Contato", contato_telefone: "Telefone", contato_email: "Email",
-  cnpj: "CNPJ", razao_social: "Razão Social", nome_fantasia: "Nome Fantasia",
-  inscricao_municipal: "Inscrição Municipal", inscricao_estadual: "Inscrição Estadual",
-};
-
-const pessoaisFields = [
-  "nome_completo", "cpf", "rg", "orgao_emissor", "data_nascimento", "genero",
-  "estado_civil", "nacionalidade", "etnia", "nome_mae", "nome_pai",
-  "cep", "logradouro", "numero", "complemento", "bairro", "cidade", "uf",
-  "telefone", "email_pessoal", "contato_emergencia_nome", "contato_emergencia_telefone",
-];
-
-const documentosFields = [
-  "pis_pasep", "ctps_numero", "ctps_serie", "ctps_uf",
-  "titulo_eleitor", "zona_eleitoral", "secao_eleitoral",
-  "cnh_numero", "cnh_categoria", "cnh_validade", "certificado_reservista",
-];
-
-const bancariosFields = ["banco_nome", "banco_codigo", "agencia", "conta", "tipo_conta", "chave_pix"];
-
-const pjFields = [
-  "contato_nome", "contato_telefone", "contato_email",
-  "cnpj", "razao_social", "nome_fantasia", "inscricao_municipal", "inscricao_estadual",
-];
+import { statusStyles } from "@/components/convite-detalhe/constants";
+import { ConviteDadosPessoaisCLT } from "@/components/convite-detalhe/ConviteDadosPessoaisCLT";
+import { ConviteDocumentosCLT } from "@/components/convite-detalhe/ConviteDocumentosCLT";
+import { ConviteDadosBancarios } from "@/components/convite-detalhe/ConviteDadosBancarios";
+import { ConviteDependentes } from "@/components/convite-detalhe/ConviteDependentes";
+import { ConviteDadosEmpresaPJ } from "@/components/convite-detalhe/ConviteDadosEmpresaPJ";
 
 interface Convite {
   id: string;
@@ -93,11 +39,12 @@ export default function ConviteDetalhe() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
 
   useEffect(() => {
     if (!id) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data, error } = await supabase
         .from("convites_cadastro")
         .select("*")
@@ -112,7 +59,7 @@ export default function ConviteDetalhe() {
       setFormData((data as Convite).dados_preenchidos || {});
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [id]);
 
   const handleSave = async () => {
@@ -138,6 +85,97 @@ export default function ConviteDetalhe() {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
+  const handleExportToCadastro = async () => {
+    if (!convite || !formData) return;
+    setExporting(true);
+    try {
+      if (convite.tipo === "clt") {
+        const { dependentes, ...dadosClt } = formData;
+        const insertData = {
+          ...dadosClt,
+          cargo: convite.cargo || dadosClt.cargo || "A definir",
+          departamento: convite.departamento || dadosClt.departamento || "A definir",
+          data_admissao: dadosClt.data_admissao || new Date().toISOString().split("T")[0],
+          salario_base: dadosClt.salario_base || 0,
+          status: "ativo",
+        };
+        const { data: colaborador, error } = await supabase
+          .from("colaboradores_clt")
+          .insert(insertData)
+          .select("id")
+          .single();
+        if (error) throw error;
+
+        if (dependentes && dependentes.length > 0) {
+          const depsInsert = dependentes
+            .filter((d: any) => d.nome_completo && d.data_nascimento && d.parentesco)
+            .map((d: any) => ({
+              colaborador_id: colaborador.id,
+              nome_completo: d.nome_completo,
+              cpf: d.cpf || null,
+              data_nascimento: d.data_nascimento,
+              parentesco: d.parentesco,
+              incluir_irrf: d.incluir_irrf || false,
+              incluir_plano_saude: d.incluir_plano_saude || false,
+            }));
+          if (depsInsert.length > 0) {
+            const { error: depsError } = await supabase.from("dependentes").insert(depsInsert);
+            if (depsError) console.error("Erro ao inserir dependentes:", depsError);
+          }
+        }
+
+        await supabase
+          .from("convites_cadastro")
+          .update({ colaborador_id: colaborador.id, status: "preenchido" })
+          .eq("id", convite.id);
+
+        toast.success("Colaborador CLT criado com sucesso!");
+        navigate(`/colaboradores/${colaborador.id}`);
+      } else {
+        const insertData = {
+          contato_nome: formData.contato_nome || convite.nome,
+          contato_telefone: formData.contato_telefone || null,
+          contato_email: formData.contato_email || convite.email,
+          cnpj: formData.cnpj,
+          razao_social: formData.razao_social,
+          nome_fantasia: formData.nome_fantasia || null,
+          inscricao_municipal: formData.inscricao_municipal || null,
+          inscricao_estadual: formData.inscricao_estadual || null,
+          banco_nome: formData.banco_nome || null,
+          banco_codigo: formData.banco_codigo || null,
+          agencia: formData.agencia || null,
+          conta: formData.conta || null,
+          tipo_conta: formData.tipo_conta || "corrente",
+          chave_pix: formData.chave_pix || null,
+          tipo_servico: convite.cargo || "Consultoria",
+          departamento: convite.departamento || "A definir",
+          valor_mensal: formData.valor_mensal || 0,
+          data_inicio: formData.data_inicio || new Date().toISOString().split("T")[0],
+          status: "ativo",
+        };
+
+        const { data: contrato, error } = await supabase
+          .from("contratos_pj")
+          .insert(insertData)
+          .select("id")
+          .single();
+        if (error) throw error;
+
+        await supabase
+          .from("convites_cadastro")
+          .update({ contrato_pj_id: contrato.id, status: "preenchido" })
+          .eq("id", convite.id);
+
+        toast.success("Contrato PJ criado com sucesso!");
+        navigate(`/contratos-pj/${contrato.id}`);
+      }
+    } catch (err: any) {
+      toast.error("Erro ao exportar: " + err.message);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -149,247 +187,21 @@ export default function ConviteDetalhe() {
   if (!convite) return null;
 
   const isClt = convite.tipo === "clt";
-  const dados = formData;
-  const hasDados = Object.keys(dados).length > 0;
+  const hasDados = Object.keys(formData).length > 0;
   const expired = convite.status === "pendente" && new Date(convite.expira_em) <= new Date();
   const displayStatus = expired ? "expirado" : convite.status;
-
-  const renderField = (key: string) => {
-    const value = dados[key];
-    const label = fieldLabels[key] || key.replace(/_/g, " ");
-
-    if (editing) {
-      if (key === "uf") {
-        return (
-          <div key={key}>
-            <Label className="text-xs text-muted-foreground">{label}</Label>
-            <Select value={value || ""} onValueChange={(v) => updateField(key, v)}>
-              <SelectTrigger className="h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>{UF_LIST.map((u) => <SelectItem key={u} value={u}>{u}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-        );
-      }
-      if (key === "genero") {
-        return (
-          <div key={key}>
-            <Label className="text-xs text-muted-foreground">{label}</Label>
-            <Select value={value || ""} onValueChange={(v) => updateField(key, v)}>
-              <SelectTrigger className="h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="masculino">Masculino</SelectItem>
-                <SelectItem value="feminino">Feminino</SelectItem>
-                <SelectItem value="nao_binario">Não-binário</SelectItem>
-                <SelectItem value="prefiro_nao_informar">Prefiro não informar</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        );
-      }
-      if (key === "estado_civil") {
-        return (
-          <div key={key}>
-            <Label className="text-xs text-muted-foreground">{label}</Label>
-            <Select value={value || ""} onValueChange={(v) => updateField(key, v)}>
-              <SelectTrigger className="h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="solteiro">Solteiro(a)</SelectItem>
-                <SelectItem value="casado">Casado(a)</SelectItem>
-                <SelectItem value="divorciado">Divorciado(a)</SelectItem>
-                <SelectItem value="viuvo">Viúvo(a)</SelectItem>
-                <SelectItem value="uniao_estavel">União Estável</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        );
-      }
-      if (key === "tipo_conta") {
-        return (
-          <div key={key}>
-            <Label className="text-xs text-muted-foreground">{label}</Label>
-            <Select value={value || "corrente"} onValueChange={(v) => updateField(key, v)}>
-              <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="corrente">Corrente</SelectItem>
-                <SelectItem value="poupanca">Poupança</SelectItem>
-                <SelectItem value="salario">Salário</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        );
-      }
-      if (key === "banco_nome") {
-        return (
-          <div key={key}>
-            <Label className="text-xs text-muted-foreground">{label}</Label>
-            <Select value={value || ""} onValueChange={(v) => {
-              const banco = bancos.find((b) => b.nome === v);
-              updateField("banco_nome", v);
-              if (banco) updateField("banco_codigo", banco.codigo);
-            }}>
-              <SelectTrigger className="h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
-              <SelectContent>{bancos.map((b) => <SelectItem key={b.codigo} value={b.nome}>{b.nome}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-        );
-      }
-      if (key.includes("data") || key.includes("validade")) {
-        return (
-          <div key={key}>
-            <Label className="text-xs text-muted-foreground">{label}</Label>
-            <Input type="date" className="h-9" value={value || ""} onChange={(e) => updateField(key, e.target.value)} />
-          </div>
-        );
-      }
-      return (
-        <div key={key}>
-          <Label className="text-xs text-muted-foreground">{label}</Label>
-          <Input className="h-9" value={value || ""} onChange={(e) => updateField(key, e.target.value)} />
-        </div>
-      );
-    }
-
-    // View mode
-    return (
-      <div key={key} className="flex flex-col">
-        <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="text-sm font-medium">{value || "—"}</span>
-      </div>
-    );
-  };
-
-  const renderDependentes = () => {
-    const deps = (dados.dependentes as any[]) || [];
-    if (deps.length === 0 && !editing) {
-      return <p className="text-sm text-muted-foreground">Nenhum dependente cadastrado</p>;
-    }
-
-    return (
-      <div className="space-y-4">
-        {deps.map((dep, i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              {editing ? (
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-semibold">Dependente {i + 1}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive h-7"
-                      onClick={() => {
-                        const newDeps = [...deps];
-                        newDeps.splice(i, 1);
-                        updateField("dependentes", newDeps);
-                      }}
-                    >
-                      Remover
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Nome</Label>
-                      <Input className="h-9" value={dep.nome_completo || ""} onChange={(e) => {
-                        const newDeps = [...deps];
-                        newDeps[i] = { ...dep, nome_completo: e.target.value };
-                        updateField("dependentes", newDeps);
-                      }} />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">CPF</Label>
-                      <Input className="h-9" value={dep.cpf || ""} onChange={(e) => {
-                        const newDeps = [...deps];
-                        newDeps[i] = { ...dep, cpf: e.target.value };
-                        updateField("dependentes", newDeps);
-                      }} />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Data Nascimento</Label>
-                      <Input type="date" className="h-9" value={dep.data_nascimento || ""} onChange={(e) => {
-                        const newDeps = [...deps];
-                        newDeps[i] = { ...dep, data_nascimento: e.target.value };
-                        updateField("dependentes", newDeps);
-                      }} />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Parentesco</Label>
-                      <Input className="h-9" value={dep.parentesco || ""} onChange={(e) => {
-                        const newDeps = [...deps];
-                        newDeps[i] = { ...dep, parentesco: e.target.value };
-                        updateField("dependentes", newDeps);
-                      }} />
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <Checkbox checked={dep.incluir_irrf || false} onCheckedChange={(v) => {
-                          const newDeps = [...deps];
-                          newDeps[i] = { ...dep, incluir_irrf: !!v };
-                          updateField("dependentes", newDeps);
-                        }} />
-                        <Label className="text-xs">IRRF</Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Checkbox checked={dep.incluir_plano_saude || false} onCheckedChange={(v) => {
-                          const newDeps = [...deps];
-                          newDeps[i] = { ...dep, incluir_plano_saude: !!v };
-                          updateField("dependentes", newDeps);
-                        }} />
-                        <Label className="text-xs">Plano Saúde</Label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  <div>
-                    <span className="text-xs text-muted-foreground">Nome</span>
-                    <p className="text-sm font-medium">{dep.nome_completo || "—"}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">CPF</span>
-                    <p className="text-sm font-medium">{dep.cpf || "—"}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Nascimento</span>
-                    <p className="text-sm font-medium">{dep.data_nascimento || "—"}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Parentesco</span>
-                    <p className="text-sm font-medium">{dep.parentesco || "—"}</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-        {editing && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              updateField("dependentes", [
-                ...deps,
-                { nome_completo: "", cpf: "", data_nascimento: "", parentesco: "", incluir_irrf: false, incluir_plano_saude: false },
-              ]);
-            }}
-          >
-            + Adicionar Dependente
-          </Button>
-        )}
-      </div>
-    );
-  };
+  const canExport = hasDados && !convite.colaborador_id && !convite.contrato_pj_id;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/convites-cadastro")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-2xl font-bold">{convite.nome}</h1>
               <Badge variant="outline" className={statusStyles[displayStatus] || ""}>
                 {displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)}
@@ -402,7 +214,7 @@ export default function ConviteDetalhe() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {editing ? (
             <>
               <Button variant="outline" onClick={() => { setEditing(false); setFormData(convite.dados_preenchidos || {}); }}>
@@ -415,9 +227,17 @@ export default function ConviteDetalhe() {
             </>
           ) : (
             hasDados && (
-              <Button onClick={() => setEditing(true)}>
-                <Edit className="h-4 w-4 mr-2" /> Editar Dados
-              </Button>
+              <>
+                <Button variant="outline" onClick={() => setEditing(true)}>
+                  <Edit className="h-4 w-4 mr-2" /> Editar Dados
+                </Button>
+                {canExport && (
+                  <Button onClick={handleExportToCadastro} disabled={exporting}>
+                    {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                    {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
+                  </Button>
+                )}
+              </>
             )
           )}
         </div>
@@ -438,45 +258,17 @@ export default function ConviteDetalhe() {
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
             <TabsTrigger value="dependentes" className="gap-2"><Users className="h-4 w-4" /> Dependentes</TabsTrigger>
           </TabsList>
-
           <TabsContent value="pessoais">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Dados Pessoais</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pessoaisFields.map(renderField)}
-                </div>
-              </CardContent>
-            </Card>
+            <ConviteDadosPessoaisCLT dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
-
           <TabsContent value="documentos">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Documentos</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {documentosFields.map(renderField)}
-                </div>
-              </CardContent>
-            </Card>
+            <ConviteDocumentosCLT dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
-
           <TabsContent value="bancarios">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Dados Bancários</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {bancariosFields.map(renderField)}
-                </div>
-              </CardContent>
-            </Card>
+            <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
-
           <TabsContent value="dependentes">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Dependentes</CardTitle></CardHeader>
-              <CardContent>{renderDependentes()}</CardContent>
-            </Card>
+            <ConviteDependentes dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
         </Tabs>
       ) : (
@@ -485,27 +277,11 @@ export default function ConviteDetalhe() {
             <TabsTrigger value="empresa" className="gap-2"><Building2 className="h-4 w-4" /> Dados da Empresa</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
           </TabsList>
-
           <TabsContent value="empresa">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Dados da Empresa</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pjFields.map(renderField)}
-                </div>
-              </CardContent>
-            </Card>
+            <ConviteDadosEmpresaPJ dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
-
           <TabsContent value="bancarios">
-            <Card>
-              <CardHeader><CardTitle className="text-lg">Dados Bancários</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {bancariosFields.map(renderField)}
-                </div>
-              </CardContent>
-            </Card>
+            <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
         </Tabs>
       )}
