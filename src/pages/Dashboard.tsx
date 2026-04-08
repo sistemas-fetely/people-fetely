@@ -102,6 +102,15 @@ export default function Dashboard() {
     });
   }
 
+  // Contratos PJ sem assinatura
+  if (contratosPendentes.length > 0) {
+    alertas.push({
+      titulo: `${contratosPendentes.length} contrato(s) PJ pendente(s) de assinatura`,
+      detalhe: contratosPendentes.slice(0, 3).map((c) => c.nome).join(", ") + (contratosPendentes.length > 3 ? "..." : ""),
+      prioridade: "alta",
+    });
+  }
+
   const prioridadeStyles: Record<string, string> = {
     alta: "bg-destructive/10 text-destructive border-0",
     media: "bg-warning/10 text-warning border-0",
