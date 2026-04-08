@@ -161,7 +161,7 @@ export function useCalcularFolha() {
       const totalLiquido = holerites.reduce((s, h) => s + h.salario_liquido, 0);
       const totalEncargos = holerites.reduce((s, h) => s + h.total_encargos, 0);
 
-      await supabase
+      const { error: updErr } = await supabase
         .from("folha_competencias")
         .update({
           status: "calculada",
@@ -171,6 +171,9 @@ export function useCalcularFolha() {
           total_colaboradores: holerites.length,
         })
         .eq("id", competenciaId);
+      if (updErr) {
+        console.error("Erro ao atualizar competência:", updErr);
+      }
 
       return { total: holerites.length };
     },
