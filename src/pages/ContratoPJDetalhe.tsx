@@ -753,7 +753,7 @@ function TabPagamentos({ contratoId }: { contratoId: string }) {
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
 
   const fetchPagamentos = async () => {
-    const { data } = await supabase.from("pagamentos_pj").select("*").eq("contrato_id", contratoId).order("data_prevista", { ascending: false });
+    const { data } = await supabase.from("pagamentos_pj").select("*, notas_fiscais_pj(numero)").eq("contrato_id", contratoId).order("data_prevista", { ascending: false });
     setPagamentos(data || []);
     setLoading(false);
   };
@@ -778,8 +778,9 @@ function TabPagamentos({ contratoId }: { contratoId: string }) {
       <Card><CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50">
+             <TableRow className="bg-muted/50">
               <TableHead className="font-semibold">Competência</TableHead>
+              <TableHead className="font-semibold">Nº NF</TableHead>
               <TableHead className="font-semibold">Data Prevista</TableHead>
               <TableHead className="font-semibold">Data Pagamento</TableHead>
               <TableHead className="font-semibold">Valor</TableHead>
@@ -790,12 +791,13 @@ function TabPagamentos({ contratoId }: { contratoId: string }) {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
             ) : pagamentos.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum pagamento cadastrado.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Nenhum pagamento cadastrado.</TableCell></TableRow>
             ) : pagamentos.map((p) => (
               <TableRow key={p.id}>
                 <TableCell className="font-medium">{p.competencia}</TableCell>
+                <TableCell className="text-sm">{p.notas_fiscais_pj?.numero || "—"}</TableCell>
                 <TableCell>{format(parseISO(p.data_prevista), "dd/MM/yyyy")}</TableCell>
                 <TableCell>{p.data_pagamento ? format(parseISO(p.data_pagamento), "dd/MM/yyyy") : "—"}</TableCell>
                 <TableCell>R$ {Number(p.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</TableCell>
