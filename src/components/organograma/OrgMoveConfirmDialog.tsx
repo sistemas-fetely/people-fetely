@@ -46,7 +46,7 @@ export function OrgMoveConfirmDialog({ open, onClose, movedNode, newParent, allN
 
   const handleConfirm = () => {
     moveMutation.mutate(
-      { id: movedNode.id, newParentId: newParent.id, node: movedNode },
+      { id: movedNode.id, newParentId: newParent.id, node: movedNode, parentNode: newParent },
       { onSuccess: onClose }
     );
   };
