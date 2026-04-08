@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import {
   ReactFlow, Background, Controls, MiniMap, useNodesState, useEdgesState,
   type Node, type Edge, type NodeProps, Handle, Position,
@@ -27,6 +27,9 @@ function getBorderColor(node: PosicaoNode) {
   return "#2563EB";
 }
 
+// Store click handler in a module-level ref to avoid passing functions through ReactFlow data
+let globalClickHandler: ((n: PosicaoNode) => void) | null = null;
+
 function OrgCard({ data }: NodeProps) {
   const node = data.posicao as PosicaoNode;
   const borderColor = getBorderColor(node);
@@ -39,7 +42,7 @@ function OrgCard({ data }: NodeProps) {
     <div
       className="bg-card rounded-lg shadow-sm px-3 py-2.5 cursor-pointer hover:shadow-md transition-shadow"
       style={{ border: `2px ${isDashed ? "dashed" : "solid"} ${borderColor}`, width: NODE_W, minHeight: 64 }}
-      onClick={() => data.onNodeClick?.(node)}
+      onClick={() => globalClickHandler?.(node)}
     >
       <Handle type="target" position={Position.Top} className="!bg-border !w-2 !h-2" />
       <Handle type="source" position={Position.Bottom} className="!bg-border !w-2 !h-2" />
@@ -80,11 +83,10 @@ function OrgCard({ data }: NodeProps) {
 
 const nodeTypes = { orgCard: OrgCard };
 
-function layoutTree(roots: PosicaoNode[], onNodeClick: (n: PosicaoNode) => void): { nodes: Node[]; edges: Edge[] } {
+function layoutTree(roots: PosicaoNode[]): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  // Calculate subtree widths
   const widthMap = new Map<string, number>();
   function calcWidth(node: PosicaoNode): number {
     if (node.children.length === 0) {
@@ -103,7 +105,7 @@ function layoutTree(roots: PosicaoNode[], onNodeClick: (n: PosicaoNode) => void)
       id: node.id,
       type: "orgCard",
       position: { x, y },
-      data: { posicao: node, onNodeClick },
+      data: { posicao: node },
     });
 
     if (node.id_pai) {
@@ -117,10 +119,8 @@ function layoutTree(roots: PosicaoNode[], onNodeClick: (n: PosicaoNode) => void)
     }
 
     const w = widthMap.get(node.id) || NODE_W;
-    let cx = x - w / 2 + NODE_W / 2;
     if (node.children.length === 0) return;
 
-    // center children within subtree
     let startX = x - w / 2;
     for (const child of node.children) {
       const cw = widthMap.get(child.id) || NODE_W;
@@ -146,20 +146,19 @@ interface Props {
 }
 
 export function OrgVisualView({ tree, filters, onNodeClick }: Props) {
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => layoutTree(tree, onNodeClick),
-    [tree, onNodeClick]
-  );
+  // Set global click handler
+  globalClickHandler = onNodeClick;
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const { nodes: layoutNodes, edges: layoutEdges } = useMemo(() => layoutTree(tree), [tree]);
 
-  // Update nodes when tree changes
-  useMemo(() => {
-    const { nodes: n, edges: e } = layoutTree(tree, onNodeClick);
-    onNodesChange(n.map(node => ({ type: "reset" as const, item: node })));
-    onEdgesChange(e.map(edge => ({ type: "reset" as const, item: edge })));
-  }, [tree, onNodeClick]);
+  const [nodes, setNodes, onNodesChange] = useNodesState(layoutNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(layoutEdges);
+
+  useEffect(() => {
+    const { nodes: n, edges: e } = layoutTree(tree);
+    setNodes(n);
+    setEdges(e);
+  }, [tree, setNodes, setEdges]);
 
   return (
     <div className="h-[calc(100vh-220px)] rounded-lg border bg-card">
