@@ -233,8 +233,8 @@ export default function Colaboradores() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
-                            <DropdownMenuItem><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/colaboradores/${c.id}`)}><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/colaboradores/${c.id}?edit=true`)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
