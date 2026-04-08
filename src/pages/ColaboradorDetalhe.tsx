@@ -53,6 +53,7 @@ const statusStyles: Record<string, string> = {
 
 export default function ColaboradorDetalhe() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
