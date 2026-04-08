@@ -70,10 +70,12 @@ export default function ColaboradorDetalhe() {
   useEffect(() => {
     if (!id) return;
     async function load() {
-      const [{ data: col }, { data: deps }, { data: depts }] = await Promise.all([
+      const [{ data: col }, { data: deps }, { data: depts }, { data: acessos }, { data: equips }] = await Promise.all([
         supabase.from("colaboradores_clt").select("*").eq("id", id).maybeSingle(),
         supabase.from("dependentes").select("*").eq("colaborador_id", id),
         supabase.from("colaborador_departamentos").select("*").eq("colaborador_id", id),
+        supabase.from("colaborador_acessos_sistemas").select("*").eq("colaborador_id", id),
+        supabase.from("colaborador_equipamentos").select("*").eq("colaborador_id", id),
       ]);
       if (!col) {
         toast.error("Colaborador não encontrado");
@@ -98,6 +100,22 @@ export default function ColaboradorDetalhe() {
         departamentos_rateio: (depts || []).length > 0
           ? depts!.map((d) => ({ departamento: d.departamento, percentual_rateio: d.percentual_rateio }))
           : [{ departamento: col.departamento, percentual_rateio: 100 }],
+        acessos_sistemas: (acessos || []).map((a) => ({
+          sistema: a.sistema,
+          tem_acesso: a.tem_acesso,
+          usuario: a.usuario || "",
+          observacoes: a.observacoes || "",
+        })),
+        equipamentos: (equips || []).map((e) => ({
+          tipo: e.tipo,
+          marca: e.marca || "",
+          modelo: e.modelo || "",
+          numero_patrimonio: e.numero_patrimonio || "",
+          numero_serie: e.numero_serie || "",
+          data_entrega: e.data_entrega || "",
+          estado: e.estado || "novo",
+          observacoes: e.observacoes || "",
+        })),
       } as any);
       setLoading(false);
     }
@@ -108,7 +126,7 @@ export default function ColaboradorDetalhe() {
     if (!id) return;
     setSaving(true);
     try {
-      const { dependentes: formDeps, departamentos_rateio, salario_base, jornada_semanal, ...rest } = data;
+      const { dependentes: formDeps, departamentos_rateio, acessos_sistemas: formAcessos, equipamentos: formEquip, salario_base, jornada_semanal, ...rest } = data;
       const cleaned = Object.fromEntries(
         Object.entries(rest).map(([k, v]) => [k, v === "" ? null : v])
       );
@@ -153,6 +171,47 @@ export default function ColaboradorDetalhe() {
           }))
         );
         if (depErr) throw depErr;
+      }
+
+      // Replace acessos_sistemas
+      await supabase.from("colaborador_acessos_sistemas").delete().eq("colaborador_id", id);
+      if (formAcessos && formAcessos.length > 0) {
+        const acessosToInsert = formAcessos
+          .filter((a: any) => a.tem_acesso && a.sistema)
+          .map((a: any) => ({
+            colaborador_id: id,
+            sistema: a.sistema,
+            tem_acesso: true,
+            usuario: a.usuario || null,
+            observacoes: a.observacoes || null,
+            data_concessao: new Date().toISOString().split("T")[0],
+          }));
+        if (acessosToInsert.length > 0) {
+          const { error: aErr } = await supabase.from("colaborador_acessos_sistemas").insert(acessosToInsert);
+          if (aErr) throw aErr;
+        }
+      }
+
+      // Replace equipamentos
+      await supabase.from("colaborador_equipamentos").delete().eq("colaborador_id", id);
+      if (formEquip && formEquip.length > 0) {
+        const equipToInsert = formEquip
+          .filter((e: any) => e.tipo)
+          .map((e: any) => ({
+            colaborador_id: id,
+            tipo: e.tipo,
+            marca: e.marca || null,
+            modelo: e.modelo || null,
+            numero_patrimonio: e.numero_patrimonio || null,
+            numero_serie: e.numero_serie || null,
+            data_entrega: e.data_entrega || null,
+            estado: e.estado || "novo",
+            observacoes: e.observacoes || null,
+          }));
+        if (equipToInsert.length > 0) {
+          const { error: eErr } = await supabase.from("colaborador_equipamentos").insert(equipToInsert);
+          if (eErr) throw eErr;
+        }
       }
 
       toast.success("Colaborador atualizado com sucesso!");
