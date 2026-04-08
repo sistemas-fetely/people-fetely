@@ -197,8 +197,16 @@ export function CadastroContratoPJ() {
         if (eErr) throw eErr;
       }
 
+      // Update convite status if created from invitation
+      if (conviteId) {
+        await supabase
+          .from("convites_cadastro")
+          .update({ contrato_pj_id: inserted.id, status: "cadastrado" })
+          .eq("id", conviteId);
+      }
+
       toast.success("Contrato PJ cadastrado com sucesso!");
-      navigate("/contratos-pj");
+      navigate(`/contratos-pj/${inserted.id}`);
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Erro ao cadastrar contrato PJ");
