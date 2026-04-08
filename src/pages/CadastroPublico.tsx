@@ -822,7 +822,7 @@ export default function CadastroPublico() {
                     {step === 0 && <StepPessoaisPJPublic />}
                     {step === 1 && <StepEmpresaPJ />}
                     {step === 2 && <StepDocumentosPJPublic />}
-                    {step === 3 && <StepBancarios />}
+                    {step === 3 && <StepBancarios isPj />}
                     {step === 4 && <StepUploadDocumentos tipo="pj" token={convite?.token || ""} uploadedFiles={uploadedFiles} onFilesChange={setUploadedFiles} />}
                   </>
                 )}
