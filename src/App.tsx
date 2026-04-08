@@ -88,6 +88,11 @@ const App = () => (
               } />
 
               {/* Admin */}
+              <Route path="/parametros" element={
+                <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
+                  <Parametros />
+                </ProtectedRoute>
+              } />
               <Route path="/configuracoes" element={
                 <ProtectedRoute allowedRoles={["super_admin"]}>
                   <PlaceholderPage title="Configurações" description="Parâmetros do sistema e permissões" />
