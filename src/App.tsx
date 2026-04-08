@@ -77,6 +77,11 @@ const App = () => (
                   <ContratosPJ />
                 </ProtectedRoute>
               } />
+              <Route path="/contratos-pj/novo" element={
+                <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
+                  <CadastroContratoPJ />
+                </ProtectedRoute>
+              } />
               <Route path="/contratos-pj/:id" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
                   <ContratoPJDetalhe />
