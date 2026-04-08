@@ -77,26 +77,78 @@ export function useDeletePosicao() {
 export function useMovePosicao() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, newParentId, node }: { id: string; newParentId: string | null; node?: any }) => {
+    mutationFn: async ({ id, newParentId, node, parentNode }: { id: string; newParentId: string | null; node?: any; parentNode?: any }) => {
+      // Resolve parent: if virtual, create a real position first
+      let resolvedParentId = newParentId;
+      if (newParentId && newParentId.startsWith("virtual-")) {
+        const isParentColab = newParentId.startsWith("virtual-clt-");
+        const parentRealId = newParentId.replace("virtual-clt-", "").replace("virtual-pj-", "");
+
+        // Check if a position already exists for this person
+        const existingCol = isParentColab ? "colaborador_id" : "contrato_pj_id";
+        const { data: existing } = await supabase
+          .from("posicoes")
+          .select("id")
+          .eq(existingCol, parentRealId)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          resolvedParentId = existing[0].id;
+        } else {
+          const parentInsert: any = {
+            titulo_cargo: parentNode?.titulo_cargo || "Sem cargo",
+            departamento: parentNode?.departamento || "Geral",
+            nivel_hierarquico: parentNode?.nivel_hierarquico || 1,
+            status: "ocupado",
+            id_pai: null,
+            ...(isParentColab ? { colaborador_id: parentRealId } : { contrato_pj_id: parentRealId }),
+          };
+          const { data: newParent, error: parentErr } = await supabase
+            .from("posicoes")
+            .insert(parentInsert)
+            .select("id")
+            .single();
+          if (parentErr) throw parentErr;
+          resolvedParentId = newParent.id;
+        }
+      }
+
       if (id.startsWith("virtual-")) {
-        // Create a real position for virtual node
         const isColab = id.startsWith("virtual-clt-");
         const realId = id.replace("virtual-clt-", "").replace("virtual-pj-", "");
-        
-        const insert: any = {
-          titulo_cargo: node?.titulo_cargo || "Sem cargo",
-          departamento: node?.departamento || "Geral",
-          nivel_hierarquico: node?.nivel_hierarquico || 1,
-          status: "ocupado",
-          id_pai: newParentId?.startsWith("virtual-") ? null : newParentId,
-          ...(isColab ? { colaborador_id: realId } : { contrato_pj_id: realId }),
-        };
 
-        const { error } = await supabase.from("posicoes").insert(insert);
-        if (error) throw error;
+        // Check if a position already exists for this person
+        const existingCol = isColab ? "colaborador_id" : "contrato_pj_id";
+        const { data: existing } = await supabase
+          .from("posicoes")
+          .select("id")
+          .eq(existingCol, realId)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          // Update existing position's parent
+          const { error } = await supabase
+            .from("posicoes")
+            .update({ id_pai: resolvedParentId } as any)
+            .eq("id", existing[0].id);
+          if (error) throw error;
+        } else {
+          const insert: any = {
+            titulo_cargo: node?.titulo_cargo || "Sem cargo",
+            departamento: node?.departamento || "Geral",
+            nivel_hierarquico: node?.nivel_hierarquico || 1,
+            status: "ocupado",
+            id_pai: resolvedParentId,
+            ...(isColab ? { colaborador_id: realId } : { contrato_pj_id: realId }),
+          };
+          const { error } = await supabase.from("posicoes").insert(insert);
+          if (error) throw error;
+        }
       } else {
-        const parentId = newParentId?.startsWith("virtual-") ? null : newParentId;
-        const { error } = await supabase.from("posicoes").update({ id_pai: parentId } as any).eq("id", id);
+        const { error } = await supabase
+          .from("posicoes")
+          .update({ id_pai: resolvedParentId } as any)
+          .eq("id", id);
         if (error) throw error;
       }
     },
