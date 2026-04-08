@@ -25,6 +25,7 @@ import NotasFiscais from "@/pages/NotasFiscais";
 import NotaFiscalDetalhe from "@/pages/NotaFiscalDetalhe";
 import FolhaPagamento from "@/pages/FolhaPagamento";
 import Ferias from "@/pages/Ferias";
+import FeriasColaborador from "@/pages/FeriasColaborador";
 
 
 const queryClient = new QueryClient();
