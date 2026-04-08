@@ -278,6 +278,7 @@ export default function ConviteDetalhe() {
             <TabsTrigger value="empresa" className="gap-2"><Building className="h-4 w-4" /> Empresa</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
             <TabsTrigger value="dependentes" className="gap-2"><Users className="h-4 w-4" /> Dependentes</TabsTrigger>
+            <TabsTrigger value="anexos" className="gap-2"><Paperclip className="h-4 w-4" /> Anexos</TabsTrigger>
           </TabsList>
           <TabsContent value="pessoais">
             <ConviteDadosPessoaisCLT dados={formData} editing={editing} updateField={updateField} />
@@ -296,6 +297,9 @@ export default function ConviteDetalhe() {
           </TabsContent>
           <TabsContent value="dependentes">
             <ConviteDependentes dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
+          <TabsContent value="anexos">
+            <ConviteAnexos documentos={formData.documentos_upload} />
           </TabsContent>
         </Tabs>
       ) : (
