@@ -447,11 +447,7 @@ export default function CadastroPublico() {
   useEffect(() => {
     if (!token) { setError("Token inválido"); setLoading(false); return; }
     const fetchConvite = async () => {
-      const { data, error: err } = await supabase
-        .from("convites_cadastro")
-        .select("*")
-        .eq("token", token)
-        .single();
+      const { data, error: err } = await supabase.rpc("get_convite_by_token", { _token: token });
 
       if (err || !data) { setError("Convite não encontrado"); setLoading(false); return; }
 
@@ -499,26 +495,12 @@ export default function CadastroPublico() {
     try {
       const formData = isClt ? cltMethods.getValues() : pjMethods.getValues();
 
-      const { error: updateErr } = await supabase
-        .from("convites_cadastro")
-        .update({
-          dados_preenchidos: formData as any,
-          status: "preenchido",
-          preenchido_em: new Date().toISOString(),
-        } as any)
-        .eq("id", convite.id);
+      const { error: rpcErr } = await supabase.rpc("submit_convite_cadastro", {
+        _token: convite.token,
+        _dados: formData as any,
+      });
 
-      if (updateErr) throw updateErr;
-
-      await supabase
-        .from("notificacoes_rh")
-        .insert({
-          tipo: "cadastro_preenchido",
-          titulo: `${convite.nome} preencheu o cadastro`,
-          mensagem: `O ${convite.tipo === "clt" ? "colaborador CLT" : "prestador PJ"} ${convite.nome} completou o formulário de pré-cadastro.`,
-          link: `/convites-cadastro`,
-          user_id: convite.criado_por,
-        } as any);
+      if (rpcErr) throw rpcErr;
 
       setSubmitted(true);
       toast.success("Cadastro enviado com sucesso!");

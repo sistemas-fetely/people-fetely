@@ -1504,6 +1504,7 @@ export type Database = {
     }
     Functions: {
       gerar_periodos_ferias_pendentes: { Args: never; Returns: undefined }
+      get_convite_by_token: { Args: { _token: string }; Returns: Json }
       get_organograma_tree: {
         Args: never
         Returns: {
@@ -1534,6 +1535,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      submit_convite_cadastro: {
+        Args: { _dados: Json; _token: string }
         Returns: boolean
       }
     }
