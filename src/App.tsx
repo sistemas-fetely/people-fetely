@@ -12,6 +12,7 @@ import Pessoas from "@/pages/Pessoas";
 import ColaboradorDetalhe from "@/pages/ColaboradorDetalhe";
 import { CadastroColaboradorCLTWrapper } from "@/components/colaborador-clt/CadastroColaboradorCLT";
 import PlaceholderPage from "@/pages/PlaceholderPage";
+import Organograma from "@/pages/Organograma";
 import Login from "@/pages/Login";
 import RecuperarSenha from "@/pages/RecuperarSenha";
 import ResetPassword from "@/pages/ResetPassword";
@@ -51,7 +52,7 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/colaboradores/:id" element={<ColaboradorDetalhe />} />
-              <Route path="/organograma" element={<PlaceholderPage title="Organograma" description="Visualização hierárquica da empresa" />} />
+              <Route path="/organograma" element={<Organograma />} />
 
               {/* CLT - Gestor RH, Super Admin, Financeiro */}
               <Route path="/folha-pagamento" element={
