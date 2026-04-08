@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, FileText, Calendar, ClipboardList, Award,
   GraduationCap, Building2, GitBranch, BarChart3, Settings, UserCircle,
-  Briefcase, LogOut, ArrowUpDown,
+  Briefcase, LogOut, ArrowUpDown, Send,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
@@ -46,6 +46,7 @@ const pjItems = [
 ];
 
 const rhItems = [
+  { title: "Convites Cadastro", url: "/convites-cadastro", icon: Send, roles: ["super_admin", "gestor_rh"] as AppRole[] },
   { title: "Recrutamento", url: "/recrutamento", icon: UserCircle, roles: ["super_admin", "gestor_rh"] as AppRole[] },
   { title: "Avaliações", url: "/avaliacoes", icon: Award, roles: [] as AppRole[] },
   { title: "Treinamentos", url: "/treinamentos", icon: GraduationCap, roles: [] as AppRole[] },
