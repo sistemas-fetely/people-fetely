@@ -417,6 +417,7 @@ interface ConviteData {
   status: string;
   expira_em: string;
   criado_por: string | null;
+  dados_preenchidos: Record<string, any> | null;
 }
 
 const CLT_STEPS = ["Dados Pessoais", "Documentos", "Dados Bancários", "Dependentes"];
