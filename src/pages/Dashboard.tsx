@@ -100,8 +100,21 @@ export default function Dashboard() {
   const folhaAtual = folha.atual;
   const folhaAnterior = folha.anterior;
 
-  const custoTotalCltAtual = folhaAtual ? Number(folhaAtual.total_bruto || 0) + Number(folhaAtual.total_encargos || 0) : salarioMedio.total;
-  const custoTotalCltAnterior = folhaAnterior ? Number(folhaAnterior.total_bruto || 0) + Number(folhaAnterior.total_encargos || 0) : 0;
+  // Se a folha atual está aberta e zerada, usar salário base como estimativa
+  const folhaAtualBrutoEncargos = folhaAtual ? Number(folhaAtual.total_bruto || 0) + Number(folhaAtual.total_encargos || 0) : 0;
+  const folhaAnteriorBrutoEncargos = folhaAnterior ? Number(folhaAnterior.total_bruto || 0) + Number(folhaAnterior.total_encargos || 0) : 0;
+
+  const custoTotalCltAtual = folhaAtualBrutoEncargos > 0
+    ? folhaAtualBrutoEncargos
+    : folhaAnteriorBrutoEncargos > 0
+      ? folhaAnteriorBrutoEncargos
+      : salarioMedio.total;
+
+  const custoTotalCltAnterior = folhaAtualBrutoEncargos > 0
+    ? folhaAnteriorBrutoEncargos
+    : folhaAnteriorBrutoEncargos > 0
+      ? (folha.anterior2 ? Number(folha.anterior2.total_bruto || 0) + Number(folha.anterior2.total_encargos || 0) : 0)
+      : 0;
 
   const custoTotalMes = custoTotalCltAtual + custoPj.totalAtual;
   const custoTotalMesAnterior = custoTotalCltAnterior + custoPj.totalAnterior;
@@ -187,7 +200,7 @@ export default function Dashboard() {
           valorAnterior={custoTotalCltAnterior}
           icon={Users}
           invertColor
-          subtitle={folhaAtual ? `${folhaAtual.total_colaboradores || 0} colaboradores` : `${salarioMedio.count} colaboradores`}
+          subtitle={`${folhaAtualBrutoEncargos > 0 ? (folhaAtual?.total_colaboradores || salarioMedio.count) : salarioMedio.count} colaboradores${folhaAtualBrutoEncargos === 0 ? " (estimativa)" : ""}`}
         />
         <FinancialKpiCard
           title="Custo PJ Mensal"

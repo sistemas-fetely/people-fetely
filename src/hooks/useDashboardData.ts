@@ -217,12 +217,13 @@ export function useDashboardData() {
         .from("folha_competencias")
         .select("competencia, status, total_bruto, total_liquido, total_encargos, total_colaboradores")
         .order("competencia", { ascending: false })
-        .limit(2);
+        .limit(3);
 
       const rows = data || [];
       const atual = rows[0] || null;
       const anterior = rows[1] || null;
-      return { atual, anterior };
+      const anterior2 = rows[2] || null;
+      return { atual, anterior, anterior2 };
     },
   });
 
@@ -230,6 +231,14 @@ export function useDashboardData() {
   const custoPjComparativoQuery = useQuery({
     queryKey: ["dashboard_custo_pj_comparativo"],
     queryFn: async () => {
+      // Soma dos valor_mensal de contratos ativos como base
+      const { data: contratosPjAtivos } = await supabase
+        .from("contratos_pj")
+        .select("valor_mensal")
+        .eq("status", "ativo");
+
+      const totalContratosAtivos = (contratosPjAtivos || []).reduce((s, c) => s + Number(c.valor_mensal), 0);
+
       const { data: pagAtual } = await supabase
         .from("pagamentos_pj")
         .select("valor, status")
@@ -242,8 +251,13 @@ export function useDashboardData() {
         .gte("data_prevista", mesAnteriorRange.startDate)
         .lte("data_prevista", mesAnteriorRange.endDate);
 
-      const totalAtual = (pagAtual || []).reduce((s, p) => s + Number(p.valor), 0);
-      const totalAnterior = (pagAnterior || []).reduce((s, p) => s + Number(p.valor), 0);
+      const pagTotalAtual = (pagAtual || []).reduce((s, p) => s + Number(p.valor), 0);
+      const pagTotalAnterior = (pagAnterior || []).reduce((s, p) => s + Number(p.valor), 0);
+
+      // Usar o maior entre pagamentos registrados e valor dos contratos ativos
+      const totalAtual = Math.max(pagTotalAtual, totalContratosAtivos);
+      const totalAnterior = pagTotalAnterior > 0 ? pagTotalAnterior : totalContratosAtivos;
+
       const pagosAtual = (pagAtual || []).filter((p) => ["paga", "pago"].includes(p.status)).reduce((s, p) => s + Number(p.valor), 0);
       const pendentesAtual = (pagAtual || []).filter((p) => ["pendente", "aprovada", "enviada_pagamento"].includes(p.status)).reduce((s, p) => s + Number(p.valor), 0);
 
@@ -499,7 +513,7 @@ export function useDashboardData() {
     aniversariantes: aniversariantesQuery.data ?? [],
     statusClt: statusQuery.data ?? {},
     turnover: turnoverQuery.data ?? [],
-    folha: folhaComparativoQuery.data ?? { atual: null, anterior: null },
+    folha: folhaComparativoQuery.data ?? { atual: null, anterior: null, anterior2: null },
     nfPendentes: nfQuery.data ?? 0,
     pagPjPendentes: pagPjQuery.data ?? 0,
     experienciaVencendo: experienciaQuery.data ?? [],
