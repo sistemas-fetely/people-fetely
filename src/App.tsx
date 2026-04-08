@@ -60,7 +60,7 @@ const App = () => (
               {/* PJ */}
               <Route path="/contratos-pj" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
-                  <PlaceholderPage title="Contratos PJ" description="Gestão de contratos de prestadores" />
+                  <ContratosPJ />
                 </ProtectedRoute>
               } />
               <Route path="/notas-fiscais" element={
