@@ -63,7 +63,6 @@ export default function Colaboradores() {
       if (data) setDbColaboradores(data);
     });
   }, []);
-  const [filterStatus, setFilterStatus] = useState("todos");
 
   const filtered = mockColaboradores.filter((c) => {
     const matchSearch = c.nome.toLowerCase().includes(search.toLowerCase()) ||
