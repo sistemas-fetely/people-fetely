@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Edit, FileText, Building2, Calendar, DollarSign, Hash, Clock, ExternalLink } from "lucide-react";
+import { ArrowLeft, Edit, FileText, Building2, Calendar, DollarSign, Hash, Clock, ExternalLink, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,11 +12,12 @@ import { format, parseISO } from "date-fns";
 import { useParametros } from "@/hooks/useParametros";
 
 const defaultStatusMap: Record<string, string> = {
-  pendente: "Pendente", aprovada: "Aprovada", paga: "Paga", cancelada: "Cancelada", vencida: "Vencida",
+  pendente: "Pendente", aprovada: "Aprovada", enviada_pagamento: "Enviada para Pagamento", paga: "Paga", cancelada: "Cancelada", vencida: "Vencida",
 };
 const statusStyles: Record<string, string> = {
   pendente: "bg-warning/10 text-warning border-0",
   aprovada: "bg-info/10 text-info border-0",
+  enviada_pagamento: "bg-primary/10 text-primary border-0",
   paga: "bg-success/10 text-success border-0",
   cancelada: "bg-destructive/10 text-destructive border-0",
   vencida: "bg-destructive/10 text-destructive border-0",
@@ -171,9 +172,18 @@ export default function NotaFiscalDetalhe() {
             </p>
           </div>
         </div>
-        <Button variant="outline" className="gap-2" onClick={() => navigate(`/notas-fiscais?edit=${nota.id}`)}>
-          <Edit className="h-4 w-4" /> Editar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            className="gap-2"
+            onClick={() => toast.info("Funcionalidade de envio de e-mail será implementada em breve.")}
+          >
+            <Mail className="h-4 w-4" /> Enviar por E-mail
+          </Button>
+          <Button variant="outline" className="gap-2" onClick={() => navigate(`/notas-fiscais?edit=${nota.id}`)}>
+            <Edit className="h-4 w-4" /> Editar
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
