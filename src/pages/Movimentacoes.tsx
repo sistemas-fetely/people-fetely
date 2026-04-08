@@ -42,6 +42,8 @@ export default function Movimentacoes() {
   const { data: movimentacoes = [], isLoading } = useMovimentacoes();
   const { data: colaboradores = [] } = useColaboradoresAtivos();
   const { data: contratosPJ = [] } = useContratosPJAtivos();
+  const { data: cargos = [], isLoading: loadingCargos } = useParametros("cargo");
+  const { data: departamentos = [], isLoading: loadingDeptos } = useParametros("departamento");
   const criarMut = useCriarMovimentacao();
   const statusMut = useAtualizarStatusMovimentacao();
   const excluirMut = useExcluirMovimentacao();
