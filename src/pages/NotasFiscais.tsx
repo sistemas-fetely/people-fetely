@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useParametros } from "@/hooks/useParametros";
 import {
   FileText, Search, MoreHorizontal, Eye, Edit, Trash2, Plus, Loader2,
@@ -67,6 +67,7 @@ interface ContratoPJOption {
 
 export default function NotasFiscais() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: statusParams } = useParametros("status_nota_fiscal");
   const statusMap = useMemo(() => {
     if (statusParams && statusParams.length > 0) {
@@ -105,6 +106,19 @@ export default function NotasFiscais() {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // Handle ?edit=<id> query param from detail page
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId && notas.length > 0) {
+      const found = notas.find((n) => n.id === editId);
+      if (found) {
+        setEditNota(found);
+        setFormOpen(true);
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [notas, searchParams]);
 
   const filtered = notas.filter((n) => {
     const matchSearch =
