@@ -753,7 +753,7 @@ function TabPagamentos({ contratoId }: { contratoId: string }) {
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
 
   const fetchPagamentos = async () => {
-    const { data } = await supabase.from("pagamentos_pj").select("*").eq("contrato_id", contratoId).order("data_prevista", { ascending: false });
+    const { data } = await supabase.from("pagamentos_pj").select("*, notas_fiscais_pj(numero)").eq("contrato_id", contratoId).order("data_prevista", { ascending: false });
     setPagamentos(data || []);
     setLoading(false);
   };
