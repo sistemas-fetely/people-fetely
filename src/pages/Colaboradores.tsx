@@ -50,6 +50,8 @@ export default function Colaboradores() {
   const [filterStatus, setFilterStatus] = useState("todos");
   const [colaboradores, setColaboradores] = useState<ColaboradorWithDepts[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteTarget, setDeleteTarget] = useState<ColaboradorWithDepts | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
