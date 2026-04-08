@@ -5,8 +5,10 @@ import { Users, Building2, CircleDot, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend, Treemap as RTreemap,
+  PieChart, Pie, Cell, Legend, LineChart, Line,
 } from "recharts";
+import { format, subMonths } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import type { PosicaoNode, OrgFilters } from "@/types/organograma";
 
 const COLORS = ["#2563EB", "#7C3AED", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#EC4899"];
