@@ -399,6 +399,14 @@ export default function ContratosPJ() {
       .order("razao_social");
     setContratos((data as ContratoPJ[]) || []);
     setLoading(false);
+
+    // Handle edit param from detail page
+    const editId = searchParams.get("edit");
+    if (editId && data) {
+      const target = (data as ContratoPJ[]).find((c) => c.id === editId);
+      if (target) { setEditContrato(target); setFormOpen(true); }
+      setSearchParams({}, { replace: true });
+    }
   };
 
   useEffect(() => { fetchContratos(); }, []);
@@ -534,7 +542,7 @@ export default function ContratosPJ() {
                   </TableRow>
                 ) : (
                   filtered.map((c) => (
-                    <TableRow key={c.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setViewContrato(c)}>
+                    <TableRow key={c.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/contratos-pj/${c.id}`)}>
                       <TableCell>
                         <div>
                           <p className="font-medium text-sm">{c.nome_fantasia || c.razao_social}</p>

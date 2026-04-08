@@ -19,6 +19,7 @@ import SemPermissao from "@/pages/SemPermissao";
 import NotFound from "@/pages/NotFound";
 import Parametros from "@/pages/Parametros";
 import ContratosPJ from "@/pages/ContratosPJ";
+import ContratoPJDetalhe from "@/pages/ContratoPJDetalhe";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,11 @@ const App = () => (
               <Route path="/contratos-pj" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
                   <ContratosPJ />
+                </ProtectedRoute>
+              } />
+              <Route path="/contratos-pj/:id" element={
+                <ProtectedRoute allowedRoles={["super_admin", "gestor_rh", "financeiro"]}>
+                  <ContratoPJDetalhe />
                 </ProtectedRoute>
               } />
               <Route path="/notas-fiscais" element={
