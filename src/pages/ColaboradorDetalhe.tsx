@@ -57,7 +57,7 @@ export default function ColaboradorDetalhe() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(searchParams.get("edit") === "true");
   const [saving, setSaving] = useState(false);
   const [colaborador, setColaborador] = useState<Tables<"colaboradores_clt"> | null>(null);
   const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
