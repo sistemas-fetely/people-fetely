@@ -374,6 +374,7 @@ export default function ContratoPJDetalhe() {
             <TabsTrigger value="pagamentos" className="gap-1"><CreditCard className="h-3.5 w-3.5" /> Pagamentos</TabsTrigger>
             <TabsTrigger value="movimentacoes" className="gap-1"><ArrowUpDown className="h-3.5 w-3.5" /> Movimentações</TabsTrigger>
             <TabsTrigger value="custos" className="gap-1"><DollarSign className="h-3.5 w-3.5" /> Custos</TabsTrigger>
+            <TabsTrigger value="organograma" className="gap-1"><Network className="h-3.5 w-3.5" /> Organograma</TabsTrigger>
           </TabsList>
 
           <TabsContent value="pessoais">
