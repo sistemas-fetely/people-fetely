@@ -17,6 +17,7 @@ import ResetPassword from "@/pages/ResetPassword";
 import SemPermissao from "@/pages/SemPermissao";
 import NotFound from "@/pages/NotFound";
 import Parametros from "@/pages/Parametros";
+import ContratosPJ from "@/pages/ContratosPJ";
 
 const queryClient = new QueryClient();
 
