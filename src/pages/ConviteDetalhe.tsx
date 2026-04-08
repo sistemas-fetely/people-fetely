@@ -130,7 +130,7 @@ export default function ConviteDetalhe() {
 
   const handleExportToCadastro = () => {
     if (!convite || !formData) return;
-    const { dependentes, ...rest } = formData;
+    const { dependentes, documentos_upload, ...rest } = formData;
 
     if (convite.tipo === "clt") {
       navigate("/colaboradores/novo", {
@@ -148,6 +148,8 @@ export default function ConviteDetalhe() {
             tipo_contrato: rest.tipo_contrato || "indeterminado",
             jornada_semanal: rest.jornada_semanal || 44,
             dependentes: dependentes || [],
+            documentos_upload: documentos_upload || [],
+            upload_folder: convite.token,
           },
         },
       });
@@ -168,6 +170,8 @@ export default function ConviteDetalhe() {
             dia_vencimento: rest.dia_vencimento || 10,
             data_inicio: rest.data_inicio || new Date().toISOString().split("T")[0],
             status: rest.status || "ativo",
+            documentos_upload: documentos_upload || [],
+            upload_folder: convite.token,
           },
         },
       });
