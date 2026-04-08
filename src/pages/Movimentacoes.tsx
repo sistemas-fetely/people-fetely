@@ -332,7 +332,18 @@ export default function Movimentacoes() {
             {(tipo === "transferencia" || tipo === "mudanca_departamento" || tipo === "promocao") && (
               <div>
                 <Label>Novo Departamento</Label>
-                <Input value={deptoNovo} onChange={(e) => setDeptoNovo(e.target.value)} placeholder="Novo departamento" />
+                {loadingDeptos ? (
+                  <div className="flex items-center h-10"><Loader2 className="h-4 w-4 animate-spin" /></div>
+                ) : (
+                  <Select value={deptoNovo} onValueChange={setDeptoNovo}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o departamento" /></SelectTrigger>
+                    <SelectContent>
+                      {departamentos.map((d) => (
+                        <SelectItem key={d.id} value={d.label}>{d.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             )}
 
