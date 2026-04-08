@@ -87,6 +87,8 @@ export default function ColaboradorDetalhe() {
       setColaborador(col);
       setDepartamentos(depts || []);
       setDependentes(deps || []);
+      setAcessosSistemas(acessos || []);
+      setEquipamentos(equips || []);
       // Set form defaults
       methods.reset({
         ...col,
