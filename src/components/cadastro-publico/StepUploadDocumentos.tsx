@@ -31,9 +31,9 @@ const CLT_DOCUMENTS: DocumentSlot[] = [
 ];
 
 const PJ_DOCUMENTS: DocumentSlot[] = [
-  { key: "rg_cnh_frente", label: "RG ou CNH (Frente)" },
+  { key: "rg_cnh_frente", label: "RG ou CNH (Frente)", required: true },
   { key: "rg_cnh_verso", label: "RG ou CNH (Verso)" },
-  { key: "contrato_social", label: "Contrato Social da Empresa" },
+  { key: "contrato_social", label: "Contrato Social da Empresa", required: true },
   { key: "cartao_cnpj", label: "Cartão CNPJ" },
 ];
 

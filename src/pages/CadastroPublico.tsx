@@ -553,7 +553,7 @@ function StepEmpresaPJ() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div><Label>CNPJ *</Label><Input value={watch("cnpj") || ""} onChange={(e) => setValue("cnpj", formatCNPJ(e.target.value), { shouldValidate: true })} maxLength={18} />{errors.cnpj && <p className="text-xs text-destructive mt-1">{errors.cnpj.message}</p>}</div>
           <div><Label>Razão Social *</Label><Input {...register("razao_social")} />{errors.razao_social && <p className="text-xs text-destructive mt-1">{errors.razao_social.message}</p>}</div>
-          <div><Label>Nome Fantasia</Label><Input {...register("nome_fantasia")} /></div>
+          <div><Label>Nome Fantasia *</Label><Input {...register("nome_fantasia")} />{errors.nome_fantasia && <p className="text-xs text-destructive mt-1">{errors.nome_fantasia.message}</p>}</div>
           <div><Label>Inscrição Municipal</Label><Input {...register("inscricao_municipal")} /></div>
           <div><Label>Inscrição Estadual</Label><Input {...register("inscricao_estadual")} /></div>
         </div>
