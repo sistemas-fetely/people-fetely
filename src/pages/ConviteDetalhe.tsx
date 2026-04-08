@@ -225,11 +225,15 @@ export default function ConviteDetalhe() {
           conta: formData.conta || null,
           tipo_conta: formData.tipo_conta || "corrente",
           chave_pix: formData.chave_pix || null,
-          tipo_servico: convite.cargo || "Consultoria",
-          departamento: convite.departamento || "A definir",
-          valor_mensal: formData.valor_mensal || 0,
+          tipo_servico: formData.tipo_servico || convite.cargo || "Consultoria",
+          departamento: formData.departamento || convite.departamento || "A definir",
+          valor_mensal: Number(formData.valor_mensal) || 0,
+          forma_pagamento: formData.forma_pagamento || "transferencia",
+          dia_vencimento: formData.dia_vencimento ? Number(formData.dia_vencimento) : 10,
           data_inicio: formData.data_inicio || new Date().toISOString().split("T")[0],
-          status: "ativo",
+          data_fim: formData.data_fim || null,
+          renovacao_automatica: !!formData.renovacao_automatica,
+          status: formData.status || "ativo",
         };
 
         const { data: contrato, error } = await supabase
