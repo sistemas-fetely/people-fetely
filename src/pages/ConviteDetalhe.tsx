@@ -327,9 +327,11 @@ export default function ConviteDetalhe() {
         </Card>
       ) : isClt ? (
         <Tabs defaultValue="pessoais">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="pessoais" className="gap-2"><User className="h-4 w-4" /> Dados Pessoais</TabsTrigger>
             <TabsTrigger value="documentos" className="gap-2"><FileText className="h-4 w-4" /> Documentos</TabsTrigger>
+            <TabsTrigger value="profissionais" className="gap-2"><Briefcase className="h-4 w-4" /> Profissionais</TabsTrigger>
+            <TabsTrigger value="empresa" className="gap-2"><Building className="h-4 w-4" /> Empresa</TabsTrigger>
             <TabsTrigger value="bancarios" className="gap-2"><CreditCard className="h-4 w-4" /> Dados Bancários</TabsTrigger>
             <TabsTrigger value="dependentes" className="gap-2"><Users className="h-4 w-4" /> Dependentes</TabsTrigger>
           </TabsList>
@@ -338,6 +340,12 @@ export default function ConviteDetalhe() {
           </TabsContent>
           <TabsContent value="documentos">
             <ConviteDocumentosCLT dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
+          <TabsContent value="profissionais">
+            <ConviteDadosProfissionaisCLT dados={formData} editing={editing} updateField={updateField} />
+          </TabsContent>
+          <TabsContent value="empresa">
+            <ConviteDadosEmpresaCLT dados={formData} editing={editing} updateField={updateField} />
           </TabsContent>
           <TabsContent value="bancarios">
             <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
