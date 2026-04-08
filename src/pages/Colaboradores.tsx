@@ -186,7 +186,7 @@ export default function Colaboradores() {
                   </TableRow>
                 ) : (
                   filtered.map((c) => (
-                    <TableRow key={c.id} className="hover:bg-muted/30 transition-colors">
+                    <TableRow key={c.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/colaboradores/${c.id}`)}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
@@ -233,8 +233,8 @@ export default function Colaboradores() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
-                            <DropdownMenuItem><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/colaboradores/${c.id}`)}><Eye className="mr-2 h-4 w-4" /> Visualizar</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/colaboradores/${c.id}?edit=true`)}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
                             <DropdownMenuItem className="text-destructive"><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
