@@ -485,6 +485,14 @@ export default function ColaboradorDetalhe() {
           <TabsContent value="movimentacoes">
             <HistoricoMovimentacoes colaboradorId={id!} />
           </TabsContent>
+
+          <TabsContent value="custos">
+            <CustoResumoCard
+              tipo="clt"
+              salarioBase={Number(colaborador.salario_base)}
+              dependentesIRRF={dependentes.filter(d => d.incluir_irrf).length}
+            />
+          </TabsContent>
         </Tabs>
 
         <AlertDialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
