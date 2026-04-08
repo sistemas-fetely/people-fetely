@@ -78,7 +78,7 @@ export default function PagamentosPJ() {
 
   const fetchData = async () => {
     const [{ data: pags }, { data: cps }] = await Promise.all([
-      supabase.from("pagamentos_pj").select("*").order("data_prevista", { ascending: false }),
+      supabase.from("pagamentos_pj").select("*, notas_fiscais_pj(numero)").order("data_prevista", { ascending: false }),
       supabase.from("contratos_pj").select("id, razao_social, nome_fantasia").order("razao_social"),
     ]);
 
