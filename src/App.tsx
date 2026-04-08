@@ -31,6 +31,7 @@ import Beneficios from "@/pages/Beneficios";
 import Movimentacoes from "@/pages/Movimentacoes";
 import CadastroPublico from "@/pages/CadastroPublico";
 import ConvitesCadastro from "@/pages/ConvitesCadastro";
+import ConviteDetalhe from "@/pages/ConviteDetalhe";
 import Unsubscribe from "@/pages/Unsubscribe";
 
 const queryClient = new QueryClient();
@@ -107,6 +108,11 @@ const App = () => (
               <Route path="/convites-cadastro" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
                   <ConvitesCadastro />
+                </ProtectedRoute>
+              } />
+              <Route path="/convites-cadastro/:id" element={
+                <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
+                  <ConviteDetalhe />
                 </ProtectedRoute>
               } />
               <Route path="/recrutamento" element={

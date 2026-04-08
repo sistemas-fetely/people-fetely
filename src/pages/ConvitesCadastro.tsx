@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +60,7 @@ interface Convite {
 }
 
 export default function ConvitesCadastro() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [convites, setConvites] = useState<Convite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -242,7 +244,7 @@ export default function ConvitesCadastro() {
                       <TableRow
                         key={c.id}
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => window.open(getLink(c.token), '_blank')}
+                        onClick={() => navigate(`/convites-cadastro/${c.id}`)}
                       >
                         <TableCell className="font-medium text-primary">{c.nome}</TableCell>
                         <TableCell className="text-sm">{c.email}</TableCell>
