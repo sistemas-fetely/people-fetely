@@ -67,6 +67,7 @@ interface ContratoPJOption {
 
 export default function NotasFiscais() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data: statusParams } = useParametros("status_nota_fiscal");
   const statusMap = useMemo(() => {
     if (statusParams && statusParams.length > 0) {
