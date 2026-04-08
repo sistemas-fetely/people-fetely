@@ -88,18 +88,23 @@ export default function NotasFiscais() {
   const [deleteTarget, setDeleteTarget] = useState<NotaComContrato | null>(null);
 
   const fetchData = async () => {
-    const [{ data: nfs }, { data: cps }] = await Promise.all([
+    const [{ data: nfs }, { data: cps }, { data: pags }] = await Promise.all([
       supabase.from("notas_fiscais_pj").select("*").order("data_emissao", { ascending: false }),
       supabase.from("contratos_pj").select("id, razao_social, nome_fantasia, cnpj").order("razao_social"),
+      supabase.from("pagamentos_pj").select("nota_fiscal_id, data_prevista, forma_pagamento"),
     ]);
 
     const contratoMap = new Map((cps || []).map((c) => [c.id, c]));
+    const pagMap = new Map((pags || []).map((p: any) => [p.nota_fiscal_id, p]));
     const mapped: NotaComContrato[] = (nfs || []).map((n: any) => {
       const c = contratoMap.get(n.contrato_id);
+      const pag = pagMap.get(n.id);
       return {
         ...n,
         contrato_nome: c ? (c.nome_fantasia || c.razao_social) : "—",
         contrato_cnpj: c?.cnpj || "—",
+        pagamento_data_prevista: pag?.data_prevista || null,
+        pagamento_forma: pag?.forma_pagamento || null,
       };
     });
     setNotas(mapped);
