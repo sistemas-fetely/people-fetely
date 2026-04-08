@@ -80,6 +80,27 @@ const pjPessoaisSchema = z.object({
   contato_nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   contato_telefone: z.string().optional().or(z.literal("")),
   contato_email: z.string().email("Email inválido").optional().or(z.literal("")),
+  cpf: z.string().optional().or(z.literal("")),
+  rg: z.string().optional().or(z.literal("")),
+  orgao_emissor: z.string().optional().or(z.literal("")),
+  data_nascimento: z.string().optional().or(z.literal("")),
+  genero: z.string().optional().or(z.literal("")),
+  estado_civil: z.string().optional().or(z.literal("")),
+  nacionalidade: z.string().default("Brasileira"),
+  etnia: z.string().optional().or(z.literal("")),
+  nome_mae: z.string().optional().or(z.literal("")),
+  nome_pai: z.string().optional().or(z.literal("")),
+  cep: z.string().optional().or(z.literal("")),
+  logradouro: z.string().optional().or(z.literal("")),
+  numero: z.string().optional().or(z.literal("")),
+  complemento: z.string().optional().or(z.literal("")),
+  bairro: z.string().optional().or(z.literal("")),
+  cidade: z.string().optional().or(z.literal("")),
+  uf: z.string().optional().or(z.literal("")),
+  telefone: z.string().optional().or(z.literal("")),
+  email_pessoal: z.string().email("Email inválido").optional().or(z.literal("")),
+  contato_emergencia_nome: z.string().optional().or(z.literal("")),
+  contato_emergencia_telefone: z.string().optional().or(z.literal("")),
   cnpj: z.string().min(14, "CNPJ é obrigatório"),
   razao_social: z.string().min(2, "Razão Social é obrigatória"),
   nome_fantasia: z.string().optional().or(z.literal("")),
@@ -421,7 +442,7 @@ interface ConviteData {
 }
 
 const CLT_STEPS = ["Dados Pessoais", "Documentos", "Dados Bancários", "Dependentes"];
-const PJ_STEPS = ["Dados da Empresa", "Dados Bancários"];
+const PJ_STEPS = ["Dados Pessoais", "Dados da Empresa", "Dados Bancários"];
 
 export default function CadastroPublico() {
   const { token } = useParams<{ token: string }>();
@@ -442,7 +463,7 @@ export default function CadastroPublico() {
 
   const pjMethods = useForm<PjFormData>({
     resolver: zodResolver(pjSchema),
-    defaultValues: { tipo_conta: "corrente" },
+    defaultValues: { tipo_conta: "corrente", nacionalidade: "Brasileira" },
   });
 
   useEffect(() => {
@@ -495,7 +516,8 @@ export default function CadastroPublico() {
     if (isClt) {
       if (step === 0) fieldsToValidate = ["nome_completo", "cpf", "data_nascimento"];
     } else {
-      if (step === 0) fieldsToValidate = ["contato_nome", "cnpj", "razao_social"];
+      if (step === 0) fieldsToValidate = ["contato_nome"];
+      if (step === 1) fieldsToValidate = ["cnpj", "razao_social"];
     }
 
     if (fieldsToValidate.length > 0) {
@@ -610,8 +632,9 @@ export default function CadastroPublico() {
                   </>
                 ) : (
                   <>
-                    {step === 0 && <StepPessoaisPJ />}
-                    {step === 1 && <StepBancarios />}
+                    {step === 0 && <StepPessoaisPJPublic />}
+                    {step === 1 && <StepEmpresaPJ />}
+                    {step === 2 && <StepBancarios />}
                   </>
                 )}
               </CardContent>
