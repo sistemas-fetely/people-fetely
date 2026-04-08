@@ -113,59 +113,44 @@ export function CadastroColaboradorCLT() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Novo Colaborador CLT</h1>
-        <p className="text-muted-foreground text-sm mt-1">Preencha os dados para cadastrar um novo colaborador</p>
-      </div>
-
-      <WizardSteps currentStep={currentStep} />
-
-      <Card className="card-shadow">
-        <CardContent className="pt-6">
-          {currentStep === 1 && <StepDadosPessoais />}
-          {currentStep === 2 && <StepDocumentos />}
-          {currentStep === 3 && <StepDadosProfissionais />}
-          {currentStep === 4 && <StepDadosBancarios />}
-          {currentStep === 5 && <StepDependentes />}
-        </CardContent>
-        <CardFooter className="flex justify-between border-t pt-6">
-          <Button type="button" variant="outline" onClick={currentStep === 1 ? () => navigate("/colaboradores") : goBack} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            {currentStep === 1 ? "Cancelar" : "Voltar"}
-          </Button>
-          {currentStep < 5 ? (
-            <Button type="button" onClick={goNext} className="gap-2">
-              Próximo
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button type="button" onClick={handleFinalSubmit} disabled={saving} className="gap-2">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Salvar Colaborador
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
-
-export function CadastroColaboradorCLTWrapper() {
-  const methods = useForm<AllFormData>({
-    mode: "onBlur",
-    defaultValues: {
-      nacionalidade: "Brasileira",
-      tipo_contrato: "indeterminado",
-      jornada_semanal: 44,
-      tipo_conta: "corrente",
-      dependentes: [],
-    },
-  });
-
-  return (
     <FormProvider {...methods}>
-      <CadastroColaboradorCLT />
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Novo Colaborador CLT</h1>
+          <p className="text-muted-foreground text-sm mt-1">Preencha os dados para cadastrar um novo colaborador</p>
+        </div>
+
+        <WizardSteps currentStep={currentStep} />
+
+        <Card className="card-shadow">
+          <CardContent className="pt-6">
+            {currentStep === 1 && <StepDadosPessoais />}
+            {currentStep === 2 && <StepDocumentos />}
+            {currentStep === 3 && <StepDadosProfissionais />}
+            {currentStep === 4 && <StepDadosBancarios />}
+            {currentStep === 5 && <StepDependentes />}
+          </CardContent>
+          <CardFooter className="flex justify-between border-t pt-6">
+            <Button type="button" variant="outline" onClick={currentStep === 1 ? () => navigate("/colaboradores") : goBack} className="gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              {currentStep === 1 ? "Cancelar" : "Voltar"}
+            </Button>
+            {currentStep < 5 ? (
+              <Button type="button" onClick={goNext} className="gap-2">
+                Próximo
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button type="button" onClick={handleFinalSubmit} disabled={saving} className="gap-2">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Salvar Colaborador
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
+      </div>
     </FormProvider>
   );
 }
+
+export { CadastroColaboradorCLT as CadastroColaboradorCLTWrapper };
