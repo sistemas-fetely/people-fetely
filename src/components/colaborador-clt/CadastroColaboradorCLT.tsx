@@ -86,7 +86,7 @@ export function CadastroColaboradorCLT() {
   const onSubmit = async (data: AllFormData) => {
     setSaving(true);
     try {
-      const { dependentes, departamentos_rateio, salario_base, jornada_semanal, ...colaboradorData } = data;
+      const { dependentes, departamentos_rateio, acessos_sistemas, equipamentos, salario_base, jornada_semanal, ...colaboradorData } = data;
 
       // Convert empty strings to null for optional fields (especially dates)
       const cleaned = Object.fromEntries(
