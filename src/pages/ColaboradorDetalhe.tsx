@@ -81,9 +81,15 @@ export default function ColaboradorDetalhe() {
     if (!id || !colaborador) return;
     setTogglingStatus(true);
     const newStatus = isAtivo ? "desligado" : "ativo";
+    const updateData: any = { status: newStatus };
+    if (newStatus === "desligado") {
+      updateData.data_desligamento = new Date().toISOString().slice(0, 10);
+    } else {
+      updateData.data_desligamento = null;
+    }
     const { error } = await supabase
       .from("colaboradores_clt")
-      .update({ status: newStatus } as any)
+      .update(updateData)
       .eq("id", id);
     if (error) {
       toast.error(error.message);
