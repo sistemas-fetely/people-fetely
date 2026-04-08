@@ -181,6 +181,7 @@ export default function PagamentosPJ() {
               <TableHeader>
                 <TableRow className="bg-muted/50">
                   <TableHead className="font-semibold">Contrato</TableHead>
+                  <TableHead className="font-semibold hidden md:table-cell">Nº NF</TableHead>
                   <TableHead className="font-semibold hidden md:table-cell">Competência</TableHead>
                   <TableHead className="font-semibold">Data Prevista</TableHead>
                   <TableHead className="font-semibold hidden md:table-cell">Data Pgto</TableHead>
