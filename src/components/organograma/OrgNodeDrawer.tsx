@@ -14,6 +14,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   allNodes: PosicaoNode[];
+  onEditPosition?: (node: PosicaoNode) => void;
 }
 
 function getInitials(name: string) {
