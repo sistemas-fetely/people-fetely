@@ -45,6 +45,11 @@ export function CadastroContratoPJ() {
   const conviteId = (location.state as any)?.conviteId || null;
   const initialData = (location.state as any)?.initialData || null;
 
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(
+    () => (initialData?.documentos_upload as any) || []
+  );
+  const uploadFolderRef = useRef(initialData?.upload_folder || crypto.randomUUID());
+
   const methods = useForm<AllPJFormData>({
     mode: "onBlur",
     defaultValues: {
