@@ -83,13 +83,11 @@ export function CadastroContratoPJ() {
     try {
       const {
         dependentes,
-        departamentos_rateio,
         acessos_sistemas,
         equipamentos,
         email_corporativo,
         ramal,
         data_integracao,
-        // Document fields not in contratos_pj table
         titulo_eleitor,
         zona_eleitoral,
         secao_eleitoral,
@@ -100,9 +98,6 @@ export function CadastroContratoPJ() {
         valor_mensal,
         ...contratoData
       } = data;
-
-      // Use first department as primary
-      const primaryDept = departamentos_rateio?.[0]?.departamento || "";
 
       const { data: inserted, error } = await supabase
         .from("contratos_pj")
