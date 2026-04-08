@@ -42,10 +42,11 @@ function statusBadge(status: string | null) {
 
 const fmtBRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-export function OrgNodeDrawer({ node, open, onClose, allNodes }: Props) {
+export function OrgNodeDrawer({ node, open, onClose, allNodes, onEditPosition }: Props) {
   const { hasAnyRole } = useAuth();
   const navigate = useNavigate();
   const canSeeSalary = hasAnyRole(["super_admin", "gestor_rh", "financeiro"]);
+  const canManage = hasAnyRole(["super_admin", "gestor_rh"]);
 
   if (!node) return null;
 
