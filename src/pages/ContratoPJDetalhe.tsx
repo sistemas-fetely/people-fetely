@@ -778,8 +778,9 @@ function TabPagamentos({ contratoId }: { contratoId: string }) {
       <Card><CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50">
+             <TableRow className="bg-muted/50">
               <TableHead className="font-semibold">Competência</TableHead>
+              <TableHead className="font-semibold">Nº NF</TableHead>
               <TableHead className="font-semibold">Data Prevista</TableHead>
               <TableHead className="font-semibold">Data Pagamento</TableHead>
               <TableHead className="font-semibold">Valor</TableHead>
