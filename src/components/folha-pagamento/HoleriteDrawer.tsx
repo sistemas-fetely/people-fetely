@@ -127,6 +127,7 @@ export function HoleriteDrawer({ holerite, open, onClose, competenciaId, canEdit
       descontoPlanoSaude: form.descontoPlanoSaude,
       outrosProventos: form.outrosProventos,
       outrosDescontos: form.outrosDescontos,
+      params: parametrosFolha,
     }, {
       onSuccess: () => {
         setEditing(false);
