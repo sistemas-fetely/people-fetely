@@ -128,7 +128,7 @@ export function useAtualizarStatusMovimentacao() {
           if (Object.keys(updates).length > 0) {
             const { error: updErr } = await supabase
               .from("colaboradores_clt")
-              .update(updates)
+              .update(updates as any)
               .eq("id", mov.colaborador_id);
             if (updErr) throw updErr;
           }
