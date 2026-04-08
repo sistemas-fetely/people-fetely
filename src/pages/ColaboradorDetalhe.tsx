@@ -135,9 +135,7 @@ export default function ColaboradorDetalhe() {
           incluir_irrf: d.incluir_irrf || false,
           incluir_plano_saude: d.incluir_plano_saude || false,
         })),
-        departamentos_rateio: (depts || []).length > 0
-          ? depts!.map((d) => ({ departamento: d.departamento, percentual_rateio: d.percentual_rateio }))
-          : [{ departamento: col.departamento, percentual_rateio: 100 }],
+        departamento: col.departamento,
         acessos_sistemas: (acessos || []).map((a) => ({
           sistema: a.sistema,
           tem_acesso: a.tem_acesso,
