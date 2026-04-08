@@ -525,6 +525,7 @@ export type Database = {
           contato_email: string | null
           contato_nome: string
           contato_telefone: string | null
+          contrato_assinado: boolean
           created_at: string
           created_by: string | null
           data_fim: string | null
@@ -556,6 +557,7 @@ export type Database = {
           contato_email?: string | null
           contato_nome: string
           contato_telefone?: string | null
+          contrato_assinado?: boolean
           created_at?: string
           created_by?: string | null
           data_fim?: string | null
@@ -587,6 +589,7 @@ export type Database = {
           contato_email?: string | null
           contato_nome?: string
           contato_telefone?: string | null
+          contrato_assinado?: boolean
           created_at?: string
           created_by?: string | null
           data_fim?: string | null

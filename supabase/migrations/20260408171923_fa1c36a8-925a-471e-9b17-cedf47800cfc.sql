@@ -1,0 +1,1 @@
+ALTER TABLE public.contratos_pj ADD COLUMN contrato_assinado boolean NOT NULL DEFAULT false;
