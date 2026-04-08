@@ -489,11 +489,14 @@ export default function ColaboradorDetalhe() {
           </TabsContent>
 
           <TabsContent value="custos">
-            <CustoResumoCard
-              tipo="clt"
-              salarioBase={Number(colaborador.salario_base)}
-              dependentesIRRF={dependentes.filter(d => d.incluir_irrf).length}
-            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CustoResumoCard
+                tipo="clt"
+                salarioBase={Number(colaborador.salario_base)}
+                dependentesIRRF={dependentes.filter(d => d.incluir_irrf).length}
+              />
+              <HistoricoCustosChart tipo="clt" entityId={id!} />
+            </div>
           </TabsContent>
         </Tabs>
 

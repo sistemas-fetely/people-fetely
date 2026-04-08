@@ -499,7 +499,10 @@ export default function ContratoPJDetalhe() {
           </TabsContent>
 
           <TabsContent value="custos">
-            <CustoResumoCard tipo="pj" salarioBase={Number(contrato.valor_mensal)} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CustoResumoCard tipo="pj" salarioBase={Number(contrato.valor_mensal)} />
+              <HistoricoCustosChart tipo="pj" entityId={id!} />
+            </div>
           </TabsContent>
         </Tabs>
 
