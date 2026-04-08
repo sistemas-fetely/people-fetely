@@ -320,23 +320,25 @@ export default function ConviteDetalhe() {
               </Button>
             </>
           ) : (
-            hasDados && (
-              <>
+            <>
+              {hasDados && !isCadastrado && (
                 <Button variant="outline" size="sm" onClick={handleResendEmail} disabled={sendingEmail}>
                   {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
                   Reenviar Email
                 </Button>
+              )}
+              {canEdit && hasDados && (
                 <Button variant="outline" onClick={() => setEditing(true)}>
                   <Edit className="h-4 w-4 mr-2" /> Editar Dados
                 </Button>
-                {canExport && (
-                  <Button onClick={handleExportToCadastro} disabled={exporting}>
-                    {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
-                    {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
-                  </Button>
-                )}
-              </>
-            )
+              )}
+              {canExport && (
+                <Button onClick={handleExportToCadastro} disabled={exporting}>
+                  {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                  {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
