@@ -42,6 +42,7 @@ const App = () => (
                   <CadastroColaboradorCLTWrapper />
                 </ProtectedRoute>
               } />
+              <Route path="/colaboradores/:id" element={<ColaboradorDetalhe />} />
               <Route path="/organograma" element={<PlaceholderPage title="Organograma" description="Visualização hierárquica da empresa" />} />
 
               {/* CLT - Gestor RH, Super Admin, Financeiro */}
