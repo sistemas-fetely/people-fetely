@@ -40,6 +40,9 @@ const CATEGORIAS_CLT: CategoriaConfig[] = [
   { value: "jornada", label: "Jornadas", icon: Settings2, description: "Jornadas de trabalho e escalas" },
   { value: "tipo_equipamento", label: "Tipos de Equipamento", icon: Package, description: "Tipos de equipamentos disponíveis" },
   { value: "estado_equipamento", label: "Estados de Equipamento", icon: Settings2, description: "Condições dos equipamentos" },
+  { value: "encargo_folha", label: "Encargos Folha", icon: FileText, description: "Alíquotas de FGTS, INSS Patronal, VT e dedução IRRF" },
+  { value: "inss_faixa", label: "Faixas INSS", icon: FileText, description: "Faixas progressivas de contribuição INSS do empregado" },
+  { value: "irrf_faixa", label: "Faixas IRRF", icon: FileText, description: "Faixas progressivas do Imposto de Renda Retido na Fonte" },
 ];
 
 const CATEGORIAS_PJ: CategoriaConfig[] = [
