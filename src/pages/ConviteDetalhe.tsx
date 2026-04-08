@@ -209,8 +209,9 @@ export default function ConviteDetalhe() {
 
         await supabase
           .from("convites_cadastro")
-          .update({ contrato_pj_id: contrato.id, status: "preenchido" })
+          .update({ contrato_pj_id: contrato.id, status: "cadastrado" })
           .eq("id", convite.id);
+        setConvite({ ...convite, contrato_pj_id: contrato.id, status: "cadastrado" });
 
         toast.success("Contrato PJ criado com sucesso!");
         navigate(`/contratos-pj/${contrato.id}`);
