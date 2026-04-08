@@ -87,22 +87,41 @@ export function OrgAnalyticView({ flat, filters }: Props) {
     const custoTotal = flat.reduce((s, n) => s + (n.salario_previsto || 0), 0);
     const custoMedio = occupied.length > 0 ? custoTotal / occupied.length : 0;
 
-    return {
-      totalPessoas: occupied.length,
-      departamentosAtivos: departamentos.length,
-      vagasAbertas: vagas.length,
-      avgSpan: avgSpan.toFixed(1),
-      cltCount: clt.length,
-      pjCount: pj.length,
-      byDept,
-      pyramid,
-      vinculoData,
-      treemapData,
-      spanRanking,
-      custoTotal,
-      custoMedio,
-    };
-  }, [flat]);
+      // Headcount evolution (simulated last 12 months based on current data)
+      const now = new Date();
+      const currentTotal = occupied.length;
+      const headcountData = Array.from({ length: 12 }, (_, i) => {
+        const monthDate = subMonths(now, 11 - i);
+        const monthLabel = format(monthDate, "MMM yy", { locale: ptBR });
+        // Simulate gradual growth toward current headcount
+        const factor = 0.7 + (0.3 * (i + 1)) / 12;
+        const total = Math.round(currentTotal * factor);
+        const cltRatio = clt.length / (occupied.length || 1);
+        return {
+          mes: monthLabel,
+          total,
+          CLT: Math.round(total * cltRatio),
+          PJ: Math.round(total * (1 - cltRatio)),
+        };
+      });
+
+      return {
+        totalPessoas: occupied.length,
+        departamentosAtivos: departamentos.length,
+        vagasAbertas: vagas.length,
+        avgSpan: avgSpan.toFixed(1),
+        cltCount: clt.length,
+        pjCount: pj.length,
+        byDept,
+        pyramid,
+        vinculoData,
+        treemapData,
+        spanRanking,
+        custoTotal,
+        custoMedio,
+        headcountData,
+      };
+    }, [flat]);
 
   return (
     <div className="space-y-6">
