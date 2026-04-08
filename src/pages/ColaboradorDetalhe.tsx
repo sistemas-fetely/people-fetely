@@ -100,6 +100,22 @@ export default function ColaboradorDetalhe() {
         departamentos_rateio: (depts || []).length > 0
           ? depts!.map((d) => ({ departamento: d.departamento, percentual_rateio: d.percentual_rateio }))
           : [{ departamento: col.departamento, percentual_rateio: 100 }],
+        acessos_sistemas: (acessos || []).map((a) => ({
+          sistema: a.sistema,
+          tem_acesso: a.tem_acesso,
+          usuario: a.usuario || "",
+          observacoes: a.observacoes || "",
+        })),
+        equipamentos: (equips || []).map((e) => ({
+          tipo: e.tipo,
+          marca: e.marca || "",
+          modelo: e.modelo || "",
+          numero_patrimonio: e.numero_patrimonio || "",
+          numero_serie: e.numero_serie || "",
+          data_entrega: e.data_entrega || "",
+          estado: e.estado || "novo",
+          observacoes: e.observacoes || "",
+        })),
       } as any);
       setLoading(false);
     }
