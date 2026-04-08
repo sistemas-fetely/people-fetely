@@ -449,11 +449,22 @@ function NotaFiscalFormDialog({ open, onClose, nota, contratos, onSaved }: {
     return defaultStatusMap;
   }, [statusParams]);
   const [saving, setSaving] = useState(false);
+  // Normalize competencia to YYYY-MM for type="month" input
+  const normalizeCompetencia = (c: string | undefined | null): string => {
+    if (!c) return "";
+    // Already YYYY-MM
+    if (/^\d{4}-\d{2}$/.test(c)) return c;
+    // MM/YYYY
+    if (/^\d{2}\/\d{4}$/.test(c)) return `${c.slice(3)}-${c.slice(0, 2)}`;
+    // MMYYYY
+    if (/^\d{6}$/.test(c)) return `${c.slice(2)}-${c.slice(0, 2)}`;
+    return c;
+  };
   const [form, setForm] = useState({
     contrato_id: nota?.contrato_id || "",
     numero: nota?.numero || "", serie: nota?.serie || "", valor: nota?.valor?.toString() || "",
     data_emissao: nota?.data_emissao || "", data_vencimento: nota?.data_vencimento || "",
-    competencia: nota?.competencia || "", descricao: nota?.descricao || "",
+    competencia: normalizeCompetencia(nota?.competencia), descricao: nota?.descricao || "",
     status: nota?.status || "pendente", observacoes: nota?.observacoes || "",
   });
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
