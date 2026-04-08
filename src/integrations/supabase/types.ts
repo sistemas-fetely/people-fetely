@@ -495,6 +495,169 @@ export type Database = {
           },
         ]
       }
+      ferias_periodos: {
+        Row: {
+          colaborador_id: string
+          created_at: string
+          dias_direito: number
+          dias_gozados: number
+          dias_vendidos: number
+          id: string
+          observacoes: string | null
+          periodo_fim: string
+          periodo_inicio: string
+          saldo: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          colaborador_id: string
+          created_at?: string
+          dias_direito?: number
+          dias_gozados?: number
+          dias_vendidos?: number
+          id?: string
+          observacoes?: string | null
+          periodo_fim: string
+          periodo_inicio: string
+          saldo?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          colaborador_id?: string
+          created_at?: string
+          dias_direito?: number
+          dias_gozados?: number
+          dias_vendidos?: number
+          id?: string
+          observacoes?: string | null
+          periodo_fim?: string
+          periodo_inicio?: string
+          saldo?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ferias_periodos_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores_clt"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ferias_pj: {
+        Row: {
+          contrato_id: string
+          created_at: string
+          data_fim: string
+          data_inicio: string
+          dias: number
+          id: string
+          observacoes: string | null
+          status: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          contrato_id: string
+          created_at?: string
+          data_fim: string
+          data_inicio: string
+          dias: number
+          id?: string
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          contrato_id?: string
+          created_at?: string
+          data_fim?: string
+          data_inicio?: string
+          dias?: number
+          id?: string
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ferias_pj_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos_pj"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ferias_programacoes: {
+        Row: {
+          aprovador_id: string | null
+          colaborador_id: string
+          created_at: string
+          data_aprovacao: string | null
+          data_fim: string
+          data_inicio: string
+          dias: number
+          id: string
+          observacoes: string | null
+          periodo_id: string
+          status: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          aprovador_id?: string | null
+          colaborador_id: string
+          created_at?: string
+          data_aprovacao?: string | null
+          data_fim: string
+          data_inicio: string
+          dias: number
+          id?: string
+          observacoes?: string | null
+          periodo_id: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          aprovador_id?: string | null
+          colaborador_id?: string
+          created_at?: string
+          data_aprovacao?: string | null
+          data_fim?: string
+          data_inicio?: string
+          dias?: number
+          id?: string
+          observacoes?: string | null
+          periodo_id?: string
+          status?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ferias_programacoes_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores_clt"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ferias_programacoes_periodo_id_fkey"
+            columns: ["periodo_id"]
+            isOneToOne: false
+            referencedRelation: "ferias_periodos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       folha_competencias: {
         Row: {
           competencia: string
