@@ -64,6 +64,8 @@ export default function ColaboradorDetalhe() {
   const [colaborador, setColaborador] = useState<Tables<"colaboradores_clt"> | null>(null);
   const [departamentos, setDepartamentos] = useState<Departamento[]>([]);
   const [dependentes, setDependentes] = useState<Dependente[]>([]);
+  const [acessosSistemas, setAcessosSistemas] = useState<Tables<"colaborador_acessos_sistemas">[]>([]);
+  const [equipamentos, setEquipamentos] = useState<Tables<"colaborador_equipamentos">[]>([]);
 
   const methods = useForm<AllFormData>({ mode: "onBlur" });
 
