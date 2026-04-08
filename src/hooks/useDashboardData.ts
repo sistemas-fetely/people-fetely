@@ -217,12 +217,13 @@ export function useDashboardData() {
         .from("folha_competencias")
         .select("competencia, status, total_bruto, total_liquido, total_encargos, total_colaboradores")
         .order("competencia", { ascending: false })
-        .limit(2);
+        .limit(3);
 
       const rows = data || [];
       const atual = rows[0] || null;
       const anterior = rows[1] || null;
-      return { atual, anterior };
+      const anterior2 = rows[2] || null;
+      return { atual, anterior, anterior2 };
     },
   });
 
@@ -500,6 +501,7 @@ export function useDashboardData() {
     statusClt: statusQuery.data ?? {},
     turnover: turnoverQuery.data ?? [],
     folha: folhaComparativoQuery.data ?? { atual: null, anterior: null },
+    folha: folhaComparativoQuery.data ?? { atual: null, anterior: null, anterior2: null },
     nfPendentes: nfQuery.data ?? 0,
     pagPjPendentes: pagPjQuery.data ?? 0,
     experienciaVencendo: experienciaQuery.data ?? [],
