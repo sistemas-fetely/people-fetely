@@ -17,6 +17,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+
+type ColaboradorWithDepts = Tables<"colaboradores_clt"> & {
+  departamentos_rateio?: { departamento: string; percentual_rateio: number }[];
+};
 import { format, parseISO } from "date-fns";
 
 const statusMap: Record<string, string> = {
