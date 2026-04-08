@@ -507,6 +507,7 @@ function StepPessoaisPJ() {
           <div><Label>Telefone</Label><Input {...register("contato_telefone")} placeholder="(00) 00000-0000" /></div>
           <div><Label>Email</Label><Input type="email" {...register("contato_email")} />{errors.contato_email && <p className="text-xs text-destructive mt-1">{errors.contato_email.message}</p>}</div>
           <div><Label>Email Pessoal</Label><Input type="email" {...register("email_pessoal")} /></div>
+          <div><Label>Telefone Pessoal</Label><Input {...register("telefone")} placeholder="(00) 00000-0000" /></div>
           <div><Label>Contato Emergência</Label><Input {...register("contato_emergencia_nome")} placeholder="Nome" /></div>
           <div><Label>Telefone Emergência</Label><Input {...register("contato_emergencia_telefone")} placeholder="(00) 00000-0000" /></div>
         </div>
