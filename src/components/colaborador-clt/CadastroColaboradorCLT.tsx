@@ -205,7 +205,8 @@ export function CadastroColaboradorCLT() {
             {currentStep === 2 && <StepDocumentos />}
             {currentStep === 3 && <StepDadosProfissionais />}
             {currentStep === 4 && <StepDadosBancarios />}
-            {currentStep === 5 && <StepDependentes />}
+            {currentStep === 5 && <StepDadosEmpresa />}
+            {currentStep === 6 && <StepDependentes />}
           </CardContent>
           <CardFooter className="flex justify-between border-t pt-6">
             <Button type="button" variant="outline" onClick={currentStep === 1 ? () => navigate("/colaboradores") : goBack} className="gap-2">
