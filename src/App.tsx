@@ -24,6 +24,7 @@ import ContratoPJDetalhe from "@/pages/ContratoPJDetalhe";
 import NotasFiscais from "@/pages/NotasFiscais";
 import NotaFiscalDetalhe from "@/pages/NotaFiscalDetalhe";
 import FolhaPagamento from "@/pages/FolhaPagamento";
+import Ferias from "@/pages/Ferias";
 
 
 const queryClient = new QueryClient();
@@ -61,7 +62,7 @@ const App = () => (
                   <FolhaPagamento />
                 </ProtectedRoute>
               } />
-              <Route path="/ferias" element={<PlaceholderPage title="Férias" description="Controle de férias e períodos aquisitivos" />} />
+              <Route path="/ferias" element={<Ferias />} />
               <Route path="/ponto" element={<PlaceholderPage title="Controle de Ponto" description="Apuração de horas e banco de horas" />} />
               <Route path="/beneficios" element={<PlaceholderPage title="Benefícios" description="Gestão de benefícios CLT" />} />
 
