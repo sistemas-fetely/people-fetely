@@ -47,7 +47,8 @@ export function FeriasPJView({ canManage, isAdmin }: Props) {
   const criarProgMut = useCriarFeriasPJ();
   const atualizarStatusMut = useAtualizarStatusFeriasPJ();
   const editarMut = useEditarFeriasPJ();
-
+  const excluirProgMut = useExcluirFeriasPJ();
+  const excluirPeriodoMut = useExcluirPeriodoPJ();
   const [showNovoPeriodo, setShowNovoPeriodo] = useState(false);
   const [showNovaProg, setShowNovaProg] = useState(false);
   const [showEditProg, setShowEditProg] = useState(false);
