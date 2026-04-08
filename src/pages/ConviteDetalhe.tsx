@@ -92,15 +92,31 @@ export default function ConviteDetalhe() {
     setExporting(true);
     try {
       if (convite.tipo === "clt") {
-        const { dependentes, ...dadosClt } = formData;
+        const { dependentes, ...rest } = formData;
+        const cltFields = [
+          "nome_completo","cpf","rg","orgao_emissor","data_nascimento","genero","estado_civil",
+          "nacionalidade","etnia","nome_mae","nome_pai","cep","logradouro","numero","complemento",
+          "bairro","cidade","uf","telefone","email_pessoal","contato_emergencia_nome",
+          "contato_emergencia_telefone","pis_pasep","ctps_numero","ctps_serie","ctps_uf",
+          "titulo_eleitor","zona_eleitoral","secao_eleitoral","cnh_numero","cnh_categoria",
+          "cnh_validade","certificado_reservista","banco_nome","banco_codigo","agencia",
+          "conta","tipo_conta","chave_pix",
+        ];
+        const dadosClt: Record<string, any> = {};
+        for (const k of cltFields) {
+          if (rest[k] !== undefined && rest[k] !== "") dadosClt[k] = rest[k];
+        }
         const insertData = {
           ...dadosClt,
-          cargo: convite.cargo || dadosClt.cargo || "A definir",
-          departamento: convite.departamento || dadosClt.departamento || "A definir",
-          data_admissao: dadosClt.data_admissao || new Date().toISOString().split("T")[0],
-          salario_base: dadosClt.salario_base || 0,
+          nome_completo: dadosClt.nome_completo || convite.nome,
+          cpf: dadosClt.cpf || "000.000.000-00",
+          data_nascimento: dadosClt.data_nascimento || "2000-01-01",
+          cargo: convite.cargo || "A definir",
+          departamento: convite.departamento || "A definir",
+          data_admissao: rest.data_admissao || new Date().toISOString().split("T")[0],
+          salario_base: Number(rest.salario_base) || 0,
           status: "ativo",
-        };
+        } as any;
         const { data: colaborador, error } = await supabase
           .from("colaboradores_clt")
           .insert(insertData)
