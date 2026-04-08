@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Plus, Loader2, Copy, Trash2, MoreHorizontal, Send, Clock, CheckCircle2,
-  XCircle, Search, RefreshCw, ExternalLink, Eye,
+  XCircle, Search, RefreshCw, ExternalLink, Eye, Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
