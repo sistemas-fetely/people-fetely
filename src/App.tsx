@@ -110,6 +110,11 @@ const App = () => (
                   <ConvitesCadastro />
                 </ProtectedRoute>
               } />
+              <Route path="/convites-cadastro/:id" element={
+                <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
+                  <ConviteDetalhe />
+                </ProtectedRoute>
+              } />
               <Route path="/recrutamento" element={
                 <ProtectedRoute allowedRoles={["super_admin", "gestor_rh"]}>
                   <PlaceholderPage title="Recrutamento e Seleção" description="Kanban de vagas e candidatos" />
