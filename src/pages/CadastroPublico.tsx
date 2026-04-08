@@ -42,10 +42,10 @@ const dadosPessoaisPublicoSchema = z.object({
 });
 
 const documentosPublicoSchema = z.object({
-  pis_pasep: z.string().optional().or(z.literal("")),
-  ctps_numero: z.string().optional().or(z.literal("")),
-  ctps_serie: z.string().optional().or(z.literal("")),
-  ctps_uf: z.string().optional().or(z.literal("")),
+  pis_pasep: z.string().min(1, "PIS/PASEP é obrigatório"),
+  ctps_numero: z.string().min(1, "Número da CTPS é obrigatório"),
+  ctps_serie: z.string().min(1, "Série da CTPS é obrigatória"),
+  ctps_uf: z.string().min(1, "UF da CTPS é obrigatória"),
   titulo_eleitor: z.string().optional().or(z.literal("")),
   zona_eleitoral: z.string().optional().or(z.literal("")),
   secao_eleitoral: z.string().optional().or(z.literal("")),
