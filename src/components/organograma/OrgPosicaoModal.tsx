@@ -76,7 +76,6 @@ export function OrgPosicaoModal({ open, onClose, editNode, allNodes }: Props) {
     }
   }, [editNode, open]);
 
-  const departamentos = [...new Set(allNodes.map(n => n.departamento))].sort();
   const parentOptions = allNodes.filter(n => !editNode || n.id !== editNode.id);
 
   const handleSubmit = () => {
