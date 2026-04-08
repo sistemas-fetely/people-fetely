@@ -379,6 +379,7 @@ export default function ColaboradorDetalhe() {
             <TabsTrigger value="documentos">Documentos</TabsTrigger>
             <TabsTrigger value="profissionais">Profissionais</TabsTrigger>
             <TabsTrigger value="bancarios">Bancários</TabsTrigger>
+            <TabsTrigger value="empresa">Empresa</TabsTrigger>
             <TabsTrigger value="dependentes">Dependentes</TabsTrigger>
           </TabsList>
 
