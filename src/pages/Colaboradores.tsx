@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Plus, Search, MoreHorizontal, Eye, Edit, Trash2,
-  UserCheck, Briefcase,
+  UserCheck, Briefcase, DollarSign,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -108,8 +108,16 @@ export default function Colaboradores() {
     return matchSearch && matchStatus && matchDept;
   });
 
-  const totalAtivos = colaboradores.filter((c) => c.status !== "desligado").length;
+  const ativos = colaboradores.filter((c) => c.status !== "desligado");
+  const totalAtivos = ativos.length;
   const totalInativos = colaboradores.filter((c) => c.status === "desligado").length;
+
+  const ENCARGOS_RATE = 0.08 + 0.20; // FGTS 8% + INSS Patronal 20%
+  const totalSalarios = ativos.reduce((s, c) => s + (c.salario_base || 0), 0);
+  const totalEncargos = totalSalarios * ENCARGOS_RATE;
+  const totalCustoMensal = totalSalarios + totalEncargos;
+
+  const fmtBRL = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const initials = (name: string) =>
     name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
@@ -129,7 +137,7 @@ export default function Colaboradores() {
         </Button>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="card-shadow">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -160,6 +168,17 @@ export default function Colaboradores() {
             <div>
               <p className="text-2xl font-bold">{totalInativos}</p>
               <p className="text-xs text-muted-foreground">Inativos</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="card-shadow">
+          <CardContent className="p-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
+              <DollarSign className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-lg font-bold">{fmtBRL(totalCustoMensal)}</p>
+              <p className="text-xs text-muted-foreground">Custo mensal (salário + encargos)</p>
             </div>
           </CardContent>
         </Card>
@@ -212,20 +231,22 @@ export default function Colaboradores() {
                   <TableHead className="font-semibold hidden md:table-cell">Departamento</TableHead>
                   <TableHead className="font-semibold">Contrato</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="font-semibold hidden lg:table-cell">Admissão</TableHead>
-                  <TableHead className="w-10" />
+                   <TableHead className="font-semibold hidden lg:table-cell">Admissão</TableHead>
+                   <TableHead className="font-semibold hidden lg:table-cell text-right">Salário</TableHead>
+                   <TableHead className="font-semibold hidden xl:table-cell text-right">Sal. + Encargos</TableHead>
+                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                     <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       Carregando...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                     <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                       Nenhum colaborador encontrado.
                     </TableCell>
                   </TableRow>
@@ -269,6 +290,12 @@ export default function Colaboradores() {
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground hidden lg:table-cell">
                         {format(parseISO(c.data_admissao), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell className="text-sm font-mono text-right hidden lg:table-cell">
+                        {fmtBRL(c.salario_base)}
+                      </TableCell>
+                      <TableCell className="text-sm font-mono text-right hidden xl:table-cell">
+                        {fmtBRL(c.salario_base * (1 + ENCARGOS_RATE))}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>
