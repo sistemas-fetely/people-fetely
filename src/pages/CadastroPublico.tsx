@@ -598,8 +598,13 @@ export default function CadastroPublico() {
       // Pre-fill with previously saved data if available, otherwise use invite defaults
       if (conviteData.dados_preenchidos && conviteData.status === "preenchido") {
         const saved = conviteData.dados_preenchidos as Record<string, any>;
+        // Restore uploaded files
+        if (saved.documentos_upload && Array.isArray(saved.documentos_upload)) {
+          setUploadedFiles(saved.documentos_upload);
+        }
         if (conviteData.tipo === "clt") {
           Object.entries(saved).forEach(([key, value]) => {
+            if (key === "documentos_upload") return;
             if (key === "dependentes" && Array.isArray(value)) {
               cltMethods.setValue("dependentes", value);
             } else {
@@ -608,6 +613,7 @@ export default function CadastroPublico() {
           });
         } else {
           Object.entries(saved).forEach(([key, value]) => {
+            if (key === "documentos_upload") return;
             pjMethods.setValue(key as any, value);
           });
         }
