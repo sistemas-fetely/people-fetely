@@ -160,7 +160,9 @@ export default function NotasFiscais() {
       n.competencia.includes(search);
     const matchStatus = filterStatus === "todos" || n.status === filterStatus;
     const matchContrato = filterContrato === "todos" || n.contrato_id === filterContrato;
-    return matchSearch && matchStatus && matchContrato;
+    const range = getPeriodRange(filterPeriodo);
+    const matchPeriodo = !range || isWithinInterval(parseISO(n.data_emissao), { start: range.start, end: range.end });
+    return matchSearch && matchStatus && matchContrato && matchPeriodo;
   });
 
   const totalPendentes = notas.filter((n) => ["pendente", "aprovada", "enviada_pagamento"].includes(n.status)).length;
