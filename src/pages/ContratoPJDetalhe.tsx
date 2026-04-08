@@ -542,10 +542,11 @@ export default function ContratoPJDetalhe() {
 
       {/* Tabs */}
       <Tabs defaultValue="dados" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-md">
+        <TabsList className="grid w-full grid-cols-4 max-w-lg">
           <TabsTrigger value="dados" className="gap-2"><Building2 className="h-4 w-4" /> Dados</TabsTrigger>
           <TabsTrigger value="notas" className="gap-2"><FileText className="h-4 w-4" /> Notas Fiscais</TabsTrigger>
           <TabsTrigger value="pagamentos" className="gap-2"><CreditCard className="h-4 w-4" /> Pagamentos</TabsTrigger>
+          <TabsTrigger value="movimentacoes" className="gap-2"><ArrowUpDown className="h-4 w-4" /> Movimentações</TabsTrigger>
         </TabsList>
         <TabsContent value="dados" className="mt-6">
           <TabDados contrato={contrato} />
@@ -555,6 +556,9 @@ export default function ContratoPJDetalhe() {
         </TabsContent>
         <TabsContent value="pagamentos" className="mt-6">
           <TabPagamentos contratoId={contrato.id} />
+        </TabsContent>
+        <TabsContent value="movimentacoes" className="mt-6">
+          <TabMovimentacoesPJ contratoId={contrato.id} />
         </TabsContent>
       </Tabs>
     </div>
