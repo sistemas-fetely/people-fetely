@@ -212,60 +212,60 @@ export default function NotasFiscais() {
 
       {/* Mês Atual - Fixed Cards */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Calendar className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold text-primary uppercase tracking-wide capitalize">{nomeMesAtual}</h2>
+        <div className="flex items-center gap-2 mb-2">
+          <Calendar className="h-3.5 w-3.5 text-primary" />
+          <h2 className="text-xs font-semibold text-primary uppercase tracking-wide capitalize">{nomeMesAtual}</h2>
         </div>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-l-4 border-l-primary bg-gradient-to-br from-primary/5 to-transparent">
-            <CardContent className="p-4">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+          <Card className="border-l-[3px] border-l-primary bg-gradient-to-br from-primary/5 to-transparent">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total NFs</p>
-                  <p className="text-2xl font-bold mt-1">{mesAtualTotal}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Total NFs</p>
+                  <p className="text-lg font-bold mt-0.5">{mesAtualTotal}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-primary" />
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-primary" />
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-2">R$ {fmtBRL(mesAtualValor)} total</p>
+              <p className="text-[10px] text-muted-foreground mt-1">R$ {fmtBRL(mesAtualValor)} total</p>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-500/5 to-transparent">
-            <CardContent className="p-4">
+          <Card className="border-l-[3px] border-l-emerald-500 bg-gradient-to-br from-emerald-500/5 to-transparent">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Pago</p>
-                  <p className="text-2xl font-bold mt-1 text-emerald-600">R$ {fmtBRL(mesAtualPagas)}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Total Pago</p>
+                  <p className="text-lg font-bold mt-0.5 text-emerald-600">R$ {fmtBRL(mesAtualPagas)}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-l-4 border-l-amber-500 bg-gradient-to-br from-amber-500/5 to-transparent">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">A Pagar</p>
-                  <p className="text-2xl font-bold mt-1 text-amber-600">R$ {fmtBRL(mesAtualPendente)}</p>
-                </div>
-                <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center">
-                  <Clock className="h-5 w-5 text-amber-500" />
+                <div className="h-8 w-8 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                 </div>
               </div>
             </CardContent>
           </Card>
-          <Card className="border-l-4 border-l-red-500 bg-gradient-to-br from-red-500/5 to-transparent">
-            <CardContent className="p-4">
+          <Card className="border-l-[3px] border-l-amber-500 bg-gradient-to-br from-amber-500/5 to-transparent">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Vencidas</p>
-                  <p className="text-2xl font-bold mt-1 text-red-600">{notasMesAtual.filter((n) => n.status === "vencida").length}</p>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">A Pagar</p>
+                  <p className="text-lg font-bold mt-0.5 text-amber-600">R$ {fmtBRL(mesAtualPendente)}</p>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-red-500/10 flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
+                <div className="h-8 w-8 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <Clock className="h-4 w-4 text-amber-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-[3px] border-l-red-500 bg-gradient-to-br from-red-500/5 to-transparent">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Vencidas</p>
+                  <p className="text-lg font-bold mt-0.5 text-red-600">{notasMesAtual.filter((n) => n.status === "vencida").length}</p>
+                </div>
+                <div className="h-8 w-8 rounded-full bg-red-500/10 flex items-center justify-center">
+                  <AlertTriangle className="h-4 w-4 text-red-500" />
                 </div>
               </div>
             </CardContent>
