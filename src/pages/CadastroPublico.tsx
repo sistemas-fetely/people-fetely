@@ -330,28 +330,30 @@ function StepDocumentosCLT() {
   );
 }
 
-function StepBancarios() {
-  const { register, setValue, watch } = useFormContext<any>();
+function StepBancarios({ isPj = false }: { isPj?: boolean }) {
+  const { register, setValue, watch, formState: { errors } } = useFormContext<any>();
   const handleBancoChange = (codigo: string) => {
     const banco = bancos.find(b => b.codigo === codigo);
     setValue("banco_codigo", codigo);
     setValue("banco_nome", banco?.nome || "");
   };
+  const r = isPj ? " *" : "";
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold mb-4">Dados Bancários</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label>Banco</Label>
+          <Label>Banco{r}</Label>
           <Select value={watch("banco_codigo") || ""} onValueChange={handleBancoChange}>
             <SelectTrigger><SelectValue placeholder="Selecione o banco" /></SelectTrigger>
             <SelectContent>{bancos.map(b => <SelectItem key={b.codigo} value={b.codigo}>{b.codigo} - {b.nome}</SelectItem>)}</SelectContent>
           </Select>
+          {isPj && errors.banco_codigo && <p className="text-xs text-destructive mt-1">{String(errors.banco_codigo.message)}</p>}
         </div>
-        <div><Label htmlFor="agencia">Agência</Label><Input id="agencia" {...register("agencia")} placeholder="0000" /></div>
-        <div><Label htmlFor="conta">Conta</Label><Input id="conta" {...register("conta")} placeholder="00000-0" /></div>
+        <div><Label htmlFor="agencia">Agência{r}</Label><Input id="agencia" {...register("agencia")} placeholder="0000" />{isPj && errors.agencia && <p className="text-xs text-destructive mt-1">{String(errors.agencia.message)}</p>}</div>
+        <div><Label htmlFor="conta">Conta{r}</Label><Input id="conta" {...register("conta")} placeholder="00000-0" />{isPj && errors.conta && <p className="text-xs text-destructive mt-1">{String(errors.conta.message)}</p>}</div>
         <div>
-          <Label>Tipo de Conta</Label>
+          <Label>Tipo de Conta{r}</Label>
           <Select value={watch("tipo_conta") || "corrente"} onValueChange={(v) => setValue("tipo_conta", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -361,7 +363,7 @@ function StepBancarios() {
             </SelectContent>
           </Select>
         </div>
-        <div className="md:col-span-2"><Label htmlFor="chave_pix">Chave PIX</Label><Input id="chave_pix" {...register("chave_pix")} placeholder="CPF, email, telefone ou chave aleatória" /></div>
+        <div className="md:col-span-2"><Label htmlFor="chave_pix">Chave PIX{r}</Label><Input id="chave_pix" {...register("chave_pix")} placeholder="CPF, email, telefone ou chave aleatória" />{isPj && errors.chave_pix && <p className="text-xs text-destructive mt-1">{String(errors.chave_pix.message)}</p>}</div>
       </div>
     </div>
   );
