@@ -77,6 +77,16 @@ const cltSchema = dadosPessoaisPublicoSchema.merge(documentosPublicoSchema).merg
   dependentes: z.array(dependentePublicoSchema).default([]),
 });
 
+const pjDocumentosSchema = z.object({
+  titulo_eleitor: z.string().optional().or(z.literal("")),
+  zona_eleitoral: z.string().optional().or(z.literal("")),
+  secao_eleitoral: z.string().optional().or(z.literal("")),
+  cnh_numero: z.string().optional().or(z.literal("")),
+  cnh_categoria: z.string().optional().or(z.literal("")),
+  cnh_validade: z.string().optional().or(z.literal("")),
+  certificado_reservista: z.string().optional().or(z.literal("")),
+});
+
 const pjPessoaisSchema = z.object({
   contato_nome: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   contato_telefone: z.string().optional().or(z.literal("")),
@@ -109,7 +119,7 @@ const pjPessoaisSchema = z.object({
   inscricao_estadual: z.string().optional().or(z.literal("")),
 });
 
-const pjSchema = pjPessoaisSchema.merge(bancariosPublicoSchema);
+const pjSchema = pjPessoaisSchema.merge(pjDocumentosSchema).merge(bancariosPublicoSchema);
 
 type CltFormData = z.infer<typeof cltSchema>;
 type PjFormData = z.infer<typeof pjSchema>;
