@@ -100,6 +100,32 @@ export default function GerenciarUsuarios() {
     },
   });
 
+  const { data: unlinkedCLT = [] } = useQuery({
+    queryKey: ["unlinked-clt"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("colaboradores_clt")
+        .select("id, nome_completo, cargo")
+        .is("user_id", null)
+        .eq("status", "ativo");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: unlinkedPJ = [] } = useQuery({
+    queryKey: ["unlinked-pj"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("contratos_pj")
+        .select("id, contato_nome, razao_social")
+        .is("user_id", null)
+        .eq("status", "ativo");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const createUser = useMutation({
     mutationFn: async () => {
       await callManageUser("create", { ...newUser, colaborador_tipo: newUser.colaborador_tipo || null });
