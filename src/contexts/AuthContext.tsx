@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasAnyRole = (r: AppRole[]) => r.some((role) => roles.includes(role));
 
   return (
-    <AuthContext.Provider value={{ session, user, roles, profile, loading, signOut, hasRole, hasAnyRole }}>
+    <AuthContext.Provider value={{ session, user, roles, profile, loading, approved: profile?.approved ?? false, signOut, hasRole, hasAnyRole }}>
       {children}
     </AuthContext.Provider>
   );
