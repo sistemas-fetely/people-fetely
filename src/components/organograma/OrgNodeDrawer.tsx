@@ -70,7 +70,7 @@ export function OrgNodeDrawer({ node, open, onClose, allNodes, onEditPosition }:
   if (!node) return null;
 
   const parent = node.id_pai ? allNodes.find(n => n.id === node.id_pai) : null;
-  const avatarUrl = node.foto_url || (node.nome_display ? `https://ui-avatars.com/api/?name=${encodeURIComponent(node.nome_display)}&background=random&size=128` : null);
+  const avatarUrl = node.foto_url || null;
 
   // Available nodes to link as subordinate: exclude self, current children, and ancestors (to prevent cycles)
   const currentChildIds = new Set(node.children.map(c => c.id));
