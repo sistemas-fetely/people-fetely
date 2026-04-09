@@ -87,7 +87,7 @@ export default function Dashboard() {
     clt, pj, headcount, ferias, aniversariantes,
     statusClt, turnover, folha, nfPendentes, pagPjPendentes,
     experienciaVencendo, docsVencendo, aniversariosEmpresa, semBeneficio,
-    contratosPendentes, custoPj, custoEvolucao, custoDept, salarioMedio,
+    contratosPendentes, convitesPreenchidos, custoPj, custoEvolucao, custoDept, salarioMedio,
     mesAtualLabel,
     isLoading,
   } = useDashboardData();
@@ -156,6 +156,9 @@ export default function Dashboard() {
   }
   if (contratosPendentes.length > 0) {
     alertas.push({ titulo: `${contratosPendentes.length} contrato(s) PJ pendente(s) de assinatura`, detalhe: contratosPendentes.slice(0, 3).map((c) => c.nome).join(", ") + (contratosPendentes.length > 3 ? "..." : ""), prioridade: "alta" });
+  }
+  if (convitesPreenchidos.length > 0) {
+    alertas.push({ titulo: `${convitesPreenchidos.length} cadastro(s) preenchido(s) aguardando aprovação`, detalhe: convitesPreenchidos.slice(0, 3).map((c) => `${c.nome} (${c.tipo.toUpperCase()})`).join(", ") + (convitesPreenchidos.length > 3 ? "..." : ""), prioridade: "alta" });
   }
 
   const prioridadeStyles: Record<string, string> = {
