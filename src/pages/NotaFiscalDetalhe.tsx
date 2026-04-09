@@ -712,54 +712,11 @@ export default function NotaFiscalDetalhe() {
         </Card>
       )}
 
-      {/* Arquivo da NF + Preview lado a lado */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ArquivoNFCard
-          nota={nota}
-          onArquivoUpdated={(url) => setNota({ ...nota, arquivo_url: url })}
-        />
-        {nota.arquivo_url && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Eye className="h-4 w-4 text-primary" />
-                Visualização
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="border rounded-lg overflow-hidden bg-muted/30">
-                {nota.arquivo_url.match(/\.pdf$/i) ? (
-                  <object
-                    data={nota.arquivo_url}
-                    type="application/pdf"
-                    className="w-full h-[400px]"
-                  >
-                    <div className="flex flex-col items-center justify-center h-[400px] gap-3 text-center p-4">
-                      <FileText className="h-10 w-10 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        Não foi possível exibir o PDF no navegador.
-                      </p>
-                      <Button variant="outline" className="gap-2" asChild>
-                        <a href={nota.arquivo_url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="h-4 w-4" /> Abrir PDF em nova aba
-                        </a>
-                      </Button>
-                    </div>
-                  </object>
-                ) : (
-                  <div className="flex items-center justify-center p-4">
-                    <img
-                      src={nota.arquivo_url}
-                      alt={`NF ${nota.numero}`}
-                      className="max-w-full max-h-[380px] object-contain rounded"
-                    />
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+      {/* Arquivo da NF */}
+      <ArquivoNFCard
+        nota={nota}
+        onArquivoUpdated={(url) => setNota({ ...nota, arquivo_url: url })}
+      />
 
       {/* Histórico */}
       <Card>
