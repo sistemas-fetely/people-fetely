@@ -9,5 +9,5 @@ type: feature
 - Component: PermissionGate — wraps children with permission check
 - Sidebar filters menus based on canView(module)
 - Config page: /configurar-perfis — grid of modules × permissions with switches
-- 13 modules: dashboard, colaboradores, contratos_pj, folha_pagamento, ferias, beneficios, movimentacoes, notas_fiscais, pagamentos_pj, organograma, convites, parametros, usuarios
+- 17 modules: dashboard, colaboradores, contratos_pj, folha_pagamento, ferias, beneficios, movimentacoes, notas_fiscais, pagamentos_pj, organograma, convites, recrutamento, avaliacoes, treinamentos, relatorios, parametros, usuarios
 - 4 CRUD + 5 special: enviar_email, aprovar, fechar, exportar, enviar
