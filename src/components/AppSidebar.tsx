@@ -46,7 +46,7 @@ const mainItems: MenuItem[] = [
 const cltItems: MenuItem[] = [
   { title: "Colaboradores CLT", url: "/colaboradores", icon: Users, permModule: "colaboradores" },
   { title: "Folha de Pagamento", url: "/folha-pagamento", icon: FileText, permModule: "folha_pagamento" },
-  { title: "Ponto", url: "/ponto", icon: ClipboardList },
+  { title: "Ponto", url: "/ponto", icon: ClipboardList, permModule: "folha_pagamento" },
   { title: "Benefícios", url: "/beneficios", icon: Award, permModule: "beneficios" },
 ];
 
@@ -57,10 +57,10 @@ const pjItems: MenuItem[] = [
 
 const rhItems: MenuItem[] = [
   { title: "Convites Cadastro", url: "/convites-cadastro", icon: Send, permModule: "convites" },
-  { title: "Recrutamento", url: "/recrutamento", icon: UserCircle },
-  { title: "Avaliações", url: "/avaliacoes", icon: Award },
-  { title: "Treinamentos", url: "/treinamentos", icon: GraduationCap },
-  { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+  { title: "Recrutamento", url: "/recrutamento", icon: UserCircle, permModule: "recrutamento" },
+  { title: "Avaliações", url: "/avaliacoes", icon: Award, permModule: "avaliacoes" },
+  { title: "Treinamentos", url: "/treinamentos", icon: GraduationCap, permModule: "treinamentos" },
+  { title: "Relatórios", url: "/relatorios", icon: BarChart3, permModule: "relatorios" },
 ];
 
 const adminItems: MenuItem[] = [
