@@ -55,7 +55,7 @@ const SPECIAL_PERMISSIONS = [
   { key: "enviar", label: "Enviar Convite", module: "convites" },
 ] as const;
 
-export { MODULES, CRUD_PERMISSIONS, SPECIAL_PERMISSIONS };
+export { MODULES, MODULE_CATEGORIES, CRUD_PERMISSIONS, SPECIAL_PERMISSIONS };
 
 export function usePermissions() {
   const { user } = useAuth();
