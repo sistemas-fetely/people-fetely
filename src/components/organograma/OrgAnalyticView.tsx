@@ -122,6 +122,8 @@ export function OrgAnalyticView({ flat, filters }: Props) {
         treemapData,
         spanRanking,
         custoTotal,
+        custoClt,
+        custoPj,
         custoMedio,
         headcountData,
       };
