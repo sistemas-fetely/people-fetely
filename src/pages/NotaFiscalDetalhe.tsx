@@ -170,7 +170,7 @@ export default function NotaFiscalDetalhe() {
         .from("email_send_log")
         .select("id, created_at, status, recipient_email, message_id")
         .eq("template_name", "nf-pagamento")
-        .containedBy("metadata", { nota_fiscal_id: id } as any)
+        .contains("metadata", { nota_fiscal_id: id })
         .order("created_at", { ascending: true });
       if (emailData) setEmailLogs(emailData as EmailLog[]);
 
