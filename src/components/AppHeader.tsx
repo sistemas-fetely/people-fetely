@@ -39,7 +39,7 @@ export function AppHeader() {
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-card px-4 card-shadow">
       <SidebarTrigger className="-ml-1" />
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <span>RH System</span>
+        <span>People Fetély</span>
         <span>/</span>
         <span className="font-medium text-foreground">{pageName}</span>
       </div>

@@ -1,8 +1,9 @@
 import {
   LayoutDashboard, Users, FileText, Calendar, ClipboardList, Award,
-  GraduationCap, Building2, GitBranch, BarChart3, Settings, UserCircle,
+  GraduationCap, GitBranch, BarChart3, Settings, UserCircle,
   Briefcase, LogOut, ArrowUpDown, Send, UserCheck,
 } from "lucide-react";
+import logoFetely from "@/assets/logo_fetely.jpg";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
@@ -139,12 +140,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
-            <Building2 className="h-4 w-4 text-sidebar-primary-foreground" />
-          </div>
+          <img src={logoFetely} alt="Fetély" className="h-8 w-8 shrink-0 rounded-lg object-contain" />
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-semibold text-sidebar-foreground">RH System</span>
+              <span className="text-sm font-semibold text-sidebar-foreground">People Fetély</span>
               <span className="text-xs text-sidebar-muted">Gestão de Pessoas</span>
             </div>
           )}
