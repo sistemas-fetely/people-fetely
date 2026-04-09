@@ -14,8 +14,12 @@ import {
   DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   CheckCircle2, XCircle, UserCheck, UserX, Users, UserPlus,
-  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil,
+  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
@@ -57,6 +61,7 @@ export default function GerenciarUsuarios() {
   const [selectedRoles, setSelectedRoles] = useState<AppRole[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", roles: ["colaborador"] as string[] });
+  const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; name: string } | null>(null);
 
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["admin-profiles"],
@@ -124,6 +129,20 @@ export default function GerenciarUsuarios() {
       setRolesDialogOpen(false);
     },
     onError: () => toast.error("Erro ao atualizar perfis"),
+  });
+
+  const deleteUser = useMutation({
+    mutationFn: async (user_id: string) => {
+      await callManageUser("delete_user", { user_id });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-auth-users"] });
+      toast.success("Usuário deletado com sucesso!");
+      setDeleteConfirm(null);
+    },
+    onError: (err: Error) => toast.error(err.message || "Erro ao deletar usuário"),
   });
 
   const getUserRoles = (userId: string) =>
@@ -401,6 +420,15 @@ export default function GerenciarUsuarios() {
                                 Inativar
                               </Button>
                             )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-destructive hover:text-destructive gap-1"
+                              onClick={() => setDeleteConfirm({ userId: profile.user_id, name: profile.full_name || "Usuário" })}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Deletar
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -504,6 +532,27 @@ export default function GerenciarUsuarios() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar o usuário <strong>{deleteConfirm?.name}</strong>? Esta ação é irreversível e removerá todos os dados de acesso do usuário.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteConfirm && deleteUser.mutate(deleteConfirm.userId)}
+              disabled={deleteUser.isPending}
+            >
+              {deleteUser.isPending ? "Deletando..." : "Deletar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
