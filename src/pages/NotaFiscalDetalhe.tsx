@@ -280,7 +280,7 @@ export default function NotaFiscalDetalhe() {
           <Button
             variant="outline"
             className="gap-2"
-            onClick={() => toast.info("Funcionalidade de envio de e-mail será implementada em breve.")}
+            onClick={() => setEmailDialogOpen(true)}
           >
             <Mail className="h-4 w-4" /> Enviar por E-mail
           </Button>
