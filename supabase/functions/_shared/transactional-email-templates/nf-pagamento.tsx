@@ -1,6 +1,6 @@
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Container, Head, Heading, Html, Preview, Text, Hr,
+  Body, Container, Head, Heading, Html, Preview, Text, Hr, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
@@ -12,9 +12,10 @@ interface NFPagamentoProps {
   numeroNF?: string
   valor?: string
   dataVencimento?: string
+  arquivoUrl?: string
 }
 
-const NFPagamentoEmail = ({ nomeColaborador, nomeFantasia, numeroNF, valor, dataVencimento }: NFPagamentoProps) => (
+const NFPagamentoEmail = ({ nomeColaborador, nomeFantasia, numeroNF, valor, dataVencimento, arquivoUrl }: NFPagamentoProps) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
     <Preview>Nota Fiscal para pagamento - NF {numeroNF || ''}</Preview>
@@ -40,6 +41,13 @@ const NFPagamentoEmail = ({ nomeColaborador, nomeFantasia, numeroNF, valor, data
         <Text style={detailItem}>
           <strong>Prestador:</strong> {nomeColaborador || '—'}
         </Text>
+        {arquivoUrl && (
+          <Section style={buttonSection}>
+            <Button style={downloadButton} href={arquivoUrl}>
+              📄 Baixar Nota Fiscal (PDF)
+            </Button>
+          </Section>
+        )}
         <Text style={text}>
           Após o pagamento, favor enviar o comprovante para rh.corp@fetelycorp.com.br
         </Text>
@@ -66,6 +74,7 @@ export const template = {
     numeroNF: '12345',
     valor: 'R$ 5.000,00',
     dataVencimento: '15/01/2025',
+    arquivoUrl: 'https://example.com/nf.pdf',
   },
 } satisfies TemplateEntry
 
@@ -75,5 +84,15 @@ const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: '#1a3a5c', ma
 const text = { fontSize: '15px', color: '#3a3a4a', lineHeight: '1.6', margin: '0 0 16px' }
 const detailsTitle = { fontSize: '15px', color: '#1a3a5c', fontWeight: 'bold' as const, margin: '16px 0 8px' }
 const detailItem = { fontSize: '15px', color: '#3a3a4a', lineHeight: '1.6', margin: '0 0 4px' }
+const buttonSection = { margin: '20px 0', textAlign: 'center' as const }
+const downloadButton = {
+  backgroundColor: '#1a3a5c',
+  color: '#ffffff',
+  padding: '12px 24px',
+  borderRadius: '6px',
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
+  textDecoration: 'none',
+}
 const hr = { borderColor: '#e5e7eb', margin: '24px 0' }
 const footer = { fontSize: '13px', color: '#999999', margin: '0', lineHeight: '1.5' }
