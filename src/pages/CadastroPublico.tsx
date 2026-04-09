@@ -730,7 +730,7 @@ export default function CadastroPublico() {
     const requiredUploads = isClt ? ["foto_rosto", "rg_cnh_frente"] : ["foto_rosto", "rg_cnh_frente", "contrato_social"];
     const missing = requiredUploads.filter(key => !uploadedFiles.find(f => f.key === key));
     if (missing.length > 0) {
-      const labels = isClt ? "RG/CNH (Frente)" : "RG/CNH (Frente) e Contrato Social";
+      const labels = isClt ? "Foto de Rosto e RG/CNH (Frente)" : "Foto de Rosto, RG/CNH (Frente) e Contrato Social";
       toast.error(`Envie os documentos obrigatórios: ${labels}.`);
       return;
     }
