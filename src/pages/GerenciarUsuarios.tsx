@@ -123,6 +123,18 @@ export default function GerenciarUsuarios() {
     onError: () => toast.error("Erro ao atualizar status do usuário"),
   });
 
+  const approveUser = useMutation({
+    mutationFn: async (user_id: string) => {
+      await callManageUser("approve", { user_id });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-auth-users"] });
+      toast.success("Usuário aprovado com sucesso!");
+    },
+    onError: () => toast.error("Erro ao aprovar usuário"),
+  });
+
   const updateRoles = useMutation({
     mutationFn: async ({ user_id, roles, colaborador_tipo }: { user_id: string; roles: AppRole[]; colaborador_tipo?: string | null }) => {
       await callManageUser("update_roles", { user_id, roles, colaborador_tipo });
