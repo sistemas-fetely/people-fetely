@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -27,6 +28,7 @@ interface PessoaUnificada {
   status: string;
   data_inicio: string;
   valor: number | null;
+  foto_url: string | null;
 }
 
 const statusMap: Record<string, string> = {
@@ -64,8 +66,8 @@ export default function Pessoas() {
   useEffect(() => {
     async function fetch() {
       const [{ data: clts }, { data: pjs }] = await Promise.all([
-        supabase.from("colaboradores_clt").select("id, nome_completo, cargo, departamento, status, data_admissao, salario_base").order("nome_completo"),
-        supabase.from("contratos_pj").select("id, razao_social, nome_fantasia, tipo_servico, departamento, status, data_inicio, valor_mensal").order("razao_social"),
+        supabase.from("colaboradores_clt").select("id, nome_completo, cargo, departamento, status, data_admissao, salario_base, foto_url").order("nome_completo"),
+        supabase.from("contratos_pj").select("id, razao_social, nome_fantasia, tipo_servico, departamento, status, data_inicio, valor_mensal, foto_url").order("razao_social"),
       ]);
 
       const unified: PessoaUnificada[] = [
@@ -78,6 +80,7 @@ export default function Pessoas() {
           status: c.status,
           data_inicio: c.data_admissao,
           valor: c.salario_base,
+          foto_url: c.foto_url,
         })),
         ...(pjs || []).map((p) => ({
           id: p.id,
@@ -88,6 +91,7 @@ export default function Pessoas() {
           status: p.status,
           data_inicio: p.data_inicio,
           valor: p.valor_mensal,
+          foto_url: p.foto_url,
         })),
       ].sort((a, b) => a.nome.localeCompare(b.nome));
 
@@ -253,9 +257,12 @@ export default function Pessoas() {
                     <TableRow key={`${p.tipo}-${p.id}`} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => handleView(p)}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                            {initials(p.nome)}
-                          </div>
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={p.foto_url || undefined} alt={p.nome} className="object-cover" />
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                              {initials(p.nome)}
+                            </AvatarFallback>
+                          </Avatar>
                           <span className="font-medium text-sm">{p.nome}</span>
                         </div>
                       </TableCell>
