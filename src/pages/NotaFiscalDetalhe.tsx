@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { useParametros } from "@/hooks/useParametros";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const defaultStatusMap: Record<string, string> = {
   pendente: "Pendente", aprovada: "Aprovada", enviada_pagamento: "Enviada para Pagamento", paga: "Paga", cancelada: "Cancelada", vencida: "Vencida",
@@ -113,6 +114,10 @@ interface EmailLog {
 export default function NotaFiscalDetalhe() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission("notas_fiscais", "edit");
+  const canApprove = hasPermission("notas_fiscais", "aprovar");
+  const canSendEmail = hasPermission("notas_fiscais", "enviar_email");
   const [nota, setNota] = useState<NotaFiscal | null>(null);
   const [contrato, setContrato] = useState<ContratoPJ | null>(null);
   const [pagamentos, setPagamentos] = useState<PagamentoPJ[]>([]);
