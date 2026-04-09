@@ -575,7 +575,7 @@ export default function GerenciarUsuarios() {
             <Button
               onClick={() => {
                 if (selectedUser) {
-                  updateRoles.mutate({ user_id: selectedUser.userId, roles: selectedRoles, colaborador_tipo: selectedColabTipo || null } as any);
+                  updateRoles.mutate({ user_id: selectedUser.userId, roles: selectedRoles, colaborador_tipo: selectedColabTipo || null });
                 }
               }}
               disabled={updateRoles.isPending}
