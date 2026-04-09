@@ -111,7 +111,7 @@ export function OrgNodeDrawer({ node, open, onClose, allNodes, onEditPosition }:
 
           <div className="flex flex-col items-center gap-3 py-4">
             <Avatar className="h-20 w-20">
-              {avatarUrl && <AvatarImage src={avatarUrl} />}
+              {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
               <AvatarFallback className="text-lg">{node.nome_display ? getInitials(node.nome_display) : "?"}</AvatarFallback>
             </Avatar>
             <div className="text-center">
