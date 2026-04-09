@@ -65,7 +65,7 @@ function TreeRow({ node, expanded, toggleExpand, onNodeClick, canSeeSalary, show
             {node.status === "ocupado" ? (
               <div className="flex items-center gap-2 min-w-0">
                 <Avatar className="h-6 w-6 shrink-0">
-                  {avatarUrl && <AvatarImage src={avatarUrl} />}
+                  {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
                   <AvatarFallback className="text-[8px]">{getInitials(node.nome_display)}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium truncate">{node.nome_display}</span>

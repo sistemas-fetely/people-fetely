@@ -47,7 +47,7 @@ function OrgCard({ data }: NodeProps) {
       {node.status === "ocupado" ? (
         <div className="flex items-center gap-2.5">
           <Avatar className="h-9 w-9 shrink-0" style={{ boxShadow: `0 0 0 2px ${borderColor}` }}>
-            {avatarUrl && <AvatarImage src={avatarUrl} />}
+            {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
             <AvatarFallback className="text-[10px]">{getInitials(node.nome_display)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
