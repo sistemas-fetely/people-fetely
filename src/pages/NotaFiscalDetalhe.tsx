@@ -931,15 +931,18 @@ function ArquivoNFCard({ nota, onArquivoUpdated }: { nota: NotaFiscal; onArquivo
   );
 }
 
-function TimelineItem({ date, label, variant = "default" }: { date: string; label: string; variant?: "default" | "success" }) {
-  const dotColor = variant === "success" ? "bg-success" : "bg-primary";
+function TimelineItem({ date, label, variant = "default" }: { date: string; label: string; variant?: "default" | "success" | "email" }) {
+  const dotColor = variant === "success" ? "bg-success" : variant === "email" ? "bg-blue-500" : "bg-primary";
   const formatted = date.includes("T") ? format(parseISO(date), "dd/MM/yyyy HH:mm") : format(parseISO(date), "dd/MM/yyyy");
   return (
     <div className="relative flex items-start gap-3">
       <div className={`absolute -left-[14px] top-1.5 h-2.5 w-2.5 rounded-full ${dotColor} ring-2 ring-background`} />
-      <div>
-        <p className="text-sm">{label}</p>
-        <p className="text-xs text-muted-foreground">{formatted}</p>
+      <div className="flex items-start gap-2">
+        {variant === "email" && <Mail className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />}
+        <div>
+          <p className="text-sm">{label}</p>
+          <p className="text-xs text-muted-foreground">{formatted}</p>
+        </div>
       </div>
     </div>
   );
