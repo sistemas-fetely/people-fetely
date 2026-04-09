@@ -379,7 +379,7 @@ export default function NotasFiscais() {
                   <TableHead className="font-semibold hidden lg:table-cell">Vencimento</TableHead>
                   <TableHead className="font-semibold hidden lg:table-cell">Forma Pgto</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="w-10" />
+                  {hasAnyAction && <TableHead className="w-10" />}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -397,16 +397,18 @@ export default function NotasFiscais() {
                     <TableCell className="text-sm hidden lg:table-cell">{n.data_vencimento ? format(parseISO(n.data_vencimento), "dd/MM/yyyy") : "—"}</TableCell>
                     <TableCell className="text-sm hidden lg:table-cell capitalize">{n.pagamento_forma || "—"}</TableCell>
                     <TableCell><Badge variant="outline" className={statusStyles[n.status] || ""}>{statusMap[n.status] || n.status}</Badge></TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => navigate(`/contratos-pj/${n.contrato_id}`)}><Eye className="mr-2 h-4 w-4" /> Ver Contrato</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { setEditNota(n); setFormOpen(true); }}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive" onClick={() => setDeleteTarget(n)}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                    {hasAnyAction && (
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => e.stopPropagation()}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => navigate(`/contratos-pj/${n.contrato_id}`)}><Eye className="mr-2 h-4 w-4" /> Ver Contrato</DropdownMenuItem>
+                            {canEdit && <DropdownMenuItem onClick={() => { setEditNota(n); setFormOpen(true); }}><Edit className="mr-2 h-4 w-4" /> Editar</DropdownMenuItem>}
+                            {canDelete && <DropdownMenuItem className="text-destructive" onClick={() => setDeleteTarget(n)}><Trash2 className="mr-2 h-4 w-4" /> Excluir</DropdownMenuItem>}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
