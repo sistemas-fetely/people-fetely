@@ -348,6 +348,7 @@ export default function GerenciarUsuarios() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Tipo</TableHead>
                     <TableHead>Perfis</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Último acesso</TableHead>
