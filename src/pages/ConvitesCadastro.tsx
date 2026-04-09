@@ -196,11 +196,17 @@ export default function ConvitesCadastro() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-3 grid-cols-3">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
         <Card className="border-l-[3px] border-l-amber-500">
           <CardContent className="p-3">
             <p className="text-xs text-muted-foreground uppercase">Pendentes</p>
             <p className="text-2xl font-bold">{pendentesCount}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-l-[3px] border-l-sky-500">
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground uppercase">Email Enviado</p>
+            <p className="text-2xl font-bold text-sky-600">{emailEnviadoCount}</p>
           </CardContent>
         </Card>
         <Card className="border-l-[3px] border-l-emerald-500">
