@@ -164,6 +164,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'suppressed',
+      metadata: emailMetadata,
     })
 
     console.log('Email suppressed', { effectiveRecipient, templateName })
@@ -197,6 +198,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'failed',
+      metadata: emailMetadata,
       error_message: 'Failed to look up unsubscribe token',
     })
     return new Response(
@@ -230,6 +232,7 @@ Deno.serve(async (req) => {
         template_name: templateName,
         recipient_email: effectiveRecipient,
         status: 'failed',
+      metadata: emailMetadata,
         error_message: 'Failed to create unsubscribe token',
       })
       return new Response(
@@ -259,6 +262,7 @@ Deno.serve(async (req) => {
         template_name: templateName,
         recipient_email: effectiveRecipient,
         status: 'failed',
+      metadata: emailMetadata,
         error_message: 'Failed to confirm unsubscribe token storage',
       })
       return new Response(
@@ -281,6 +285,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'suppressed',
+      metadata: emailMetadata,
       error_message:
         'Unsubscribe token used but email missing from suppressed list',
     })
@@ -317,6 +322,7 @@ Deno.serve(async (req) => {
     template_name: templateName,
     recipient_email: effectiveRecipient,
     status: 'pending',
+    metadata: emailMetadata,
   })
 
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
@@ -349,6 +355,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'failed',
+      metadata: emailMetadata,
       error_message: 'Failed to enqueue email',
     })
 
