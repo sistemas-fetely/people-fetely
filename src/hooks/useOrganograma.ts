@@ -29,7 +29,7 @@ function buildTree(posicoes: PosicaoRaw[], colaboradores: ColaboradorVinculado[]
       subordinados_diretos: 0,
       subordinados_totais: 0,
       nome_display: colab ? colab.nome_completo : contrato ? (contrato.nome_fantasia || contrato.contato_nome) : "",
-      foto_url: colab?.foto_url || null,
+      foto_url: colab?.foto_url || contrato?.foto_url || null,
       vinculo: colab ? "CLT" : contrato ? "PJ" : null,
       status_pessoal: colab ? colab.status : contrato ? contrato.status : null,
     };
@@ -101,7 +101,7 @@ function buildTree(posicoes: PosicaoRaw[], colaboradores: ColaboradorVinculado[]
       subordinados_diretos: 0,
       subordinados_totais: 0,
       nome_display: cp.nome_fantasia || cp.contato_nome,
-      foto_url: null,
+      foto_url: cp.foto_url || null,
       vinculo: "PJ",
       status_pessoal: cp.status,
     };
@@ -149,7 +149,7 @@ export function useOrganograma() {
       const [posRes, colabRes, contrRes] = await Promise.all([
         supabase.rpc("get_organograma_tree"),
         supabase.from("colaboradores_clt").select("id, nome_completo, foto_url, email_corporativo, telefone, data_admissao, salario_base, status, tipo_contrato, cargo, departamento"),
-        supabase.from("contratos_pj").select("id, contato_nome, nome_fantasia, razao_social, contato_email, contato_telefone, data_inicio, valor_mensal, status"),
+        supabase.from("contratos_pj").select("id, contato_nome, nome_fantasia, razao_social, contato_email, contato_telefone, data_inicio, valor_mensal, status, foto_url"),
       ]);
 
       if (posRes.error) throw posRes.error;

@@ -33,9 +33,7 @@ function OrgCard({ data }: NodeProps) {
   const node = data.posicao as PosicaoNode;
   const borderColor = getBorderColor(node);
   const isDashed = node.status === "vaga_aberta" || node.status === "previsto";
-  const avatarUrl = node.nome_display
-    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(node.nome_display)}&background=random&size=64`
-    : null;
+  const avatarUrl = node.foto_url || null;
 
   return (
     <div

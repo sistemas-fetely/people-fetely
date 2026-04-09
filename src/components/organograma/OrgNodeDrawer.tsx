@@ -70,7 +70,7 @@ export function OrgNodeDrawer({ node, open, onClose, allNodes, onEditPosition }:
   if (!node) return null;
 
   const parent = node.id_pai ? allNodes.find(n => n.id === node.id_pai) : null;
-  const avatarUrl = node.foto_url || (node.nome_display ? `https://ui-avatars.com/api/?name=${encodeURIComponent(node.nome_display)}&background=random&size=128` : null);
+  const avatarUrl = node.foto_url || null;
 
   // Available nodes to link as subordinate: exclude self, current children, and ancestors (to prevent cycles)
   const currentChildIds = new Set(node.children.map(c => c.id));
@@ -246,7 +246,7 @@ export function OrgNodeDrawer({ node, open, onClose, allNodes, onEditPosition }:
                   >
                     <Avatar className="h-8 w-8 shrink-0">
                       {n.nome_display && (
-                        <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(n.nome_display)}&background=random&size=32`} />
+                        <AvatarImage src={n.foto_url || undefined} className="object-cover" />
                       )}
                       <AvatarFallback className="text-[10px]">{n.nome_display ? getInitials(n.nome_display) : "?"}</AvatarFallback>
                     </Avatar>
@@ -285,7 +285,7 @@ function InfoRow({ icon, label, value }: { icon?: React.ReactNode; label: string
 }
 
 function MiniCard({ node }: { node: PosicaoNode }) {
-  const avatarUrl = node.nome_display ? `https://ui-avatars.com/api/?name=${encodeURIComponent(node.nome_display)}&background=random&size=32` : null;
+  const avatarUrl = node.foto_url || null;
   return (
     <div className="flex items-center gap-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer transition-colors">
       <Avatar className="h-7 w-7">
