@@ -145,6 +145,32 @@ export default function ContratoPJDetalhe() {
         contrato_assinado: (ct as any).contrato_assinado || false,
         objeto: ct.objeto || "",
         observacoes: ct.observacoes || "",
+        // Personal data fields
+        cpf: ct.cpf || "",
+        rg: ct.rg || "",
+        orgao_emissor: ct.orgao_emissor || "",
+        data_nascimento: ct.data_nascimento || "",
+        genero: ct.genero || "",
+        estado_civil: ct.estado_civil || "",
+        nacionalidade: ct.nacionalidade || "Brasileira",
+        etnia: ct.etnia || "",
+        nome_mae: ct.nome_mae || "",
+        nome_pai: ct.nome_pai || "",
+        foto_url: ct.foto_url || "",
+        // Address fields
+        cep: ct.cep || "",
+        logradouro: ct.logradouro || "",
+        numero: ct.numero || "",
+        complemento: ct.complemento || "",
+        bairro: ct.bairro || "",
+        cidade: ct.cidade || "",
+        uf: ct.uf || "",
+        // Contact fields
+        telefone: ct.telefone || "",
+        email_pessoal: ct.email_pessoal || "",
+        contato_emergencia_nome: ct.contato_emergencia_nome || "",
+        contato_emergencia_telefone: ct.contato_emergencia_telefone || "",
+        // Document fields (unused for PJ but required by form type)
         titulo_eleitor: "",
         zona_eleitoral: "",
         secao_eleitoral: "",
@@ -152,6 +178,7 @@ export default function ContratoPJDetalhe() {
         cnh_categoria: "",
         cnh_validade: "",
         certificado_reservista: "",
+        // Professional fields
         tipo_servico: ct.tipo_servico,
         departamento: ct.departamento,
         data_inicio: ct.data_inicio,
@@ -161,6 +188,7 @@ export default function ContratoPJDetalhe() {
         dia_vencimento: ct.dia_vencimento || 10,
         renovacao_automatica: ct.renovacao_automatica,
         status: ct.status,
+        // Banking fields
         banco_nome: ct.banco_nome || "",
         banco_codigo: ct.banco_codigo || "",
         agencia: ct.agencia || "",
