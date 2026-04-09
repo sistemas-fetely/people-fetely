@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, FileText, Calendar, ClipboardList, Award,
-  GraduationCap, GitBranch, BarChart3, Settings, UserCircle,
+  GraduationCap, GitBranch, BarChart3, Settings, UserCircle, CreditCard,
   Briefcase, LogOut, ArrowUpDown, Send, UserCheck,
 } from "lucide-react";
 import logoFetely from "@/assets/logo_fetely.jpg";
