@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CheckCircle2, XCircle, UserCheck, UserX, Users, UserPlus,
-  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil,
+  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
