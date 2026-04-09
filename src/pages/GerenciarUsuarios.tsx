@@ -487,7 +487,20 @@ export default function GerenciarUsuarios() {
                               <Pencil className="h-3.5 w-3.5" />
                               Perfis
                             </Button>
-                            {isBanned ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1"
+                              onClick={() => {
+                                setLinkUser({ userId: profile.user_id, name: profile.full_name || "Usuário" });
+                                setLinkColaboradorId("");
+                                setLinkContratoPjId("");
+                                setLinkDialogOpen(true);
+                              }}
+                            >
+                              <Link2 className="h-3.5 w-3.5" />
+                              Vincular
+                            </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
