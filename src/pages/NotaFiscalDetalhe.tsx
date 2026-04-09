@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { useParametros } from "@/hooks/useParametros";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const defaultStatusMap: Record<string, string> = {
   pendente: "Pendente", aprovada: "Aprovada", enviada_pagamento: "Enviada para Pagamento", paga: "Paga", cancelada: "Cancelada", vencida: "Vencida",
@@ -113,6 +114,10 @@ interface EmailLog {
 export default function NotaFiscalDetalhe() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
+  const canEdit = hasPermission("notas_fiscais", "edit");
+  const canApprove = hasPermission("notas_fiscais", "aprovar");
+  const canSendEmail = hasPermission("notas_fiscais", "enviar_email");
   const [nota, setNota] = useState<NotaFiscal | null>(null);
   const [contrato, setContrato] = useState<ContratoPJ | null>(null);
   const [pagamentos, setPagamentos] = useState<PagamentoPJ[]>([]);
@@ -295,16 +300,20 @@ export default function NotaFiscalDetalhe() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            className="gap-2"
-            onClick={() => setEmailDialogOpen(true)}
-          >
-            <Mail className="h-4 w-4" /> Enviar por E-mail
-          </Button>
-          <Button variant="outline" className="gap-2" onClick={() => navigate(`/notas-fiscais?edit=${nota.id}`)}>
-            <Edit className="h-4 w-4" /> Editar
-          </Button>
+          {canSendEmail && (
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => setEmailDialogOpen(true)}
+            >
+              <Mail className="h-4 w-4" /> Enviar por E-mail
+            </Button>
+          )}
+          {canEdit && (
+            <Button variant="outline" className="gap-2" onClick={() => navigate(`/notas-fiscais?edit=${nota.id}`)}>
+              <Edit className="h-4 w-4" /> Editar
+            </Button>
+          )}
         </div>
       </div>
 
@@ -339,14 +348,16 @@ export default function NotaFiscalDetalhe() {
                 return (
                   <div key={status} className="flex items-center flex-1 last:flex-initial">
                     <button
-                      disabled={changingStatus || isPast || isActive}
-                      onClick={() => (isNext || isFuture) ? setPendingStatus(status) : undefined}
+                      disabled={changingStatus || isPast || isActive || !canApprove}
+                      onClick={() => canApprove && (isNext || isFuture) ? setPendingStatus(status) : undefined}
                       className={`
                         relative flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all w-full min-w-[140px] justify-center
                         ${isActive ? `${colors.activeBg} ${colors.activeFg} shadow-md` : ""}
                         ${isPast ? `${colors.pastBg} ${colors.pastFg}` : ""}
-                        ${isFuture && isNext ? "bg-muted hover:bg-muted/80 cursor-pointer border-2 border-dashed border-muted-foreground/30 text-muted-foreground" : ""}
-                        ${isFuture && !isNext ? "bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer" : ""}
+                        ${isFuture && isNext && canApprove ? "bg-muted hover:bg-muted/80 cursor-pointer border-2 border-dashed border-muted-foreground/30 text-muted-foreground" : ""}
+                        ${isFuture && isNext && !canApprove ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed" : ""}
+                        ${isFuture && !isNext && canApprove ? "bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer" : ""}
+                        ${isFuture && !isNext && !canApprove ? "bg-muted text-muted-foreground opacity-50 cursor-not-allowed" : ""}
                         ${isPast || isActive ? "cursor-default" : ""}
                       `}
                     >
@@ -374,7 +385,7 @@ export default function NotaFiscalDetalhe() {
               </p>
             </div>
           )}
-          {!isTerminal && (
+          {!isTerminal && canApprove && (
             <div className="flex items-center gap-2 mt-3 pt-3 border-t">
               <p className="text-xs text-muted-foreground">Ações rápidas:</p>
               {terminalStatuses.map((ts) => (
@@ -716,6 +727,7 @@ export default function NotaFiscalDetalhe() {
       <ArquivoNFCard
         nota={nota}
         onArquivoUpdated={(url) => setNota({ ...nota, arquivo_url: url })}
+        canEdit={canEdit}
       />
 
       {/* Histórico */}
@@ -788,7 +800,7 @@ export default function NotaFiscalDetalhe() {
   );
 }
 
-function ArquivoNFCard({ nota, onArquivoUpdated }: { nota: NotaFiscal; onArquivoUpdated: (url: string | null) => void }) {
+function ArquivoNFCard({ nota, onArquivoUpdated, canEdit = true }: { nota: NotaFiscal; onArquivoUpdated: (url: string | null) => void; canEdit?: boolean }) {
   const [uploading, setUploading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -875,12 +887,14 @@ function ArquivoNFCard({ nota, onArquivoUpdated }: { nota: NotaFiscal; onArquivo
                   <Download className="h-4 w-4" />
                 </a>
               </Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={handleRemove} title="Remover">
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {canEdit && (
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={handleRemove} title="Remover">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
-        ) : (
+        ) : canEdit ? (
           <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-8 text-center">
             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-sm text-muted-foreground mb-3">Nenhum arquivo anexado</p>
@@ -894,6 +908,11 @@ function ArquivoNFCard({ nota, onArquivoUpdated }: { nota: NotaFiscal; onArquivo
               Enviar Nota Fiscal
             </Button>
             <p className="text-xs text-muted-foreground mt-2">PDF, JPG, PNG ou WebP (máx. 10MB)</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-8 text-center">
+            <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">Nenhum arquivo anexado</p>
           </div>
         )}
         <input
