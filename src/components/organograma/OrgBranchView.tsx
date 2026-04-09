@@ -59,9 +59,7 @@ function extractBranch(flat: PosicaoNode[], targetColabId: string | null, target
 }
 
 function PersonCard({ node, highlight, label }: { node: PosicaoNode; highlight?: boolean; label?: string }) {
-  const avatarUrl = node.nome_display
-    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(node.nome_display)}&background=random&size=64`
-    : null;
+  const avatarUrl = node.foto_url || null;
 
   return (
     <div className={`flex items-center gap-3 p-3 rounded-lg border ${highlight ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border"}`}>
