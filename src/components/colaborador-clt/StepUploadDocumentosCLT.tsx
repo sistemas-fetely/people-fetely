@@ -134,6 +134,21 @@ export function StepUploadDocumentos({ tipo, folderKey, uploadedFiles, onFilesCh
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    {uploaded && uploaded.url && !uploaded.name.toLowerCase().endsWith(".pdf") && (
+                      <Button
+                        type="button"
+                        variant={currentFotoUrl === uploaded.url ? "secondary" : "outline"}
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={() => {
+                          setValue("foto_url", uploaded.url);
+                          toast.success("Foto de perfil atualizada!");
+                        }}
+                      >
+                        <UserCircle className="h-3.5 w-3.5" />
+                        {currentFotoUrl === uploaded.url ? "Foto definida" : "Usar como foto"}
+                      </Button>
+                    )}
                     {uploaded && (
                       <Button
                         type="button"
