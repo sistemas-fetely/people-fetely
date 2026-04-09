@@ -10,23 +10,34 @@ export interface RolePermission {
 }
 
 const MODULES = [
-  { key: "dashboard", label: "Dashboard" },
-  { key: "colaboradores", label: "Colaboradores CLT" },
-  { key: "contratos_pj", label: "Contratos PJ" },
-  { key: "folha_pagamento", label: "Folha de Pagamento" },
-  { key: "ferias", label: "Férias" },
-  { key: "beneficios", label: "Benefícios" },
-  { key: "movimentacoes", label: "Movimentações" },
-  { key: "notas_fiscais", label: "Notas Fiscais" },
-  { key: "pagamentos_pj", label: "Pagamentos PJ" },
-  { key: "organograma", label: "Organograma" },
-  { key: "convites", label: "Convites de Cadastro" },
-  { key: "recrutamento", label: "Recrutamento" },
-  { key: "avaliacoes", label: "Avaliações" },
-  { key: "treinamentos", label: "Treinamentos" },
-  { key: "relatorios", label: "Relatórios" },
-  { key: "parametros", label: "Parâmetros" },
-  { key: "usuarios", label: "Gerenciar Usuários" },
+  // Geral
+  { key: "dashboard", label: "Dashboard", category: "geral" },
+  { key: "organograma", label: "Organograma", category: "geral" },
+  { key: "movimentacoes", label: "Movimentações", category: "geral" },
+  { key: "recrutamento", label: "Recrutamento", category: "geral" },
+  { key: "avaliacoes", label: "Avaliações", category: "geral" },
+  { key: "treinamentos", label: "Treinamentos", category: "geral" },
+  { key: "relatorios", label: "Relatórios", category: "geral" },
+  // CLT
+  { key: "colaboradores", label: "Colaboradores", category: "clt" },
+  { key: "folha_pagamento", label: "Folha de Pagamento", category: "clt" },
+  { key: "ferias", label: "Férias", category: "clt" },
+  { key: "beneficios", label: "Benefícios", category: "clt" },
+  // PJ
+  { key: "contratos_pj", label: "Contratos", category: "pj" },
+  { key: "notas_fiscais", label: "Notas Fiscais", category: "pj" },
+  { key: "pagamentos_pj", label: "Pagamentos", category: "pj" },
+  // Administração
+  { key: "convites", label: "Convites de Cadastro", category: "admin" },
+  { key: "parametros", label: "Parâmetros", category: "admin" },
+  { key: "usuarios", label: "Gerenciar Usuários", category: "admin" },
+] as const;
+
+const MODULE_CATEGORIES = [
+  { key: "geral", label: "Geral", color: "text-foreground" },
+  { key: "clt", label: "CLT", color: "text-blue-700 dark:text-blue-400" },
+  { key: "pj", label: "PJ", color: "text-emerald-700 dark:text-emerald-400" },
+  { key: "admin", label: "Administração", color: "text-amber-700 dark:text-amber-400" },
 ] as const;
 
 const CRUD_PERMISSIONS = [
