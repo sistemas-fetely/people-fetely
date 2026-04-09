@@ -264,6 +264,21 @@ export default function GerenciarUsuarios() {
                   ))}
                 </div>
               </div>
+              <div className="space-y-2">
+                <Label>Tipo de Colaborador</Label>
+                <Select value={newUser.colaborador_tipo} onValueChange={(v) => setNewUser({ ...newUser, colaborador_tipo: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Automático (detectar pelo cadastro)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Automático</SelectItem>
+                    <SelectItem value="clt">CLT</SelectItem>
+                    <SelectItem value="pj">PJ</SelectItem>
+                    <SelectItem value="ambos">Ambos (CLT + PJ)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">Define quais módulos o usuário terá acesso</p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
