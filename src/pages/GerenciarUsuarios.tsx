@@ -501,6 +501,7 @@ export default function GerenciarUsuarios() {
                               <Link2 className="h-3.5 w-3.5" />
                               Vincular
                             </Button>
+                            {isBanned ? (
                               <Button
                                 size="sm"
                                 variant="outline"
