@@ -554,6 +554,21 @@ export default function GerenciarUsuarios() {
               </label>
             ))}
           </div>
+          <div className="space-y-2 pt-2">
+            <Label className="text-sm font-medium">Tipo de Colaborador</Label>
+            <Select value={selectedColabTipo || "auto"} onValueChange={(v) => setSelectedColabTipo(v === "auto" ? "" : v)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Automático (detectar pelo cadastro)</SelectItem>
+                <SelectItem value="clt">CLT</SelectItem>
+                <SelectItem value="pj">PJ</SelectItem>
+                <SelectItem value="ambos">Ambos (CLT + PJ)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">Define quais módulos o usuário terá acesso</p>
+          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRolesDialogOpen(false)}>Cancelar</Button>
             <Button
