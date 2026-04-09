@@ -64,7 +64,7 @@ function PersonCard({ node, highlight, label }: { node: PosicaoNode; highlight?:
   return (
     <div className={`flex items-center gap-3 p-3 rounded-lg border ${highlight ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border"}`}>
       <Avatar className={`h-10 w-10 shrink-0 border-2 ${getBorderColor(node)}`}>
-        {avatarUrl && <AvatarImage src={avatarUrl} />}
+        {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
         <AvatarFallback className="text-xs">{node.nome_display ? getInitials(node.nome_display) : "?"}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">

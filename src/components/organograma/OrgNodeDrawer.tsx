@@ -289,7 +289,7 @@ function MiniCard({ node }: { node: PosicaoNode }) {
   return (
     <div className="flex items-center gap-2 p-2 rounded-md border hover:bg-accent/50 cursor-pointer transition-colors">
       <Avatar className="h-7 w-7">
-        {avatarUrl && <AvatarImage src={avatarUrl} />}
+        {avatarUrl && <AvatarImage src={avatarUrl} className="object-cover" />}
         <AvatarFallback className="text-[10px]">{node.nome_display ? getInitials(node.nome_display) : "?"}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
