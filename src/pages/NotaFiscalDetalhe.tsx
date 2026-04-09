@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -108,6 +111,9 @@ export default function NotaFiscalDetalhe() {
   const [loading, setLoading] = useState(true);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [changingStatus, setChangingStatus] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailTo, setEmailTo] = useState("flavio@fsime.com.br");
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const { data: statusParams } = useParametros("status_nota_fiscal");
   const statusMap = useMemo(() => {
@@ -274,7 +280,7 @@ export default function NotaFiscalDetalhe() {
           <Button
             variant="outline"
             className="gap-2"
-            onClick={() => toast.info("Funcionalidade de envio de e-mail será implementada em breve.")}
+            onClick={() => setEmailDialogOpen(true)}
           >
             <Mail className="h-4 w-4" /> Enviar por E-mail
           </Button>
@@ -405,7 +411,99 @@ export default function NotaFiscalDetalhe() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Summary Cards */}
+      {/* Email Send Dialog */}
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Mail className="h-5 w-5 text-primary" />
+              Enviar NF por E-mail
+            </DialogTitle>
+            <DialogDescription>
+              Revise os dados abaixo antes de enviar.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email-to">Destinatário</Label>
+              <Input
+                id="email-to"
+                type="email"
+                value={emailTo}
+                onChange={(e) => setEmailTo(e.target.value)}
+                placeholder="email@exemplo.com"
+              />
+            </div>
+            <Separator />
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">Assunto</p>
+              <p className="text-sm font-medium">
+                [Fetely] - NF para pagamento{contrato?.nome_fantasia ? ` - ${contrato.nome_fantasia}` : ''}
+              </p>
+            </div>
+            <Separator />
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Prévia do E-mail</p>
+              <div className="rounded-lg border bg-muted/30 p-4 text-sm space-y-3">
+                <p className="font-semibold text-foreground">Nota Fiscal para Pagamento</p>
+                <p>
+                  Segue abaixo a nota fiscal referente aos serviços prestados
+                  {contrato ? ` por ${contrato.contato_nome}` : ''}
+                  {contrato?.nome_fantasia ? ` (${contrato.nome_fantasia})` : ''} para processamento de pagamento.
+                </p>
+                <div className="space-y-1 pl-2 border-l-2 border-primary/30">
+                  <p><strong>Número da NF:</strong> {nota.numero}</p>
+                  <p><strong>Valor:</strong> {formatCurrency(nota.valor)}</p>
+                  <p><strong>Data de Vencimento:</strong> {formatDate(nota.data_vencimento)}</p>
+                  <p><strong>Prestador:</strong> {contrato?.contato_nome || '—'}</p>
+                </div>
+                <p>Solicitamos que o pagamento seja efetuado conforme os dados acima até a data de vencimento indicada.</p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailDialogOpen(false)} disabled={sendingEmail}>
+              Cancelar
+            </Button>
+            <Button
+              className="gap-2"
+              disabled={sendingEmail || !emailTo}
+              onClick={async () => {
+                if (!emailTo) return;
+                setSendingEmail(true);
+                try {
+                  const { error } = await supabase.functions.invoke('send-transactional-email', {
+                    body: {
+                      templateName: 'nf-pagamento',
+                      recipientEmail: emailTo,
+                      idempotencyKey: `nf-pagamento-${nota.id}-${Date.now()}`,
+                      templateData: {
+                        nomeColaborador: contrato?.contato_nome || '',
+                        nomeFantasia: contrato?.nome_fantasia || '',
+                        numeroNF: nota.numero,
+                        valor: formatCurrency(nota.valor),
+                        dataVencimento: formatDate(nota.data_vencimento),
+                      },
+                    },
+                  });
+                  if (error) throw error;
+                  toast.success("E-mail enviado com sucesso!");
+                  setEmailDialogOpen(false);
+                } catch (err: any) {
+                  toast.error("Erro ao enviar e-mail: " + (err.message || "Erro desconhecido"));
+                } finally {
+                  setSendingEmail(false);
+                }
+              }}
+            >
+              {sendingEmail ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Enviar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
