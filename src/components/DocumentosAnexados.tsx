@@ -179,6 +179,9 @@ export function DocumentosAnexados({ colaboradorId, contratoPjId, currentFotoUrl
       if (colaboradorId) {
         const { error } = await supabase.from("colaboradores_clt").update({ foto_url: file.url }).eq("id", colaboradorId);
         if (error) throw error;
+      } else if (contratoPjId) {
+        const { error } = await supabase.from("contratos_pj").update({ foto_url: file.url } as any).eq("id", contratoPjId);
+        if (error) throw error;
       }
       onFotoUpdated?.(file.url);
       toast.success("Foto de perfil atualizada!");
