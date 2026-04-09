@@ -403,7 +403,7 @@ export default function ConfigurarPerfis() {
                     <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">Por Tipo de Colaborador</h3>
                     <Separator className="flex-1" />
                   </div>
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* CLT column */}
                     <div>
                       <div className="flex items-center gap-2 mb-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 p-2.5">
