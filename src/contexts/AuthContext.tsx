@@ -9,8 +9,9 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   roles: AppRole[];
-  profile: { full_name: string | null; avatar_url: string | null; department: string | null; position: string | null } | null;
+  profile: { full_name: string | null; avatar_url: string | null; department: string | null; position: string | null; approved: boolean } | null;
   loading: boolean;
+  approved: boolean;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   hasAnyRole: (roles: AppRole[]) => boolean;
