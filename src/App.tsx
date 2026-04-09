@@ -51,6 +51,7 @@ const App = () => (
             <Route path="/recuperar-senha" element={<RecuperarSenha />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/sem-permissao" element={<SemPermissao />} />
+            <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
             <Route path="/cadastro/:token" element={<CadastroPublico />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
 
