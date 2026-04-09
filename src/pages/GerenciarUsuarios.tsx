@@ -420,6 +420,15 @@ export default function GerenciarUsuarios() {
                                 Inativar
                               </Button>
                             )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-destructive hover:text-destructive gap-1"
+                              onClick={() => setDeleteConfirm({ userId: profile.user_id, name: profile.full_name || "Usuário" })}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Deletar
+                            </Button>
                           </div>
                         </TableCell>
                       </TableRow>
