@@ -579,6 +579,12 @@ export default function NotaFiscalDetalhe() {
         </Card>
       )}
 
+      {/* Arquivo da NF */}
+      <ArquivoNFCard
+        nota={nota}
+        onArquivoUpdated={(url) => setNota({ ...nota, arquivo_url: url })}
+      />
+
       {/* Histórico */}
       <Card>
         <CardHeader>
