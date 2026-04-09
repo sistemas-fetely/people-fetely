@@ -1,42 +1,52 @@
 
 
-## Plano: Benefícios com abas CLT e PJ (espelhando Férias)
+## Plano: Aplicar permissões granulares no módulo Notas Fiscais
 
-### Situação atual
-- A página Benefícios é monolítica, usando apenas a tabela `beneficios_colaborador` que referencia `colaboradores_clt`
-- Não existe tabela `beneficios_pj` para contratos PJ
-- A página Férias já tem o padrão correto: wrapper com abas + componentes `FeriasCLTView` e `FeriasPJView`
+### Problema
+As páginas `NotasFiscais.tsx` e `NotaFiscalDetalhe.tsx` não verificam permissões. Um Colaborador PJ com apenas `view` consegue criar, editar, excluir NFs, alterar status no pipeline e enviar e-mail. O RLS no banco impede a gravação, mas a UI não reflete isso.
 
-### O que será feito
+### Permissões já existentes no sistema
+O módulo `notas_fiscais` já possui os 4 CRUD (`view`, `create`, `edit`, `delete`) + a especial `enviar_email`. Mas existe uma lacuna: **alterar status** (pipeline) e **aprovar** são ações distintas de "editar campos". Precisamos de uma nova permissão especial.
 
-#### 1. Migração SQL — Criar tabela `beneficios_pj`
-Mesma estrutura de `beneficios_colaborador`, mas com `contrato_id` referenciando `contratos_pj`:
-- Campos: id, contrato_id (FK → contratos_pj), tipo, descricao, operadora, numero_cartao, valor_empresa, valor_desconto, data_inicio, data_fim, status, observacoes, created_at, updated_at
-- RLS: Admin/HR/Fin ALL, PJ user SELECT own (via contratos_pj.user_id), Gestor direto SELECT
-- Trigger `update_updated_at_column` no UPDATE
+### Nova permissão especial proposta
+| Permissão | Módulo | Descrição |
+|-----------|--------|-----------|
+| `aprovar` | `notas_fiscais` | Permite avançar/alterar status no pipeline da NF |
 
-#### 2. Hook `useBeneficiosPJ` — CRUD para benefícios PJ
-Novo arquivo `src/hooks/useBeneficiosPJ.ts` espelhando `useBeneficios.ts`:
-- `useBeneficiosPJ()` — query com join em `contratos_pj(contato_nome, tipo_servico, departamento)`
-- `useCriarBeneficioPJ()`, `useEditarBeneficioPJ()`, `useExcluirBeneficioPJ()`
+Isso permite que um perfil possa **editar dados** da NF (número, valor, datas) mas sem poder **mudar o status** — ou vice-versa.
 
-#### 3. Componente `BeneficiosCLTView`
-Extrair o conteúdo atual de `Beneficios.tsx` para `src/components/beneficios/BeneficiosCLTView.tsx`. Recebe props `canManage` e `isAdmin` (igual FeriasCLTView).
+### Implementação
 
-#### 4. Componente `BeneficiosPJView`
-Criar `src/components/beneficios/BeneficiosPJView.tsx` espelhando a CLT view, mas usando o hook PJ e buscando contratos PJ no select do formulário.
+#### Passo 1 — Registrar nova permissão especial
+Em `src/hooks/usePermissions.ts`, adicionar ao array `SPECIAL_PERMISSIONS`:
+```
+{ key: "aprovar", label: "Aprovar/Alterar Status", module: "notas_fiscais" }
+```
 
-#### 5. Refatorar `Beneficios.tsx` — wrapper com abas
-Mesmo padrão de `Ferias.tsx`:
-- Importa `useAuth` e `usePermissions`
-- Calcula `showCLT`/`showPJ` baseado em roles e `userTipos`
-- Renderiza `Tabs` com `TabsTrigger` CLT e PJ condicionais
-- Cada aba renderiza o componente view correspondente
+#### Passo 2 — Migração SQL: inserir permissão para perfis admin
+Inserir rows `(role_name, module, permission, granted, colaborador_tipo)` para `super_admin`, `gestor_rh` e `financeiro` com `permission = 'aprovar'`, `module = 'notas_fiscais'`, `granted = true`.
+
+#### Passo 3 — `NotasFiscais.tsx` (listagem)
+- Importar `usePermissions`
+- Calcular: `canCreate`, `canEdit`, `canDelete`
+- Esconder botão **"Nova NF"** se `!canCreate`
+- No dropdown de ações por linha:
+  - Esconder "Editar" se `!canEdit`
+  - Esconder "Excluir" se `!canDelete`
+  - Se nenhuma ação disponível (só "Visualizar"), remover o dropdown e deixar apenas o clique na linha
+
+#### Passo 4 — `NotaFiscalDetalhe.tsx` (detalhe)
+- Importar `usePermissions`
+- Calcular: `canEdit`, `canApprove = hasPermission("notas_fiscais", "aprovar")`, `canSendEmail = hasPermission("notas_fiscais", "enviar_email")`
+- Esconder botão **"Editar"** se `!canEdit`
+- Esconder botão **"Enviar por E-mail"** se `!canSendEmail`
+- **Pipeline de status**: desabilitar todos os botões de mudança de status se `!canApprove`; mostrar o pipeline como read-only (visualização do status atual sem interação)
+- **Ações rápidas** (Cancelada/Vencida): esconder se `!canApprove`
+- Upload/exclusão de arquivo: esconder se `!canEdit`
 
 ### Arquivos alterados
-- **Migração SQL** — criar `beneficios_pj` + RLS + trigger
-- `src/hooks/useBeneficiosPJ.ts` — novo
-- `src/components/beneficios/BeneficiosCLTView.tsx` — novo (extraído de Beneficios.tsx)
-- `src/components/beneficios/BeneficiosPJView.tsx` — novo
-- `src/pages/Beneficios.tsx` — refatorar para wrapper com abas
+- `src/hooks/usePermissions.ts` — adicionar `aprovar` para `notas_fiscais`
+- `src/pages/NotasFiscais.tsx` — condicionar botões/ações
+- `src/pages/NotaFiscalDetalhe.tsx` — condicionar pipeline, e-mail, editar
+- **Migração SQL** — inserir permissão `aprovar` para perfis administrativos
 
