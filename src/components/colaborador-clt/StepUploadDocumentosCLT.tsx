@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
+import { useFormContext } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, X, FileText, Loader2, CheckCircle2 } from "lucide-react";
+import { Upload, X, FileText, Loader2, CheckCircle2, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
