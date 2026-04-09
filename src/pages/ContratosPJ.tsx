@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Briefcase, Plus, Search, MoreHorizontal, Eye, Edit, Trash2,
-  FileCheck, FileClock,
+  FileCheck, FileClock, User,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,6 +76,7 @@ interface ContratoPJ {
   status: string;
   observacoes: string | null;
   created_at: string;
+  foto_url: string | null;
 }
 
 function ContratoPJForm({
@@ -544,11 +546,19 @@ export default function ContratosPJ() {
                   filtered.map((c) => (
                     <TableRow key={c.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/contratos-pj/${c.id}`)}>
                       <TableCell>
-                        <div>
-                          <p className="font-medium text-sm">{c.nome_fantasia || c.razao_social}</p>
-                          {c.nome_fantasia && (
-                            <p className="text-xs text-muted-foreground">{c.razao_social}</p>
-                          )}
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={c.foto_url || undefined} alt={c.contato_nome} className="object-cover" />
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                              {c.contato_nome.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium text-sm">{c.nome_fantasia || c.razao_social}</p>
+                            {c.nome_fantasia && (
+                              <p className="text-xs text-muted-foreground">{c.razao_social}</p>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-sm hidden md:table-cell font-mono">{c.cnpj}</TableCell>
