@@ -540,6 +540,7 @@ export function useDashboardData() {
     aniversariosEmpresa: anivEmpresaQuery.data ?? [],
     semBeneficio: semBeneficioQuery.data ?? [],
     contratosPendentes: contratosPendentesQuery.data ?? [],
+    convitesPreenchidos: convitesPreenchidosQuery.data ?? [],
     custoPj: custoPjComparativoQuery.data ?? { totalAtual: 0, totalAnterior: 0, pagosAtual: 0, pendentesAtual: 0 },
     custoEvolucao: custoEvolucaoQuery.data ?? [],
     custoDept: custoDeptQuery.data ?? [],
