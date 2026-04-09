@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { MODULES, CRUD_PERMISSIONS, SPECIAL_PERMISSIONS, type RolePermission } from "@/hooks/usePermissions";
+import { MODULES, MODULE_CATEGORIES, CRUD_PERMISSIONS, SPECIAL_PERMISSIONS, type RolePermission } from "@/hooks/usePermissions";
 
 const PERMISSION_ICONS: Record<string, React.ReactNode> = {
   view: <Eye className="h-3.5 w-3.5" />,
@@ -305,78 +305,94 @@ export default function ConfigurarPerfis() {
                   </div>
                 </div>
               )}
-              <div className="space-y-4">
-                {MODULES.map((mod) => {
-                  const specialPerms = getModuleSpecialPerms(mod.key);
-                  const allPermsKeys = [
-                    ...CRUD_PERMISSIONS.map((p) => p.key),
-                    ...specialPerms.map((p) => p.key),
-                  ];
-                  const allGranted = allPermsKeys.every(
-                    (p) => localPermissions.get(`${mod.key}:${p}`)
-                  );
-                  const someGranted = allPermsKeys.some(
-                    (p) => localPermissions.get(`${mod.key}:${p}`)
-                  );
-
+              <div className="space-y-6">
+                {MODULE_CATEGORIES.map((cat) => {
+                  const catModules = MODULES.filter((m) => m.category === cat.key);
+                  if (!catModules.length) return null;
                   return (
-                    <div key={mod.key} className="rounded-lg border p-3">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={allGranted}
-                            // @ts-ignore
-                            indeterminate={someGranted && !allGranted}
-                            onCheckedChange={() => toggleModuleAll(mod.key, allPermsKeys)}
-                          />
-                          <span className="text-sm font-semibold">{mod.label}</span>
-                        </div>
-                        <Badge variant={someGranted ? "default" : "outline"} className="text-[10px]">
-                          {allPermsKeys.filter((p) => localPermissions.get(`${mod.key}:${p}`)).length}/{allPermsKeys.length}
-                        </Badge>
+                    <div key={cat.key}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <h3 className={`text-sm font-bold uppercase tracking-wider ${cat.color}`}>
+                          {cat.label}
+                        </h3>
+                        <Separator className="flex-1" />
                       </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {CRUD_PERMISSIONS.map((perm) => {
-                          const granted = localPermissions.get(`${mod.key}:${perm.key}`) || false;
-                          return (
-                            <label
-                              key={perm.key}
-                              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs cursor-pointer transition-colors ${
-                                granted
-                                  ? "bg-primary/10 border-primary/30 text-primary"
-                                  : "hover:bg-muted/50"
-                              }`}
-                            >
-                              <Switch
-                                className="scale-75"
-                                checked={granted}
-                                onCheckedChange={() => togglePermission(mod.key, perm.key)}
-                              />
-                              {PERMISSION_ICONS[perm.key]}
-                              {perm.label}
-                            </label>
+                      <div className="space-y-3">
+                        {catModules.map((mod) => {
+                          const specialPerms = getModuleSpecialPerms(mod.key);
+                          const allPermsKeys = [
+                            ...CRUD_PERMISSIONS.map((p) => p.key),
+                            ...specialPerms.map((p) => p.key),
+                          ];
+                          const allGranted = allPermsKeys.every(
+                            (p) => localPermissions.get(`${mod.key}:${p}`)
                           );
-                        })}
-                        {specialPerms.map((sp) => {
-                          const granted = localPermissions.get(`${mod.key}:${sp.key}`) || false;
+                          const someGranted = allPermsKeys.some(
+                            (p) => localPermissions.get(`${mod.key}:${p}`)
+                          );
+
                           return (
-                            <label
-                              key={sp.key}
-                              className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs cursor-pointer transition-colors ${
-                                granted
-                                  ? "bg-accent/80 border-accent text-accent-foreground"
-                                  : "hover:bg-muted/50 border-dashed"
-                              }`}
-                            >
-                              <Switch
-                                className="scale-75"
-                                checked={granted}
-                                onCheckedChange={() => togglePermission(mod.key, sp.key)}
-                              />
-                              {PERMISSION_ICONS[sp.key]}
-                              {sp.label}
-                            </label>
+                            <div key={mod.key} className="rounded-lg border p-3">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    checked={allGranted}
+                                    // @ts-ignore
+                                    indeterminate={someGranted && !allGranted}
+                                    onCheckedChange={() => toggleModuleAll(mod.key, allPermsKeys)}
+                                  />
+                                  <span className="text-sm font-semibold">{mod.label}</span>
+                                </div>
+                                <Badge variant={someGranted ? "default" : "outline"} className="text-[10px]">
+                                  {allPermsKeys.filter((p) => localPermissions.get(`${mod.key}:${p}`)).length}/{allPermsKeys.length}
+                                </Badge>
+                              </div>
+
+                              <div className="flex flex-wrap gap-2">
+                                {CRUD_PERMISSIONS.map((perm) => {
+                                  const granted = localPermissions.get(`${mod.key}:${perm.key}`) || false;
+                                  return (
+                                    <label
+                                      key={perm.key}
+                                      className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs cursor-pointer transition-colors ${
+                                        granted
+                                          ? "bg-primary/10 border-primary/30 text-primary"
+                                          : "hover:bg-muted/50"
+                                      }`}
+                                    >
+                                      <Switch
+                                        className="scale-75"
+                                        checked={granted}
+                                        onCheckedChange={() => togglePermission(mod.key, perm.key)}
+                                      />
+                                      {PERMISSION_ICONS[perm.key]}
+                                      {perm.label}
+                                    </label>
+                                  );
+                                })}
+                                {specialPerms.map((sp) => {
+                                  const granted = localPermissions.get(`${mod.key}:${sp.key}`) || false;
+                                  return (
+                                    <label
+                                      key={sp.key}
+                                      className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs cursor-pointer transition-colors ${
+                                        granted
+                                          ? "bg-accent/80 border-accent text-accent-foreground"
+                                          : "hover:bg-muted/50 border-dashed"
+                                      }`}
+                                    >
+                                      <Switch
+                                        className="scale-75"
+                                        checked={granted}
+                                        onCheckedChange={() => togglePermission(mod.key, sp.key)}
+                                      />
+                                      {PERMISSION_ICONS[sp.key]}
+                                      {sp.label}
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           );
                         })}
                       </div>
