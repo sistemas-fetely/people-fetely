@@ -98,6 +98,11 @@ interface ContratoPJOption {
 export default function NotasFiscais() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission("notas_fiscais", "create");
+  const canEdit = hasPermission("notas_fiscais", "edit");
+  const canDelete = hasPermission("notas_fiscais", "delete");
+  const hasAnyAction = canEdit || canDelete;
   const { data: statusParams } = useParametros("status_nota_fiscal");
   const statusMap = useMemo(() => {
     if (statusParams && statusParams.length > 0) {
