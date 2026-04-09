@@ -66,8 +66,8 @@ export default function Pessoas() {
   useEffect(() => {
     async function fetch() {
       const [{ data: clts }, { data: pjs }] = await Promise.all([
-        supabase.from("colaboradores_clt").select("id, nome_completo, cargo, departamento, status, data_admissao, salario_base").order("nome_completo"),
-        supabase.from("contratos_pj").select("id, razao_social, nome_fantasia, tipo_servico, departamento, status, data_inicio, valor_mensal").order("razao_social"),
+        supabase.from("colaboradores_clt").select("id, nome_completo, cargo, departamento, status, data_admissao, salario_base, foto_url").order("nome_completo"),
+        supabase.from("contratos_pj").select("id, razao_social, nome_fantasia, tipo_servico, departamento, status, data_inicio, valor_mensal, foto_url").order("razao_social"),
       ]);
 
       const unified: PessoaUnificada[] = [
@@ -80,6 +80,7 @@ export default function Pessoas() {
           status: c.status,
           data_inicio: c.data_admissao,
           valor: c.salario_base,
+          foto_url: c.foto_url,
         })),
         ...(pjs || []).map((p) => ({
           id: p.id,
@@ -90,6 +91,7 @@ export default function Pessoas() {
           status: p.status,
           data_inicio: p.data_inicio,
           valor: p.valor_mensal,
+          foto_url: p.foto_url,
         })),
       ].sort((a, b) => a.nome.localeCompare(b.nome));
 
