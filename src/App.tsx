@@ -17,6 +17,8 @@ import Login from "@/pages/Login";
 import RecuperarSenha from "@/pages/RecuperarSenha";
 import ResetPassword from "@/pages/ResetPassword";
 import SemPermissao from "@/pages/SemPermissao";
+import AguardandoAprovacao from "@/pages/AguardandoAprovacao";
+import GerenciarUsuarios from "@/pages/GerenciarUsuarios";
 import NotFound from "@/pages/NotFound";
 import Parametros from "@/pages/Parametros";
 import ContratosPJ from "@/pages/ContratosPJ";
