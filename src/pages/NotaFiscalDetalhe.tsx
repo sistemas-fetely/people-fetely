@@ -729,11 +729,23 @@ export default function NotaFiscalDetalhe() {
             <CardContent>
               <div className="border rounded-lg overflow-hidden bg-muted/30">
                 {nota.arquivo_url.match(/\.pdf$/i) ? (
-                  <iframe
-                    src={nota.arquivo_url}
-                    className="w-full h-[400px] border-0"
-                    title={`NF ${nota.numero}`}
-                  />
+                  <object
+                    data={nota.arquivo_url}
+                    type="application/pdf"
+                    className="w-full h-[400px]"
+                  >
+                    <div className="flex flex-col items-center justify-center h-[400px] gap-3 text-center p-4">
+                      <FileText className="h-10 w-10 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Não foi possível exibir o PDF no navegador.
+                      </p>
+                      <Button variant="outline" className="gap-2" asChild>
+                        <a href={nota.arquivo_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4" /> Abrir PDF em nova aba
+                        </a>
+                      </Button>
+                    </div>
+                  </object>
                 ) : (
                   <div className="flex items-center justify-center p-4">
                     <img
