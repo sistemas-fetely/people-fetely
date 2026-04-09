@@ -148,6 +148,11 @@ const App = () => (
                   <GerenciarUsuarios />
                 </ProtectedRoute>
               } />
+              <Route path="/configurar-perfis" element={
+                <ProtectedRoute allowedRoles={["super_admin"]}>
+                  <ConfigurarPerfis />
+                </ProtectedRoute>
+              } />
             </Route>
 
             <Route path="*" element={<NotFound />} />
