@@ -22,8 +22,8 @@ const MODULES = [
   // CLT
   { key: "colaboradores", label: "Colaboradores", category: "clt" },
   { key: "folha_pagamento", label: "Folha de Pagamento", category: "clt" },
-  { key: "ferias", label: "Férias", category: "clt" },
-  { key: "beneficios", label: "Benefícios", category: "clt" },
+  { key: "ferias", label: "Férias", category: "geral" },
+  { key: "beneficios", label: "Benefícios", category: "geral" },
   // PJ
   { key: "contratos_pj", label: "Contratos", category: "pj" },
   { key: "notas_fiscais", label: "Notas Fiscais", category: "pj" },
