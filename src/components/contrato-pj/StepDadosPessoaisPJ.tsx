@@ -127,6 +127,7 @@ export function StepDadosPessoaisPJ() {
             <Label htmlFor="nome_pai">Nome do Pai</Label>
             <Input id="nome_pai" {...register("nome_pai")} />
           </div>
+          </div>
         </div>
       </div>
 
