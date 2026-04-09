@@ -371,6 +371,15 @@ export default function GerenciarUsuarios() {
                           </div>
                         </TableCell>
                         <TableCell>
+                          {(() => {
+                            const tipo = (profile as any).colaborador_tipo;
+                            if (tipo === "clt") return <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">CLT</Badge>;
+                            if (tipo === "pj") return <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700">PJ</Badge>;
+                            if (tipo === "ambos") return <div className="flex gap-1"><Badge variant="outline" className="text-xs border-blue-300 text-blue-700">CLT</Badge><Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700">PJ</Badge></div>;
+                            return <span className="text-xs text-muted-foreground">Auto</span>;
+                          })()}
+                        </TableCell>
+                        <TableCell>
                           <div className="flex flex-wrap gap-1">
                             {roles.map((role) => (
                               <Badge key={role} variant="secondary" className="text-xs">
