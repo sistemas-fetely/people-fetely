@@ -158,6 +158,8 @@ export default function GerenciarUsuarios() {
   const openRolesDialog = (userId: string, name: string) => {
     setSelectedUser({ userId, name });
     setSelectedRoles(getUserRoles(userId));
+    const profile = profiles.find((p) => p.user_id === userId);
+    setSelectedColabTipo((profile as any)?.colaborador_tipo || "");
     setRolesDialogOpen(true);
   };
 
