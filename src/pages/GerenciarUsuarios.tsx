@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CheckCircle2, XCircle, UserCheck, UserX, Users, UserPlus,
-  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil, Trash2,
+  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil, Trash2, Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
@@ -54,6 +55,7 @@ async function callManageUser(action: string, payload: Record<string, unknown>) 
 }
 
 export default function GerenciarUsuarios() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [rolesDialogOpen, setRolesDialogOpen] = useState(false);
@@ -448,13 +450,19 @@ export default function GerenciarUsuarios() {
         </TabsContent>
 
         <TabsContent value="perfis" className="mt-4">
+          <div className="flex justify-end mb-4">
+            <Button className="gap-2" onClick={() => navigate("/configurar-perfis")}>
+              <Settings2 className="h-4 w-4" />
+              Configurar Permissões dos Perfis
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {ALL_ROLES.map((role) => {
               const usersWithRole = profiles.filter((p) =>
                 getUserRoles(p.user_id).includes(role)
               );
               return (
-                <Card key={role}>
+                <Card key={role} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/configurar-perfis")}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="h-5 w-5 text-primary" />

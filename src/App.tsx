@@ -35,6 +35,7 @@ import CadastroPublico from "@/pages/CadastroPublico";
 import ConvitesCadastro from "@/pages/ConvitesCadastro";
 import ConviteDetalhe from "@/pages/ConviteDetalhe";
 import Unsubscribe from "@/pages/Unsubscribe";
+import ConfigurarPerfis from "@/pages/ConfigurarPerfis";
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,11 @@ const App = () => (
               <Route path="/gerenciar-usuarios" element={
                 <ProtectedRoute allowedRoles={["super_admin"]}>
                   <GerenciarUsuarios />
+                </ProtectedRoute>
+              } />
+              <Route path="/configurar-perfis" element={
+                <ProtectedRoute allowedRoles={["super_admin"]}>
+                  <ConfigurarPerfis />
                 </ProtectedRoute>
               } />
             </Route>
