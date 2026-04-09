@@ -745,6 +745,29 @@ export default function NotaFiscalDetalhe() {
                 label="Data de vencimento"
               />
             )}
+            {/* Email logs */}
+            {emailLogs.filter((log, idx, arr) => {
+              // Show only the latest status per message_id (sent > pending)
+              if (!log.message_id) return true;
+              const lastForMessage = arr.filter(l => l.message_id === log.message_id).pop();
+              return lastForMessage?.id === log.id;
+            }).map((log) => {
+              const statusLabel = log.status === 'sent' ? 'E-mail enviado' 
+                : log.status === 'pending' ? 'E-mail na fila de envio'
+                : log.status === 'failed' ? 'Falha no envio de e-mail'
+                : `E-mail ${log.status}`;
+              const variant = log.status === 'sent' ? 'email' 
+                : log.status === 'failed' ? 'default' 
+                : 'default';
+              return (
+                <TimelineItem
+                  key={log.id}
+                  date={log.created_at}
+                  label={`${statusLabel} para ${log.recipient_email}`}
+                  variant={variant as any}
+                />
+              );
+            })}
             {nota.data_pagamento && (
               <TimelineItem
                 date={nota.data_pagamento}
