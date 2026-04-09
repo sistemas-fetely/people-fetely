@@ -452,6 +452,17 @@ export default function GerenciarUsuarios() {
                                 <CheckCircle2 className="h-3.5 w-3.5" />
                                 Ativar
                               </Button>
+                            ) : !profile.approved ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-emerald-600 hover:text-emerald-700 gap-1"
+                                onClick={() => approveUser.mutate(profile.user_id)}
+                                disabled={approveUser.isPending}
+                              >
+                                <UserCheck className="h-3.5 w-3.5" />
+                                Aprovar
+                              </Button>
                             ) : (
                               <Button
                                 size="sm"
