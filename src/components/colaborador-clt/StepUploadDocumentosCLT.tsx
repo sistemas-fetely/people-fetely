@@ -41,6 +41,8 @@ const PJ_DOCUMENTS: DocumentSlot[] = [
 export function StepUploadDocumentos({ tipo, folderKey, uploadedFiles, onFilesChange }: StepUploadDocumentosProps) {
   const [uploading, setUploading] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const { setValue, watch } = useFormContext();
+  const currentFotoUrl = watch("foto_url");
 
   const documents = tipo === "clt" ? CLT_DOCUMENTS : PJ_DOCUMENTS;
 
