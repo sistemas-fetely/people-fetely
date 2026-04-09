@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CheckCircle2, XCircle, UserCheck, UserX, Users, UserPlus,
-  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil, Trash2,
+  Shield, ShieldCheck, ShieldAlert, Eye, EyeOff, Pencil, Trash2, Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
