@@ -67,6 +67,7 @@ Deno.serve(async (req) => {
   let idempotencyKey: string
   let messageId: string
   let templateData: Record<string, any> = {}
+  let emailMetadata: Record<string, any> | null = null
   try {
     const body = await req.json()
     templateName = body.templateName || body.template_name
@@ -75,6 +76,9 @@ Deno.serve(async (req) => {
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     if (body.templateData && typeof body.templateData === 'object') {
       templateData = body.templateData
+    }
+    if (body.metadata && typeof body.metadata === 'object') {
+      emailMetadata = body.metadata
     }
   } catch {
     return new Response(
@@ -160,6 +164,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'suppressed',
+      metadata: emailMetadata,
     })
 
     console.log('Email suppressed', { effectiveRecipient, templateName })
@@ -193,6 +198,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'failed',
+      metadata: emailMetadata,
       error_message: 'Failed to look up unsubscribe token',
     })
     return new Response(
@@ -226,6 +232,7 @@ Deno.serve(async (req) => {
         template_name: templateName,
         recipient_email: effectiveRecipient,
         status: 'failed',
+      metadata: emailMetadata,
         error_message: 'Failed to create unsubscribe token',
       })
       return new Response(
@@ -255,6 +262,7 @@ Deno.serve(async (req) => {
         template_name: templateName,
         recipient_email: effectiveRecipient,
         status: 'failed',
+      metadata: emailMetadata,
         error_message: 'Failed to confirm unsubscribe token storage',
       })
       return new Response(
@@ -277,6 +285,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'suppressed',
+      metadata: emailMetadata,
       error_message:
         'Unsubscribe token used but email missing from suppressed list',
     })
@@ -313,6 +322,7 @@ Deno.serve(async (req) => {
     template_name: templateName,
     recipient_email: effectiveRecipient,
     status: 'pending',
+    metadata: emailMetadata,
   })
 
   const { error: enqueueError } = await supabase.rpc('enqueue_email', {
@@ -345,6 +355,7 @@ Deno.serve(async (req) => {
       template_name: templateName,
       recipient_email: effectiveRecipient,
       status: 'failed',
+      metadata: emailMetadata,
       error_message: 'Failed to enqueue email',
     })
 

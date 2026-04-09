@@ -102,12 +102,21 @@ function InfoItem({ label, value, icon: Icon }: { label: string; value: React.Re
   );
 }
 
+interface EmailLog {
+  id: string;
+  created_at: string;
+  status: string;
+  recipient_email: string;
+  message_id: string | null;
+}
+
 export default function NotaFiscalDetalhe() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [nota, setNota] = useState<NotaFiscal | null>(null);
   const [contrato, setContrato] = useState<ContratoPJ | null>(null);
   const [pagamentos, setPagamentos] = useState<PagamentoPJ[]>([]);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [changingStatus, setChangingStatus] = useState(false);
@@ -155,6 +164,15 @@ export default function NotaFiscalDetalhe() {
         .eq("nota_fiscal_id", id)
         .order("created_at", { ascending: false });
       if (pagData) setPagamentos(pagData as PagamentoPJ[]);
+
+      // Fetch email logs for this nota fiscal
+      const { data: emailData } = await supabase
+        .from("email_send_log")
+        .select("id, created_at, status, recipient_email, message_id")
+        .eq("template_name", "nf-pagamento")
+        .contains("metadata", { nota_fiscal_id: id })
+        .order("created_at", { ascending: true });
+      if (emailData) setEmailLogs(emailData as EmailLog[]);
 
       setLoading(false);
     };
@@ -484,6 +502,7 @@ export default function NotaFiscalDetalhe() {
                       templateName: 'nf-pagamento',
                       recipientEmail: emailTo,
                       idempotencyKey: `nf-pagamento-${nota.id}-${Date.now()}`,
+                      metadata: { nota_fiscal_id: nota.id },
                       templateData: {
                         nomeColaborador: contrato?.contato_nome || '',
                         nomeFantasia: contrato?.nome_fantasia || '',
@@ -497,6 +516,14 @@ export default function NotaFiscalDetalhe() {
                   if (error) throw error;
                   toast.success("E-mail enviado com sucesso!");
                   setEmailDialogOpen(false);
+                  // Refresh email logs
+                  const { data: newLogs } = await supabase
+                    .from("email_send_log")
+                    .select("id, created_at, status, recipient_email, message_id")
+                    .eq("template_name", "nf-pagamento")
+                    .contains("metadata", { nota_fiscal_id: nota.id })
+                    .order("created_at", { ascending: true });
+                  if (newLogs) setEmailLogs(newLogs as EmailLog[]);
                 } catch (err: any) {
                   toast.error("Erro ao enviar e-mail: " + (err.message || "Erro desconhecido"));
                 } finally {
@@ -718,6 +745,29 @@ export default function NotaFiscalDetalhe() {
                 label="Data de vencimento"
               />
             )}
+            {/* Email logs */}
+            {emailLogs.filter((log, idx, arr) => {
+              // Show only the latest status per message_id (sent > pending)
+              if (!log.message_id) return true;
+              const lastForMessage = arr.filter(l => l.message_id === log.message_id).pop();
+              return lastForMessage?.id === log.id;
+            }).map((log) => {
+              const statusLabel = log.status === 'sent' ? 'E-mail enviado' 
+                : log.status === 'pending' ? 'E-mail na fila de envio'
+                : log.status === 'failed' ? 'Falha no envio de e-mail'
+                : `E-mail ${log.status}`;
+              const variant = log.status === 'sent' ? 'email' 
+                : log.status === 'failed' ? 'default' 
+                : 'default';
+              return (
+                <TimelineItem
+                  key={log.id}
+                  date={log.created_at}
+                  label={`${statusLabel} para ${log.recipient_email}`}
+                  variant={variant as any}
+                />
+              );
+            })}
             {nota.data_pagamento && (
               <TimelineItem
                 date={nota.data_pagamento}
@@ -881,15 +931,18 @@ function ArquivoNFCard({ nota, onArquivoUpdated }: { nota: NotaFiscal; onArquivo
   );
 }
 
-function TimelineItem({ date, label, variant = "default" }: { date: string; label: string; variant?: "default" | "success" }) {
-  const dotColor = variant === "success" ? "bg-success" : "bg-primary";
+function TimelineItem({ date, label, variant = "default" }: { date: string; label: string; variant?: "default" | "success" | "email" }) {
+  const dotColor = variant === "success" ? "bg-success" : variant === "email" ? "bg-blue-500" : "bg-primary";
   const formatted = date.includes("T") ? format(parseISO(date), "dd/MM/yyyy HH:mm") : format(parseISO(date), "dd/MM/yyyy");
   return (
     <div className="relative flex items-start gap-3">
       <div className={`absolute -left-[14px] top-1.5 h-2.5 w-2.5 rounded-full ${dotColor} ring-2 ring-background`} />
-      <div>
-        <p className="text-sm">{label}</p>
-        <p className="text-xs text-muted-foreground">{formatted}</p>
+      <div className="flex items-start gap-2">
+        {variant === "email" && <Mail className="h-3.5 w-3.5 text-blue-500 mt-0.5 shrink-0" />}
+        <div>
+          <p className="text-sm">{label}</p>
+          <p className="text-xs text-muted-foreground">{formatted}</p>
+        </div>
       </div>
     </div>
   );
