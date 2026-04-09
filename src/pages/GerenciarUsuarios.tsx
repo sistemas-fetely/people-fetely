@@ -192,6 +192,22 @@ export default function GerenciarUsuarios() {
     onError: (err: Error) => toast.error(err.message || "Erro ao deletar usuário"),
   });
 
+  const linkRecord = useMutation({
+    mutationFn: async ({ user_id, colaborador_id, contrato_pj_id }: { user_id: string; colaborador_id?: string; contrato_pj_id?: string }) => {
+      await callManageUser("link_record", { user_id, colaborador_id, contrato_pj_id });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
+      queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      toast.success("Vínculo realizado com sucesso!");
+      setLinkDialogOpen(false);
+      setLinkColaboradorId("");
+      setLinkContratoPjId("");
+    },
+    onError: () => toast.error("Erro ao vincular registro"),
+  });
+
   const getUserRoles = (userId: string) =>
     allRoles.filter((r) => r.user_id === userId).map((r) => r.role);
 
