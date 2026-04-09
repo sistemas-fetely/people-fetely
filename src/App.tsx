@@ -17,6 +17,8 @@ import Login from "@/pages/Login";
 import RecuperarSenha from "@/pages/RecuperarSenha";
 import ResetPassword from "@/pages/ResetPassword";
 import SemPermissao from "@/pages/SemPermissao";
+import AguardandoAprovacao from "@/pages/AguardandoAprovacao";
+import GerenciarUsuarios from "@/pages/GerenciarUsuarios";
 import NotFound from "@/pages/NotFound";
 import Parametros from "@/pages/Parametros";
 import ContratosPJ from "@/pages/ContratosPJ";
@@ -49,6 +51,7 @@ const App = () => (
             <Route path="/recuperar-senha" element={<RecuperarSenha />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/sem-permissao" element={<SemPermissao />} />
+            <Route path="/aguardando-aprovacao" element={<AguardandoAprovacao />} />
             <Route path="/cadastro/:token" element={<CadastroPublico />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
 
@@ -137,6 +140,11 @@ const App = () => (
               <Route path="/configuracoes" element={
                 <ProtectedRoute allowedRoles={["super_admin"]}>
                   <PlaceholderPage title="Configurações" description="Parâmetros do sistema e permissões" />
+                </ProtectedRoute>
+              } />
+              <Route path="/gerenciar-usuarios" element={
+                <ProtectedRoute allowedRoles={["super_admin"]}>
+                  <GerenciarUsuarios />
                 </ProtectedRoute>
               } />
             </Route>

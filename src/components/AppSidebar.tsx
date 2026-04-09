@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, FileText, Calendar, ClipboardList, Award,
   GraduationCap, Building2, GitBranch, BarChart3, Settings, UserCircle,
-  Briefcase, LogOut, ArrowUpDown, Send,
+  Briefcase, LogOut, ArrowUpDown, Send, UserCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
@@ -58,6 +58,7 @@ const adminItems = [
   { title: "Parâmetros CLT", url: "/parametros?modulo=clt", icon: Settings, roles: ["super_admin", "gestor_rh"] as AppRole[] },
   { title: "Parâmetros PJ", url: "/parametros?modulo=pj", icon: Settings, roles: ["super_admin", "gestor_rh"] as AppRole[] },
   { title: "Configurações", url: "/configuracoes", icon: Settings, roles: ["super_admin"] as AppRole[] },
+  { title: "Gerenciar Usuários", url: "/gerenciar-usuarios", icon: UserCheck, roles: ["super_admin"] as AppRole[] },
 ];
 
 interface MenuItem {

@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { user, roles, loading } = useAuth();
+  const { user, roles, loading, approved } = useAuth();
 
   if (loading) {
     return (
@@ -26,6 +26,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!approved) {
+    return <Navigate to="/aguardando-aprovacao" replace />;
   }
 
   if (allowedRoles && allowedRoles.length > 0) {

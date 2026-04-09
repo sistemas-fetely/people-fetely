@@ -9,8 +9,9 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   roles: AppRole[];
-  profile: { full_name: string | null; avatar_url: string | null; department: string | null; position: string | null } | null;
+  profile: { full_name: string | null; avatar_url: string | null; department: string | null; position: string | null; approved: boolean } | null;
   loading: boolean;
+  approved: boolean;
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   hasAnyRole: (roles: AppRole[]) => boolean;
@@ -28,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserData = async (userId: string) => {
     const [rolesRes, profileRes] = await Promise.all([
       supabase.rpc("get_user_roles", { _user_id: userId }),
-      supabase.from("profiles").select("full_name, avatar_url, department, position").eq("user_id", userId).single(),
+      supabase.from("profiles").select("full_name, avatar_url, department, position, approved").eq("user_id", userId).single(),
     ]);
     if (rolesRes.data) setRoles(rolesRes.data as AppRole[]);
     if (profileRes.data) setProfile(profileRes.data);
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const hasAnyRole = (r: AppRole[]) => r.some((role) => roles.includes(role));
 
   return (
-    <AuthContext.Provider value={{ session, user, roles, profile, loading, signOut, hasRole, hasAnyRole }}>
+    <AuthContext.Provider value={{ session, user, roles, profile, loading, approved: profile?.approved ?? false, signOut, hasRole, hasAnyRole }}>
       {children}
     </AuthContext.Provider>
   );
