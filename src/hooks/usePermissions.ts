@@ -21,6 +21,10 @@ const MODULES = [
   { key: "pagamentos_pj", label: "Pagamentos PJ" },
   { key: "organograma", label: "Organograma" },
   { key: "convites", label: "Convites de Cadastro" },
+  { key: "recrutamento", label: "Recrutamento" },
+  { key: "avaliacoes", label: "Avaliações" },
+  { key: "treinamentos", label: "Treinamentos" },
+  { key: "relatorios", label: "Relatórios" },
   { key: "parametros", label: "Parâmetros" },
   { key: "usuarios", label: "Gerenciar Usuários" },
 ] as const;
