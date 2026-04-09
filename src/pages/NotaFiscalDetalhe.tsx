@@ -502,6 +502,7 @@ export default function NotaFiscalDetalhe() {
                       templateName: 'nf-pagamento',
                       recipientEmail: emailTo,
                       idempotencyKey: `nf-pagamento-${nota.id}-${Date.now()}`,
+                      metadata: { nota_fiscal_id: nota.id },
                       templateData: {
                         nomeColaborador: contrato?.contato_nome || '',
                         nomeFantasia: contrato?.nome_fantasia || '',
@@ -515,6 +516,14 @@ export default function NotaFiscalDetalhe() {
                   if (error) throw error;
                   toast.success("E-mail enviado com sucesso!");
                   setEmailDialogOpen(false);
+                  // Refresh email logs
+                  const { data: newLogs } = await supabase
+                    .from("email_send_log")
+                    .select("id, created_at, status, recipient_email, message_id")
+                    .eq("template_name", "nf-pagamento")
+                    .contains("metadata", { nota_fiscal_id: nota.id })
+                    .order("created_at", { ascending: true });
+                  if (newLogs) setEmailLogs(newLogs as EmailLog[]);
                 } catch (err: any) {
                   toast.error("Erro ao enviar e-mail: " + (err.message || "Erro desconhecido"));
                 } finally {
