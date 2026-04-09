@@ -55,6 +55,7 @@ async function callManageUser(action: string, payload: Record<string, unknown>) 
 }
 
 export default function GerenciarUsuarios() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [rolesDialogOpen, setRolesDialogOpen] = useState(false);
