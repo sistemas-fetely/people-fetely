@@ -179,6 +179,7 @@ export default function ConvitesCadastro() {
   // Check expired convites
   const now = new Date();
   const pendentesCount = convites.filter(c => c.status === "pendente" && new Date(c.expira_em) > now).length;
+  const emailEnviadoCount = convites.filter(c => c.status === "email_enviado").length;
   const preenchidosCount = convites.filter(c => c.status === "preenchido").length;
   const expiradosCount = convites.filter(c => c.status === "expirado" || (c.status === "pendente" && new Date(c.expira_em) <= now)).length;
 
