@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -20,6 +21,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setRoles([]);
     setProfile(null);
+    navigate("/login");
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
