@@ -179,6 +179,7 @@ export default function ConvitesCadastro() {
   // Check expired convites
   const now = new Date();
   const pendentesCount = convites.filter(c => c.status === "pendente" && new Date(c.expira_em) > now).length;
+  const emailEnviadoCount = convites.filter(c => c.status === "email_enviado").length;
   const preenchidosCount = convites.filter(c => c.status === "preenchido").length;
   const expiradosCount = convites.filter(c => c.status === "expirado" || (c.status === "pendente" && new Date(c.expira_em) <= now)).length;
 
@@ -195,11 +196,17 @@ export default function ConvitesCadastro() {
       </div>
 
       {/* KPIs */}
-      <div className="grid gap-3 grid-cols-3">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
         <Card className="border-l-[3px] border-l-amber-500">
           <CardContent className="p-3">
             <p className="text-xs text-muted-foreground uppercase">Pendentes</p>
             <p className="text-2xl font-bold">{pendentesCount}</p>
+          </CardContent>
+        </Card>
+        <Card className="border-l-[3px] border-l-sky-500">
+          <CardContent className="p-3">
+            <p className="text-xs text-muted-foreground uppercase">Email Enviado</p>
+            <p className="text-2xl font-bold text-sky-600">{emailEnviadoCount}</p>
           </CardContent>
         </Card>
         <Card className="border-l-[3px] border-l-emerald-500">
