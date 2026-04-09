@@ -29,7 +29,7 @@ function buildTree(posicoes: PosicaoRaw[], colaboradores: ColaboradorVinculado[]
       subordinados_diretos: 0,
       subordinados_totais: 0,
       nome_display: colab ? colab.nome_completo : contrato ? (contrato.nome_fantasia || contrato.contato_nome) : "",
-      foto_url: colab?.foto_url || null,
+      foto_url: colab?.foto_url || contrato?.foto_url || null,
       vinculo: colab ? "CLT" : contrato ? "PJ" : null,
       status_pessoal: colab ? colab.status : contrato ? contrato.status : null,
     };
