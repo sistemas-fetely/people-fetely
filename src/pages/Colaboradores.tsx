@@ -40,7 +40,7 @@ const statusStyles: Record<string, string> = {
   ativo: "bg-success/10 text-success border-0",
   ferias: "bg-info/10 text-info border-0",
   afastado: "bg-warning/10 text-warning border-0",
-  experiencia: "bg-primary/10 text-primary border-0",
+  experiencia: "bg-info/10 text-info border-0",
   desligado: "bg-destructive/10 text-destructive border-0",
 };
 
@@ -134,7 +134,7 @@ export default function Colaboradores() {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="card-shadow">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
               <Users className="h-5 w-5" />
             </div>
             <div>
@@ -251,7 +251,7 @@ export default function Colaboradores() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={c.foto_url || undefined} alt={c.nome_completo} className="object-cover" />
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                            <AvatarFallback className="bg-muted text-foreground text-xs font-semibold">
                               {initials(c.nome_completo)}
                             </AvatarFallback>
                           </Avatar>
@@ -266,7 +266,7 @@ export default function Colaboradores() {
                         {c.departamento}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-0 capitalize">
+                        <Badge variant="outline" className="bg-muted text-foreground border-0 capitalize">
                           {c.tipo_contrato}
                         </Badge>
                       </TableCell>

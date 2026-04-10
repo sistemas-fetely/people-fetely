@@ -481,7 +481,7 @@ export default function ContratosPJ() {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="card-shadow">
           <CardContent className="p-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-foreground">
               <Briefcase className="h-5 w-5" />
             </div>
             <div>
@@ -569,7 +569,7 @@ export default function ContratosPJ() {
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
                             <AvatarImage src={c.foto_url || undefined} alt={c.contato_nome} className="object-cover" />
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                            <AvatarFallback className="bg-muted text-foreground text-xs">
                               {c.contato_nome.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -583,7 +583,7 @@ export default function ContratosPJ() {
                       </TableCell>
                       <TableCell className="text-sm hidden md:table-cell font-mono">{c.cnpj}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="bg-primary/10 text-primary border-0">{c.tipo_servico}</Badge>
+                        <Badge variant="outline" className="bg-muted text-foreground border-0">{c.tipo_servico}</Badge>
                       </TableCell>
                       <TableCell className="text-sm hidden lg:table-cell">{c.departamento}</TableCell>
                       <TableCell className="text-sm font-medium">

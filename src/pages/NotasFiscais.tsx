@@ -221,19 +221,19 @@ export default function NotasFiscais() {
       {/* Mês Atual - Fixed Cards */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <Calendar className="h-3.5 w-3.5 text-primary" />
-          <h2 className="text-xs font-semibold text-primary uppercase tracking-wide capitalize">{nomeMesAtual}</h2>
+          <Calendar className="h-3.5 w-3.5 text-foreground" />
+          <h2 className="text-xs font-semibold text-foreground uppercase tracking-wide capitalize">{nomeMesAtual}</h2>
         </div>
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
-          <Card className="border-l-[3px] border-l-primary bg-gradient-to-br from-primary/5 to-transparent">
+          <Card className="border-l-[3px] border-l-info bg-gradient-to-br from-info/5 to-transparent">
             <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Total NFs</p>
                   <p className="text-lg font-bold mt-0.5">{mesAtualTotal}</p>
                 </div>
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-primary" />
+                <div className="h-8 w-8 rounded-full bg-info/10 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-info" />
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground mt-1">R$ {fmtBRL(mesAtualValor)} total</p>
@@ -291,8 +291,8 @@ export default function NotasFiscais() {
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             <Card className="bg-muted/30 border-dashed">
               <CardContent className="p-4 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-4 w-4 text-primary" />
+                <div className="h-9 w-9 rounded-lg bg-info/10 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-info" />
                 </div>
                 <div>
                   <p className="text-xl font-bold">{filteredTotal}</p>

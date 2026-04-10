@@ -43,7 +43,7 @@ const statusMap: Record<string, string> = {
 const statusStyles: Record<string, string> = {
   pendente: "bg-warning/10 text-warning border-0",
   aprovada: "bg-info/10 text-info border-0",
-  enviada_pagamento: "bg-primary/10 text-primary border-0",
+  enviada_pagamento: "bg-info/10 text-info border-0",
   paga: "bg-success/10 text-success border-0",
   pago: "bg-success/10 text-success border-0",
   cancelada: "bg-destructive/10 text-destructive border-0",
@@ -160,7 +160,7 @@ export default function PagamentosPJ() {
           <div><p className="text-2xl font-bold">R$ {totalValorPago.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p><p className="text-xs text-muted-foreground">Total Pago</p></div>
         </CardContent></Card>
         <Card className="card-shadow"><CardContent className="p-4 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10 text-destructive"><CreditCard className="h-5 w-5" /></div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning"><CreditCard className="h-5 w-5" /></div>
           <div><p className="text-2xl font-bold">R$ {totalValorPendente.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p><p className="text-xs text-muted-foreground">A Pagar</p></div>
         </CardContent></Card>
       </div>

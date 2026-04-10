@@ -37,7 +37,7 @@ const statusStyles: Record<string, string> = {
   preenchido: "bg-emerald-100 text-emerald-700 border-0",
   cadastrado: "bg-blue-100 text-blue-700 border-0",
   expirado: "bg-muted text-muted-foreground border-0",
-  cancelado: "bg-red-100 text-red-700 border-0",
+  cancelado: "bg-muted text-muted-foreground border-0",
 };
 const statusLabels: Record<string, string> = {
   pendente: "Pendente",
@@ -206,13 +206,13 @@ export default function ConvitesCadastro() {
         <Card className="border-l-[3px] border-l-sky-500">
           <CardContent className="p-3">
             <p className="text-xs text-muted-foreground uppercase">Email Enviado</p>
-            <p className="text-2xl font-bold text-sky-600">{emailEnviadoCount}</p>
+            <p className="text-2xl font-bold text-info">{emailEnviadoCount}</p>
           </CardContent>
         </Card>
         <Card className="border-l-[3px] border-l-emerald-500">
           <CardContent className="p-3">
             <p className="text-xs text-muted-foreground uppercase">Preenchidos</p>
-            <p className="text-2xl font-bold text-emerald-600">{preenchidosCount}</p>
+            <p className="text-2xl font-bold text-success">{preenchidosCount}</p>
           </CardContent>
         </Card>
         <Card className="border-l-[3px] border-l-muted">
@@ -270,7 +270,7 @@ export default function ConvitesCadastro() {
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => navigate(`/convites-cadastro/${c.id}`)}
                       >
-                        <TableCell className="font-medium text-primary">{c.nome}</TableCell>
+                        <TableCell className="font-medium">{c.nome}</TableCell>
                         <TableCell className="text-sm">{c.email}</TableCell>
                         <TableCell><Badge variant="outline" className="text-xs">{c.tipo.toUpperCase()}</Badge></TableCell>
                         <TableCell className="text-sm">{c.cargo || "—"}</TableCell>
