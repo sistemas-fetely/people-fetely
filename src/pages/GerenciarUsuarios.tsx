@@ -578,7 +578,7 @@ export default function GerenciarUsuarios() {
                 <Card key={role} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/configurar-perfis")}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-5 w-5 text-primary" />
+                      <ShieldCheck className="h-5 w-5 text-foreground" />
                       <CardTitle className="text-base">{ROLE_LABELS[role]}</CardTitle>
                     </div>
                     <p className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
@@ -594,7 +594,7 @@ export default function GerenciarUsuarios() {
                             const authUser = getAuthUser(p.user_id);
                             return (
                               <div key={p.id} className="flex items-center gap-2 text-sm rounded-md bg-muted/50 px-2 py-1.5">
-                                <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium text-primary">
+                                <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-foreground">
                                   {(p.full_name || "?")[0].toUpperCase()}
                                 </div>
                                 <div className="min-w-0 flex-1">
