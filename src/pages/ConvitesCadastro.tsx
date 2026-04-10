@@ -270,7 +270,7 @@ export default function ConvitesCadastro() {
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => navigate(`/convites-cadastro/${c.id}`)}
                       >
-                        <TableCell className="font-medium text-primary">{c.nome}</TableCell>
+                        <TableCell className="font-medium">{c.nome}</TableCell>
                         <TableCell className="text-sm">{c.email}</TableCell>
                         <TableCell><Badge variant="outline" className="text-xs">{c.tipo.toUpperCase()}</Badge></TableCell>
                         <TableCell className="text-sm">{c.cargo || "—"}</TableCell>
