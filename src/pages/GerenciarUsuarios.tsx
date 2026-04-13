@@ -643,18 +643,54 @@ export default function GerenciarUsuarios() {
             <DialogDescription>{selectedUser?.name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            {ALL_ROLES.map((role) => (
-              <label key={role} className="flex items-center gap-2 rounded-md border p-3 cursor-pointer hover:bg-muted/50">
-                <Checkbox
-                  checked={selectedRoles.includes(role)}
-                  onCheckedChange={() => toggleRole(role)}
-                />
-                <div>
-                  <span className="text-sm font-medium">{ROLE_LABELS[role]}</span>
-                  <p className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
+            {ALL_ROLES.map((role) => {
+              const isGestorDireto = role === "gestor_direto";
+              const currentRecord = selectedUser ? getUserRoleRecord(selectedUser.userId, role) : null;
+              const isManual = currentRecord ? (currentRecord as any).atribuido_manualmente === true : false;
+              const isAutoAssigned = isGestorDireto && selectedRoles.includes(role) && !isManual;
+
+              return (
+                <div key={role} className="rounded-md border p-3 space-y-2">
+                  <label className="flex items-center gap-2 cursor-pointer hover:bg-muted/50">
+                    <Checkbox
+                      checked={selectedRoles.includes(role)}
+                      onCheckedChange={() => toggleRole(role)}
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-medium">{ROLE_LABELS[role]}</span>
+                      <p className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
+                    </div>
+                    {isGestorDireto && selectedRoles.includes(role) && (
+                      <Badge variant="outline" className={`text-[10px] ${isAutoAssigned ? "border-dashed" : ""}`}>
+                        {isAutoAssigned ? "Auto" : "Manual"}
+                      </Badge>
+                    )}
+                  </label>
+                  {isGestorDireto && selectedRoles.includes(role) && (
+                    <div className="flex items-center gap-2 ml-6">
+                      <Switch
+                        checked={isManual}
+                        onCheckedChange={async (checked) => {
+                          if (!selectedUser) return;
+                          const { error } = await supabase
+                            .from("user_roles")
+                            .update({ atribuido_manualmente: checked } as any)
+                            .eq("user_id", selectedUser.userId)
+                            .eq("role", "gestor_direto" as any);
+                          if (error) {
+                            toast.error("Erro ao atualizar flag manual");
+                          } else {
+                            queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
+                            toast.success(checked ? "Marcado como atribuição manual" : "Marcado como atribuição automática");
+                          }
+                        }}
+                      />
+                      <span className="text-xs text-muted-foreground">Atribuído manualmente (protege contra remoção automática)</span>
+                    </div>
+                  )}
                 </div>
-              </label>
-            ))}
+              );
+            })}
           </div>
           <div className="space-y-2 pt-2">
             <Label className="text-sm font-medium">Tipo de Colaborador</Label>
