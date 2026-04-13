@@ -497,8 +497,9 @@ function NotaFiscalFormDialog({ open, onClose, nota, contratos, onSaved }: {
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
-    const { roles } = useAuth();
-    // This won't work - useAuth can't be called inside a handler. Let me fix this differently.
+    if (!isSuperAdmin && (!form.contrato_id || !form.numero.trim() || !form.data_emissao || !form.valor || !form.competencia)) {
+      toast.error("Preencha os campos obrigatórios"); return;
+    }
     setSaving(true);
     const normalizedStatus = form.status === "enviada_p_pagamento" ? "enviada_pagamento" : form.status;
     const payload = {
