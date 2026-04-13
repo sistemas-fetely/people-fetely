@@ -4,7 +4,7 @@ import { useParametros } from "@/hooks/useParametros";
 import { usePermissions } from "@/hooks/usePermissions";
 import {
   FileText, Search, MoreHorizontal, Eye, Edit, Trash2, Plus, Loader2,
-  Calendar, Filter, TrendingUp, Clock, CheckCircle2, AlertTriangle, DollarSign,
+  Calendar, Filter, TrendingUp, Clock, CheckCircle2, AlertTriangle, DollarSign, Upload,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
