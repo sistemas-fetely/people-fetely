@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getTarefasParaTipo } from "@/lib/onboarding-tarefas";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -212,6 +213,41 @@ export default function ColaboradorDetalhe() {
           }
 
           await supabase.from("alertas_agendados").insert(alertas as any);
+
+          // Create onboarding checklist
+          try {
+            const { data: newChecklist } = await supabase
+              .from("onboarding_checklists")
+              .insert({
+                colaborador_id: id,
+                colaborador_tipo: "clt",
+              } as any)
+              .select("id")
+              .single();
+
+            if (newChecklist) {
+              const dataInicioCl = colaborador.data_admissao ? new Date(colaborador.data_admissao) : new Date();
+              const tarefas = getTarefasParaTipo("clt").map((t) => {
+                const prazoDate = new Date(dataInicioCl);
+                prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
+                return {
+                  checklist_id: newChecklist.id,
+                  titulo: t.titulo,
+                  descricao: t.descricao || null,
+                  responsavel_role: t.responsavel_role,
+                  responsavel_user_id:
+                    t.responsavel_role === "colaborador" ? colaborador.user_id :
+                    t.responsavel_role === "gestor_direto" && gestorProfile?.user_id ? gestorProfile.user_id :
+                    null,
+                  prazo_dias: t.prazo_dias,
+                  prazo_data: prazoDate.toISOString().slice(0, 10),
+                };
+              });
+              await supabase.from("onboarding_tarefas").insert(tarefas as any);
+            }
+          } catch (onbErr) {
+            console.error("Erro ao criar onboarding:", onbErr);
+          }
 
         } else if (newStatus === "desligado" && colaborador.user_id) {
           await supabase.functions.invoke("create-portal-access", {
