@@ -18,8 +18,9 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Loader2, Monitor, Package, Settings2, FileText } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Monitor, Package, Settings2, FileText, ShieldCheck } from "lucide-react";
 import type { Parametro } from "@/hooks/useParametros";
+import GruposAcessoTab from "@/components/grupos-acesso/GruposAcessoTab";
 
 interface CategoriaConfig {
   value: string;
@@ -54,6 +55,7 @@ const MODULO_MAP: Record<string, { title: string; categorias: CategoriaConfig[] 
   geral: { title: "Parâmetros Gerais", categorias: CATEGORIAS_GERAL },
   clt: { title: "Parâmetros CLT", categorias: CATEGORIAS_CLT },
   pj: { title: "Parâmetros PJ", categorias: CATEGORIAS_PJ },
+  grupos_acesso: { title: "Grupos de Acesso", categorias: [] },
 };
 
 function ParametroForm({
@@ -186,6 +188,20 @@ export default function Parametros() {
     ...cat,
     items: (allParams || []).filter((p) => p.categoria === cat.value),
   }));
+
+  if (modulo === "grupos_acesso") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Grupos de Acesso</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Define automaticamente o perfil de cada colaborador no portal
+          </p>
+        </div>
+        <GruposAcessoTab />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

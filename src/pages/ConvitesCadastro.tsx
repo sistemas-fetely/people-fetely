@@ -74,9 +74,17 @@ export default function ConvitesCadastro() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("todos");
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ nome: "", email: "", tipo: "clt", cargo: "", departamento: "" });
+  const [form, setForm] = useState({ nome: "", email: "", tipo: "clt", cargo: "", departamento: "", grupo_acesso_id: "" });
 
   const { data: departamentos } = useParametros("departamento");
+
+  // Fetch grupos de acesso
+  const [gruposAcesso, setGruposAcesso] = useState<any[]>([]);
+  useEffect(() => {
+    supabase.from("grupos_acesso").select("*").eq("ativo", true).order("nome").then(({ data }) => {
+      setGruposAcesso((data || []) as any[]);
+    });
+  }, []);
 
   const fetchConvites = async () => {
     const { data, error } = await supabase
@@ -103,6 +111,7 @@ export default function ConvitesCadastro() {
           cargo: form.cargo.trim() || null,
           departamento: form.departamento || null,
           criado_por: user?.id || null,
+          grupo_acesso_id: form.grupo_acesso_id || null,
         } as any)
         .select()
         .single();
@@ -110,7 +119,7 @@ export default function ConvitesCadastro() {
       if (error) throw error;
       toast.success("Convite criado com sucesso!");
       setFormOpen(false);
-      setForm({ nome: "", email: "", tipo: "clt", cargo: "", departamento: "" });
+      setForm({ nome: "", email: "", tipo: "clt", cargo: "", departamento: "", grupo_acesso_id: "" });
       fetchConvites();
     } catch (err: any) {
       toast.error(err.message);
@@ -345,6 +354,20 @@ export default function ConvitesCadastro() {
               ) : (
                 <Input value={form.departamento} onChange={(e) => setForm({ ...form, departamento: e.target.value })} placeholder="Departamento" />
               )}
+            </div>
+            <div>
+              <Label>Grupo de Acesso</Label>
+              <Select value={form.grupo_acesso_id} onValueChange={(v) => setForm({ ...form, grupo_acesso_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione (opcional)" /></SelectTrigger>
+                <SelectContent>
+                  {gruposAcesso
+                    .filter((g) => g.tipo_colaborador === form.tipo || g.tipo_colaborador === "ambos")
+                    .map((g: any) => (
+                      <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Define o role automático ao ativar o colaborador</p>
             </div>
             <p className="text-xs text-muted-foreground">O convite expira automaticamente em 7 dias.</p>
           </div>

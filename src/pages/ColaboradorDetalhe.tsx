@@ -110,6 +110,29 @@ export default function ColaboradorDetalhe() {
     } else {
       setColaborador({ ...colaborador, status: newStatus });
       toast.success(newStatus === "desligado" ? "Colaborador inativado" : "Colaborador reativado");
+
+      // Portal access automation
+      try {
+        if (newStatus === "ativo" && colaborador.email_pessoal) {
+          await supabase.functions.invoke("create-portal-access", {
+            body: {
+              action: "activate",
+              email: colaborador.email_pessoal,
+              nome: colaborador.nome_completo,
+              colaborador_id: id,
+              tipo: "clt",
+            },
+          });
+          toast.success("Acesso ao portal criado automaticamente");
+        } else if (newStatus === "desligado" && colaborador.user_id) {
+          await supabase.functions.invoke("create-portal-access", {
+            body: { action: "revoke", user_id: colaborador.user_id },
+          });
+          toast.info("Acesso ao portal revogado");
+        }
+      } catch (portalErr) {
+        console.error("Erro na automação de acesso:", portalErr);
+      }
     }
     setTogglingStatus(false);
     setStatusDialogOpen(false);
