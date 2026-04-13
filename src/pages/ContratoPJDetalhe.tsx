@@ -323,7 +323,7 @@ export default function ContratoPJDetalhe() {
         email_corporativo, ramal, data_integracao,
         titulo_eleitor, zona_eleitoral, secao_eleitoral,
         cnh_numero, cnh_categoria, cnh_validade, certificado_reservista,
-        valor_mensal,
+        valor_mensal, gestor_direto_id,
         ...rest
       } = data;
 
