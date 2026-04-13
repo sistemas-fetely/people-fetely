@@ -65,7 +65,7 @@ const roleLabels: Record<string, string> = {
 
 export default function Onboarding() {
   const { user } = useAuth();
-  const { roles } = usePermissions();
+  const { userRoles: roles } = usePermissions();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
