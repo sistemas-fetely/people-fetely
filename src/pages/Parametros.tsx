@@ -302,13 +302,12 @@ export default function Parametros() {
                               </div>
                             </div>
                             <div className="flex items-center gap-2 ml-2">
-                              {isCargos && (
-                                <div className="flex items-center gap-1.5" title={isSuperAdmin ? "C-Level" : "Apenas Super Admin pode alterar"}>
+                              {isCargos && isSuperAdmin && (
+                                <div className="flex items-center gap-1.5" title="C-Level">
                                   <span className="text-[10px] text-muted-foreground hidden sm:inline">C-Level</span>
                                   <Switch
                                     checked={param.is_clevel}
                                     onCheckedChange={() => handleToggleCLevel(param)}
-                                    disabled={!isSuperAdmin}
                                     className="data-[state=checked]:bg-orange-500"
                                   />
                                 </div>
