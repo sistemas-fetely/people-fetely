@@ -280,6 +280,7 @@ export default function ContratoPJDetalhe() {
         dia_vencimento: ct.dia_vencimento || 10,
         renovacao_automatica: ct.renovacao_automatica,
         status: ct.status,
+        gestor_direto_id: ct.gestor_direto_id || "",
         // Banking fields
         banco_nome: ct.banco_nome || "",
         banco_codigo: ct.banco_codigo || "",
