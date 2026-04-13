@@ -391,7 +391,7 @@ export default function NotasFiscais() {
                   <TableRow key={n.id} className="hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => navigate(`/notas-fiscais/${n.id}`)}>
                     <TableCell className="font-medium">{n.numero}{n.serie ? `/${n.serie}` : ""}</TableCell>
                     <TableCell className="text-sm">{n.contrato_nome}</TableCell>
-                    <TableCell className="text-sm hidden md:table-cell">{n.competencia ? format(parseISO(n.competencia), "dd/MM/yyyy") : "—"}</TableCell>
+                    <TableCell className="text-sm hidden md:table-cell">{n.competencia ? format(parseISO(n.competencia), "MM/yyyy") : "—"}</TableCell>
                     <TableCell className="text-sm hidden md:table-cell">{format(parseISO(n.data_emissao), "dd/MM/yyyy")}</TableCell>
                     <TableCell>R$ {Number(n.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</TableCell>
                     <TableCell className="text-sm hidden lg:table-cell">{n.data_vencimento ? format(parseISO(n.data_vencimento), "dd/MM/yyyy") : "—"}</TableCell>
@@ -566,7 +566,7 @@ function NotaFiscalFormDialog({ open, onClose, nota, contratos, onSaved }: {
           <div><Label>Número *</Label><Input value={form.numero} onChange={(e) => set("numero", e.target.value)} /></div>
           <div><Label>Série</Label><Input value={form.serie} onChange={(e) => set("serie", e.target.value)} /></div>
           <div><Label>Valor (R$) *</Label><Input type="number" step="0.01" value={form.valor} onChange={(e) => set("valor", e.target.value)} /></div>
-          <div><Label>Competência *</Label><Input type="date" value={form.competencia} onChange={(e) => set("competencia", e.target.value)} /></div>
+          <div><Label>Competência *</Label><Input type="month" value={form.competencia} onChange={(e) => set("competencia", e.target.value)} /></div>
           <div><Label>Data Emissão *</Label><Input type="date" value={form.data_emissao} onChange={(e) => set("data_emissao", e.target.value)} /></div>
           <div><Label>Data Vencimento</Label><Input type="date" value={form.data_vencimento} onChange={(e) => set("data_vencimento", e.target.value)} /></div>
           <div>
