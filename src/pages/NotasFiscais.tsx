@@ -468,6 +468,8 @@ export default function NotasFiscais() {
 function NotaFiscalFormDialog({ open, onClose, nota, contratos, onSaved }: {
   open: boolean; onClose: () => void; nota: NotaComContrato | null; contratos: ContratoPJOption[]; onSaved: () => void;
 }) {
+  const { roles } = useAuth();
+  const isSuperAdmin = roles.includes("super_admin");
   const { data: statusParams } = useParametros("status_nota_fiscal");
   const statusMap = useMemo(() => {
     if (statusParams && statusParams.length > 0) {
