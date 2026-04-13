@@ -215,9 +215,14 @@ export default function NotasFiscais() {
           <p className="text-muted-foreground text-sm mt-1">Gestão de notas fiscais de todos os contratos PJ</p>
         </div>
         {canCreate && (
-          <Button className="gap-2" onClick={() => { setEditNota(null); setFormOpen(true); }}>
-            <Plus className="h-4 w-4" /> Nova NF
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4" /> Importar PDF
+            </Button>
+            <Button className="gap-2" onClick={() => { setEditNota(null); setFormOpen(true); }}>
+              <Plus className="h-4 w-4" /> Nova NF
+            </Button>
+          </div>
         )}
       </div>
 
