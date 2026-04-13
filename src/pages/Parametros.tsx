@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -143,6 +144,7 @@ export default function Parametros() {
   const modulo = searchParams.get("modulo") || "geral";
   const config = MODULO_MAP[modulo] || MODULO_MAP.geral;
   const CATEGORIAS = config.categorias;
+  const { isSuperAdmin } = usePermissions();
 
   const { data: allParams, isLoading } = useAllParametros();
   const queryClient = useQueryClient();
@@ -151,6 +153,7 @@ export default function Parametros() {
   const [formCategoria, setFormCategoria] = useState(CATEGORIAS[0]?.value || "");
   const [deleteTarget, setDeleteTarget] = useState<Parametro | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [clevelConfirm, setClevelConfirm] = useState<Parametro | null>(null);
 
   const handleToggleAtivo = async (param: Parametro) => {
     const { error } = await supabase
@@ -159,6 +162,32 @@ export default function Parametros() {
       .eq("id", param.id);
     if (error) { toast.error("Erro ao atualizar"); return; }
     queryClient.invalidateQueries({ queryKey: ["parametros"] });
+  };
+
+  const handleToggleCLevel = async (param: Parametro) => {
+    if (!param.is_clevel) {
+      // About to mark as C-Level — show confirmation first
+      setClevelConfirm(param);
+      return;
+    }
+    // Removing C-Level — do it directly
+    await doToggleCLevel(param);
+  };
+
+  const doToggleCLevel = async (param: Parametro) => {
+    const { error } = await supabase
+      .from("parametros")
+      .update({ is_clevel: !param.is_clevel } as any)
+      .eq("id", param.id);
+    if (error) { toast.error("Erro ao atualizar"); return; }
+    toast.success(param.is_clevel ? "Restrição C-Level removida" : "Cargo marcado como C-Level");
+    queryClient.invalidateQueries({ queryKey: ["parametros"] });
+  };
+
+  const handleConfirmCLevel = async () => {
+    if (!clevelConfirm) return;
+    await doToggleCLevel(clevelConfirm);
+    setClevelConfirm(null);
   };
 
   const handleDelete = async () => {
@@ -227,71 +256,90 @@ export default function Parametros() {
             ))}
           </TabsList>
 
-          {grouped.map((cat) => (
-            <TabsContent key={cat.value} value={cat.value}>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <div>
-                    <CardTitle className="text-lg">{cat.label}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{cat.description}</p>
-                  </div>
-                  <Button onClick={() => openNew(cat.value)} className="gap-2" size="sm">
-                    <Plus className="h-4 w-4" /> Adicionar
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  {cat.items.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">
-                      Nenhum parâmetro cadastrado nesta categoria.
-                    </p>
-                  ) : (
-                    <div className="space-y-2">
-                      {cat.items.map((param) => (
-                        <div
-                          key={param.id}
-                          className="flex items-center justify-between border rounded-lg p-3 hover:bg-muted/50 transition-colors"
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <Switch
-                              checked={param.ativo}
-                              onCheckedChange={() => handleToggleAtivo(param)}
-                            />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm">{param.label}</span>
-                                <Badge variant="outline" className="text-[10px] font-mono">
-                                  {param.valor}
-                                </Badge>
-                                {!param.ativo && (
-                                  <Badge variant="secondary" className="text-[10px]">Inativo</Badge>
+          {grouped.map((cat) => {
+            const isCargos = cat.value === "cargo";
+            return (
+              <TabsContent key={cat.value} value={cat.value}>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <div>
+                      <CardTitle className="text-lg">{cat.label}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{cat.description}</p>
+                    </div>
+                    <Button onClick={() => openNew(cat.value)} className="gap-2" size="sm">
+                      <Plus className="h-4 w-4" /> Adicionar
+                    </Button>
+                  </CardHeader>
+                  <CardContent>
+                    {cat.items.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        Nenhum parâmetro cadastrado nesta categoria.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {cat.items.map((param) => (
+                          <div
+                            key={param.id}
+                            className="flex items-center justify-between border rounded-lg p-3 hover:bg-muted/50 transition-colors"
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <Switch
+                                checked={param.ativo}
+                                onCheckedChange={() => handleToggleAtivo(param)}
+                              />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-medium text-sm">{param.label}</span>
+                                  <Badge variant="outline" className="text-[10px] font-mono">
+                                    {param.valor}
+                                  </Badge>
+                                  {!param.ativo && (
+                                    <Badge variant="secondary" className="text-[10px]">Inativo</Badge>
+                                  )}
+                                  {isCargos && param.is_clevel && (
+                                    <Badge className="text-[10px] bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-700">
+                                      C-Level 🔒
+                                    </Badge>
+                                  )}
+                                </div>
+                                {param.descricao && (
+                                  <p className="text-xs text-muted-foreground truncate">{param.descricao}</p>
                                 )}
                               </div>
-                              {param.descricao && (
-                                <p className="text-xs text-muted-foreground truncate">{param.descricao}</p>
+                            </div>
+                            <div className="flex items-center gap-2 ml-2">
+                              {isCargos && (
+                                <div className="flex items-center gap-1.5" title={isSuperAdmin ? "C-Level" : "Apenas Super Admin pode alterar"}>
+                                  <span className="text-[10px] text-muted-foreground hidden sm:inline">C-Level</span>
+                                  <Switch
+                                    checked={param.is_clevel}
+                                    onCheckedChange={() => handleToggleCLevel(param)}
+                                    disabled={!isSuperAdmin}
+                                    className="data-[state=checked]:bg-orange-500"
+                                  />
+                                </div>
                               )}
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(param)}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                onClick={() => setDeleteTarget(param)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1 ml-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(param)}>
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                              onClick={() => setDeleteTarget(param)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          ))}
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            );
+          })}
         </Tabs>
       )}
 
@@ -316,6 +364,24 @@ export default function Parametros() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* C-Level confirmation dialog */}
+      <AlertDialog open={!!clevelConfirm} onOpenChange={() => setClevelConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Marcar como C-Level?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Marcar o cargo "{clevelConfirm?.label}" como C-Level restringirá a visibilidade do salário apenas ao Super Admin. Outros perfis (incluindo Admin RH) não poderão visualizar salários de colaboradores neste cargo. Confirmar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCLevel} className="bg-orange-600 text-white hover:bg-orange-700">
+              Confirmar C-Level
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
