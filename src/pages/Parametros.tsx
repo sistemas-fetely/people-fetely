@@ -153,7 +153,7 @@ export default function Parametros() {
   const [formCategoria, setFormCategoria] = useState(CATEGORIAS[0]?.value || "");
   const [deleteTarget, setDeleteTarget] = useState<Parametro | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [clevelConfirm, setClevelConfirm] = useState<Parametro | null>(null);
+  const [clevelConfirm, setClevelConfirm] = useState<{ param: Parametro; enabling: boolean } | null>(null);
 
   const handleToggleAtivo = async (param: Parametro) => {
     const { error } = await supabase
@@ -165,13 +165,7 @@ export default function Parametros() {
   };
 
   const handleToggleCLevel = async (param: Parametro) => {
-    if (!param.is_clevel) {
-      // About to mark as C-Level — show confirmation first
-      setClevelConfirm(param);
-      return;
-    }
-    // Removing C-Level — do it directly
-    await doToggleCLevel(param);
+    setClevelConfirm({ param, enabling: !param.is_clevel });
   };
 
   const doToggleCLevel = async (param: Parametro) => {
@@ -186,7 +180,7 @@ export default function Parametros() {
 
   const handleConfirmCLevel = async () => {
     if (!clevelConfirm) return;
-    await doToggleCLevel(clevelConfirm);
+    await doToggleCLevel(clevelConfirm.param);
     setClevelConfirm(null);
   };
 
@@ -308,13 +302,12 @@ export default function Parametros() {
                               </div>
                             </div>
                             <div className="flex items-center gap-2 ml-2">
-                              {isCargos && (
-                                <div className="flex items-center gap-1.5" title={isSuperAdmin ? "C-Level" : "Apenas Super Admin pode alterar"}>
+                              {isCargos && isSuperAdmin && (
+                                <div className="flex items-center gap-1.5" title="C-Level">
                                   <span className="text-[10px] text-muted-foreground hidden sm:inline">C-Level</span>
                                   <Switch
                                     checked={param.is_clevel}
                                     onCheckedChange={() => handleToggleCLevel(param)}
-                                    disabled={!isSuperAdmin}
                                     className="data-[state=checked]:bg-orange-500"
                                   />
                                 </div>
@@ -373,15 +366,19 @@ export default function Parametros() {
       <AlertDialog open={!!clevelConfirm} onOpenChange={() => setClevelConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Marcar como C-Level?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {clevelConfirm?.enabling ? "Marcar como C-Level?" : "Remover restrição C-Level?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Marcar o cargo "{clevelConfirm?.label}" como C-Level restringirá a visibilidade do salário apenas ao Super Admin. Outros perfis (incluindo Admin RH) não poderão visualizar salários de colaboradores neste cargo. Confirmar?
+              {clevelConfirm?.enabling
+                ? `Marcar o cargo "${clevelConfirm?.param.label}" como C-Level restringirá a visibilidade do salário apenas ao Super Admin. Outros perfis (incluindo Admin RH) não poderão visualizar salários de colaboradores neste cargo. Confirmar?`
+                : `Remover restrição C-Level de "${clevelConfirm?.param.label}"? O salário ficará visível para Admin RH também. Confirmar?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmCLevel} className="bg-orange-600 text-white hover:bg-orange-700">
-              Confirmar C-Level
+              Confirmar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
