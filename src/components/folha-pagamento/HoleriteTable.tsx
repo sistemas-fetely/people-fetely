@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useCLevelCargos } from "@/hooks/useCLevelCargos";
 import type { HoleriteComColaborador } from "@/hooks/useFolhaPagamento";
 
 const fmt = (v: number | null) =>
@@ -14,20 +16,30 @@ interface Props {
 
 export function HoleriteTable({ holerites, onSelect }: Props) {
   const [busca, setBusca] = useState("");
+  const { canSeeSalary } = usePermissions();
+  const { isCargoClevel } = useCLevelCargos();
 
   const filtered = holerites.filter((h) =>
     (h.colaborador?.nome_completo ?? "").toLowerCase().includes(busca.toLowerCase()) ||
     (h.colaborador?.departamento ?? "").toLowerCase().includes(busca.toLowerCase())
   );
 
+  // Filter out C-Level collaborators whose salary the user can't see
+  const visible = filtered.filter((h) => {
+    const cargo = h.colaborador?.cargo;
+    return canSeeSalary(isCargoClevel(cargo));
+  });
+
   const totais = {
-    bruto: filtered.reduce((s, h) => s + (h.total_proventos ?? 0), 0),
-    inss: filtered.reduce((s, h) => s + (h.inss ?? 0), 0),
-    irrf: filtered.reduce((s, h) => s + (h.irrf ?? 0), 0),
-    descontos: filtered.reduce((s, h) => s + (h.total_descontos ?? 0), 0),
-    liquido: filtered.reduce((s, h) => s + (h.salario_liquido ?? 0), 0),
-    fgts: filtered.reduce((s, h) => s + (h.fgts ?? 0), 0),
+    bruto: visible.reduce((s, h) => s + (h.total_proventos ?? 0), 0),
+    inss: visible.reduce((s, h) => s + (h.inss ?? 0), 0),
+    irrf: visible.reduce((s, h) => s + (h.irrf ?? 0), 0),
+    descontos: visible.reduce((s, h) => s + (h.total_descontos ?? 0), 0),
+    liquido: visible.reduce((s, h) => s + (h.salario_liquido ?? 0), 0),
+    fgts: visible.reduce((s, h) => s + (h.fgts ?? 0), 0),
   };
+
+  const hiddenCount = filtered.length - visible.length;
 
   return (
     <div className="space-y-3">
@@ -57,7 +69,7 @@ export function HoleriteTable({ holerites, onSelect }: Props) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {visible.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                   {holerites.length === 0
@@ -66,7 +78,7 @@ export function HoleriteTable({ holerites, onSelect }: Props) {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((h) => (
+              visible.map((h) => (
                 <TableRow
                   key={h.id}
                   className="cursor-pointer"
@@ -85,10 +97,10 @@ export function HoleriteTable({ holerites, onSelect }: Props) {
               ))
             )}
           </TableBody>
-          {filtered.length > 0 && (
+          {visible.length > 0 && (
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={3} className="font-semibold">Totais ({filtered.length})</TableCell>
+                <TableCell colSpan={3} className="font-semibold">Totais ({visible.length})</TableCell>
                 <TableCell className="text-right font-semibold">{fmt(totais.bruto)}</TableCell>
                 <TableCell className="text-right font-semibold text-red-600">{fmt(totais.inss)}</TableCell>
                 <TableCell className="text-right font-semibold text-red-600">{fmt(totais.irrf)}</TableCell>
@@ -100,6 +112,11 @@ export function HoleriteTable({ holerites, onSelect }: Props) {
           )}
         </Table>
       </div>
+      {hiddenCount > 0 && (
+        <p className="text-xs text-muted-foreground italic">
+          * {hiddenCount} holerite(s) C-Level oculto(s)
+        </p>
+      )}
     </div>
   );
 }

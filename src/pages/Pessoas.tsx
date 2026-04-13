@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useCLevelCargos } from "@/hooks/useCLevelCargos";
 
 interface PessoaUnificada {
   id: string;
@@ -57,6 +59,8 @@ const statusStyles: Record<string, string> = {
 
 export default function Pessoas() {
   const navigate = useNavigate();
+  const { canSeeSalary } = usePermissions();
+  const { isCargoClevel } = useCLevelCargos();
   const [pessoas, setPessoas] = useState<PessoaUnificada[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

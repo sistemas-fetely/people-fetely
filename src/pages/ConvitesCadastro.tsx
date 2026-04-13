@@ -39,6 +39,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO, addDays, differenceInDays, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useParametros } from "@/hooks/useParametros";
+import { useCLevelCargos } from "@/hooks/useCLevelCargos";
+import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -161,6 +163,8 @@ export default function ConvitesCadastro() {
 
   const { data: departamentos } = useParametros("departamento");
   const { data: cargos } = useParametros("cargo");
+  const { isCargoClevel } = useCLevelCargos();
+  const { canSeeSalary, isSuperAdmin } = usePermissions();
 
   const canSeeSensitive = hasAnyRole(["super_admin", "admin_rh"]);
   const isGestorDireto = !hasAnyRole(["super_admin", "admin_rh", "gestor_rh"]) && hasAnyRole(["gestor_direto"]);
@@ -537,7 +541,11 @@ export default function ConvitesCadastro() {
                         {!isGestorDireto && <TableCell className="text-sm hidden xl:table-cell">{c.grupo_acesso_id ? (grupoMap.get(c.grupo_acesso_id) || "—") : "—"}</TableCell>}
                         {canSeeSensitive && (
                           <TableCell className="text-sm hidden xl:table-cell">
-                            {c.salario_previsto ? `R$ ${Number(c.salario_previsto).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
+                            {c.salario_previsto
+                              ? canSeeSalary(isCargoClevel(c.cargo))
+                                ? `R$ ${Number(c.salario_previsto).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
+                                : "🔒"
+                              : "—"}
                           </TableCell>
                         )}
                         <TableCell>
@@ -629,7 +637,7 @@ export default function ConvitesCadastro() {
                       <div><span className="text-xs text-muted-foreground">Tipo</span><p className="font-medium">{reviewTarget.tipo.toUpperCase()}</p></div>
                       {reviewTarget.cargo && <div><span className="text-xs text-muted-foreground">Cargo</span><p className="font-medium">{reviewTarget.cargo}</p></div>}
                       {reviewTarget.departamento && <div><span className="text-xs text-muted-foreground">Departamento</span><p className="font-medium">{reviewTarget.departamento}</p></div>}
-                      {canSeeSensitive && reviewTarget.salario_previsto && (
+                      {canSeeSalary(isCargoClevel(reviewTarget.cargo)) && reviewTarget.salario_previsto && (
                         <div><span className="text-xs text-muted-foreground flex items-center gap-1"><Lock className="h-3 w-3" /> Salário</span><p className="font-medium">R$ {Number(reviewTarget.salario_previsto).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p></div>
                       )}
                       {reviewTarget.data_inicio_prevista && (
@@ -832,18 +840,36 @@ export default function ConvitesCadastro() {
               </div>
 
               {/* Section 3: Dados Sensíveis */}
-              {canSeeSensitive && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800 p-4 space-y-4">
-                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> Dados Sensíveis</h3>
-                  <div>
-                    <Label className="flex items-center gap-2">
-                      {form.tipo === "clt" ? "Salário Base (R$)" : "Valor Mensal (R$)"}
-                      <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1"><Lock className="h-3 w-3" /> Dado sensível</span>
-                    </Label>
-                    <Input type="number" step="0.01" min="0" value={form.salario_previsto} onChange={(e) => setForm({ ...form, salario_previsto: e.target.value })} placeholder="0,00" />
-                  </div>
-                </div>
-              )}
+              {(() => {
+                const selectedCargoCLevel = isCargoClevel(form.cargo);
+                const showSalaryField = selectedCargoCLevel ? isSuperAdmin : canSeeSensitive;
+                return (
+                  <>
+                    {selectedCargoCLevel && !isSuperAdmin && form.cargo && (
+                      <p className="text-xs text-muted-foreground italic">
+                        Este é um cargo C-Level. O salário será definido pelo Super Admin.
+                      </p>
+                    )}
+                    {showSalaryField && (
+                      <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800 p-4 space-y-4">
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2"><Lock className="h-3.5 w-3.5" /> Dados Sensíveis</h3>
+                        <div>
+                          <Label className="flex items-center gap-2">
+                            {form.tipo === "clt" ? "Salário Base (R$)" : "Valor Mensal (R$)"}
+                            <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1"><Lock className="h-3 w-3" /> Dado sensível</span>
+                            {selectedCargoCLevel && (
+                              <Badge className="text-[10px] bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-700 ml-1">
+                                C-Level 🔒
+                              </Badge>
+                            )}
+                          </Label>
+                          <Input type="number" step="0.01" min="0" value={form.salario_previsto} onChange={(e) => setForm({ ...form, salario_previsto: e.target.value })} placeholder="0,00" />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
               {/* Section 4: Configurações */}
               <div className="space-y-4">

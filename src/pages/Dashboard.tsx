@@ -12,6 +12,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
 } from "recharts";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -91,6 +92,7 @@ export default function Dashboard() {
     mesAtualLabel,
     isLoading,
   } = useDashboardData();
+  const { isSuperAdmin } = usePermissions();
 
   const statusData = useMemo(() => Object.entries(statusClt).map(([status, value]) => ({
     name: STATUS_LABELS[status] || status, value,
@@ -195,7 +197,10 @@ export default function Dashboard() {
           valorAnterior={custoTotalMesAnterior}
           icon={DollarSign}
           invertColor
-          subtitle={`CLT ${formatBRL(custoTotalCltAtual)} + PJ ${formatBRL(custoPj.totalAtual)}`}
+          subtitle={isSuperAdmin
+            ? `CLT ${formatBRL(custoTotalCltAtual)} + PJ ${formatBRL(custoPj.totalAtual)}`
+            : `CLT ${formatBRL(custoTotalCltAtual)} + PJ ${formatBRL(custoPj.totalAtual)} · * valores C-Level excluídos`
+          }
         />
         <FinancialKpiCard
           title="Folha CLT (Bruto + Encargos)"
