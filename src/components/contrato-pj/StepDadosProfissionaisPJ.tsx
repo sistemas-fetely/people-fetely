@@ -15,6 +15,11 @@ const statusMap: Record<string, string> = {
   renovado: "Renovado",
 };
 
+function formatBRL(value: number): string {
+  if (!value) return "";
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 export function StepDadosProfissionaisPJ() {
   const { register, setValue, watch, formState: { errors } } = useFormContext<DadosProfissionaisPJForm>();
 
@@ -62,18 +67,14 @@ export function StepDadosProfissionaisPJ() {
           <Label>Valor Mensal (R$) *</Label>
           <Input
             type="text"
-            inputMode="decimal"
-            value={
-              watch("valor_mensal") != null
-                ? Number(watch("valor_mensal")).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                : ""
-            }
+            inputMode="numeric"
+            value={watch("valor_mensal") ? formatBRL(watch("valor_mensal")) : ""}
             onChange={(e) => {
-              const raw = e.target.value.replace(/\./g, "").replace(",", ".");
-              const num = parseFloat(raw);
-              setValue("valor_mensal", isNaN(num) ? 0 : num);
+              const digits = e.target.value.replace(/\D/g, "");
+              const cents = parseInt(digits || "0", 10);
+              setValue("valor_mensal", cents / 100);
             }}
-            placeholder="0,00"
+            placeholder="R$ 0,00"
           />
           {errors.valor_mensal && <p className="text-xs text-destructive mt-1">{errors.valor_mensal.message}</p>}
         </div>
