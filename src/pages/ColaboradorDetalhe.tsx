@@ -227,6 +227,11 @@ export default function ColaboradorDetalhe() {
 
             if (newChecklist) {
               const dataInicioCl = colaborador.data_admissao ? new Date(colaborador.data_admissao) : new Date();
+              let gestorUserId: string | null = null;
+              if (colaborador.gestor_direto_id) {
+                const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", colaborador.gestor_direto_id).single();
+                gestorUserId = gp?.user_id || null;
+              }
               const tarefas = getTarefasParaTipo("clt").map((t) => {
                 const prazoDate = new Date(dataInicioCl);
                 prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
@@ -237,7 +242,7 @@ export default function ColaboradorDetalhe() {
                   responsavel_role: t.responsavel_role,
                   responsavel_user_id:
                     t.responsavel_role === "colaborador" ? colaborador.user_id :
-                    t.responsavel_role === "gestor_direto" && gestorProfile?.user_id ? gestorProfile.user_id :
+                    t.responsavel_role === "gestor_direto" && gestorUserId ? gestorUserId :
                     null,
                   prazo_dias: t.prazo_dias,
                   prazo_data: prazoDate.toISOString().slice(0, 10),
