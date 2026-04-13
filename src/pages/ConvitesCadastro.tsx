@@ -146,11 +146,11 @@ export default function ConvitesCadastro() {
         
         for (const c of cltRes.data || []) {
           const pid = profileMap.get(c.user_id!);
-          if (pid) options.push({ profile_id: pid, user_id: c.user_id!, nome: c.nome_completo, cargo: c.cargo, tipo: "clt" });
+          if (pid) options.push({ profile_id: pid, user_id: c.user_id as string, nome: c.nome_completo, cargo: c.cargo, tipo: "clt" });
         }
         for (const c of pjRes.data || []) {
-          const pid = profileMap.get(c.user_id!);
-          if (pid) options.push({ profile_id: pid, user_id: c.user_id!, nome: c.contato_nome, cargo: c.tipo_servico, tipo: "pj" });
+          const pid = profileMap.get(c.user_id as string);
+          if (pid) options.push({ profile_id: pid, user_id: c.user_id as string, nome: c.contato_nome, cargo: c.tipo_servico, tipo: "pj" });
         }
       }
       setLideres(options);
