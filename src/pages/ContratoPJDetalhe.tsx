@@ -115,6 +115,29 @@ export default function ContratoPJDetalhe() {
     } else {
       setContrato({ ...contrato, status: newStatus });
       toast.success(newStatus === "encerrado" ? "Contrato encerrado" : "Contrato reativado");
+
+      // Portal access automation
+      try {
+        if (newStatus === "ativo" && contrato.contato_email) {
+          await supabase.functions.invoke("create-portal-access", {
+            body: {
+              action: "activate",
+              email: contrato.contato_email,
+              nome: contrato.contato_nome,
+              contrato_pj_id: id,
+              tipo: "pj",
+            },
+          });
+          toast.success("Acesso ao portal criado automaticamente");
+        } else if (newStatus === "encerrado" && contrato.user_id) {
+          await supabase.functions.invoke("create-portal-access", {
+            body: { action: "revoke", user_id: contrato.user_id },
+          });
+          toast.info("Acesso ao portal revogado");
+        }
+      } catch (portalErr) {
+        console.error("Erro na automação de acesso:", portalErr);
+      }
     }
     setTogglingStatus(false);
     setStatusDialogOpen(false);
