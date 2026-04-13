@@ -97,6 +97,7 @@ export default function ContratoPJDetalhe() {
   const [equipamentos, setEquipamentos] = useState<Tables<"contrato_pj_equipamentos">[]>([]);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [togglingStatus, setTogglingStatus] = useState(false);
+  const [gestorNome, setGestorNome] = useState<string | null>(null);
 
   const methods = useForm<AllPJFormData>({ mode: "onBlur" });
 
