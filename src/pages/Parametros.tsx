@@ -366,15 +366,19 @@ export default function Parametros() {
       <AlertDialog open={!!clevelConfirm} onOpenChange={() => setClevelConfirm(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Marcar como C-Level?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {clevelConfirm?.enabling ? "Marcar como C-Level?" : "Remover restrição C-Level?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Marcar o cargo "{clevelConfirm?.label}" como C-Level restringirá a visibilidade do salário apenas ao Super Admin. Outros perfis (incluindo Admin RH) não poderão visualizar salários de colaboradores neste cargo. Confirmar?
+              {clevelConfirm?.enabling
+                ? `Marcar o cargo "${clevelConfirm?.param.label}" como C-Level restringirá a visibilidade do salário apenas ao Super Admin. Outros perfis (incluindo Admin RH) não poderão visualizar salários de colaboradores neste cargo. Confirmar?`
+                : `Remover restrição C-Level de "${clevelConfirm?.param.label}"? O salário ficará visível para Admin RH também. Confirmar?`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmCLevel} className="bg-orange-600 text-white hover:bg-orange-700">
-              Confirmar C-Level
+              Confirmar
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
