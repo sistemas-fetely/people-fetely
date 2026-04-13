@@ -350,6 +350,7 @@ export default function ContratoPJDetalhe() {
           dia_vencimento: Number(rest.dia_vencimento) || 10,
           renovacao_automatica: rest.renovacao_automatica,
           status: rest.status,
+          gestor_direto_id: gestor_direto_id || null,
           banco_nome: rest.banco_nome || null,
           banco_codigo: rest.banco_codigo || null,
           agencia: rest.agencia || null,
