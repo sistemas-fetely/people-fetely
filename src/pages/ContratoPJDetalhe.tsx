@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useCLevelCargos } from "@/hooks/useCLevelCargos";
 import type { Tables } from "@/integrations/supabase/types";
 
 import { StepDadosPessoaisPJ } from "@/components/contrato-pj/StepDadosPessoaisPJ";
@@ -87,10 +88,11 @@ export default function ContratoPJDetalhe() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { hasPermission } = usePermissions();
-  const canEdit = hasPermission("contratos_pj", "edit");
+  const { hasPermission, canSeeSalary } = usePermissions();
+  const { isCargoClevel } = useCLevelCargos();
+  const canEditContract = hasPermission("contratos_pj", "edit");
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(searchParams.get("edit") === "true" && canEdit);
+  const [editing, setEditing] = useState(searchParams.get("edit") === "true" && canEditContract);
   const [saving, setSaving] = useState(false);
   const [contrato, setContrato] = useState<Tables<"contratos_pj"> | null>(null);
   const [acessosSistemas, setAcessosSistemas] = useState<Tables<"contrato_pj_acessos_sistemas">[]>([]);
@@ -470,7 +472,7 @@ export default function ContratoPJDetalhe() {
             <ArrowLeft className="h-4 w-4" /> Voltar
           </Button>
           <div className="flex items-center gap-2">
-            {canEdit && (
+            {canEditContract && (
               <>
                 <Button
                   variant={isAtivo ? "outline" : "default"}
@@ -608,7 +610,9 @@ export default function ContratoPJDetalhe() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <InfoField label="Cargo / Tipo de Serviço" value={contrato.tipo_servico} />
                 <InfoField label="Departamento" value={contrato.departamento} />
-                <InfoField label="Valor Mensal" value={`R$ ${Number(contrato.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                {canSeeSalary(isCargoClevel(contrato.tipo_servico)) && (
+                  <InfoField label="Valor Mensal" value={`R$ ${Number(contrato.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                )}
                 <InfoField label="Forma de Pagamento" value={contrato.forma_pagamento} />
                 <InfoField label="Dia do Vencimento" value={contrato.dia_vencimento?.toString()} />
                 <InfoField label="Data de Início" value={format(parseISO(contrato.data_inicio), "dd/MM/yyyy")} />

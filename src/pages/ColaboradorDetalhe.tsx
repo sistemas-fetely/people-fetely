@@ -31,6 +31,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useCLevelCargos } from "@/hooks/useCLevelCargos";
 import { useQuery } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -77,6 +79,8 @@ export default function ColaboradorDetalhe() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { canSeeSalary } = usePermissions();
+  const { isCargoClevel } = useCLevelCargos();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(searchParams.get("edit") === "true");
   const [saving, setSaving] = useState(false);
@@ -573,7 +577,9 @@ export default function ColaboradorDetalhe() {
                 <InfoField label="Data de Admissão" value={safeFormatDate(colaborador.data_admissao)} />
                 <InfoField label="Data de Desligamento" value={(colaborador as any).data_desligamento ? safeFormatDate((colaborador as any).data_desligamento) : "—"} />
                 <InfoField label="Tipo de Contrato" value={colaborador.tipo_contrato} />
-                <InfoField label="Salário Base" value={`R$ ${Number(colaborador.salario_base).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                {canSeeSalary(isCargoClevel(colaborador.cargo)) && (
+                  <InfoField label="Salário Base" value={`R$ ${Number(colaborador.salario_base).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                )}
                 <InfoField label="Jornada Semanal" value={colaborador.jornada_semanal ? `${colaborador.jornada_semanal}h` : ""} />
                 <InfoField label="Horário de Trabalho" value={colaborador.horario_trabalho} />
                 <InfoField label="Local de Trabalho" value={colaborador.local_trabalho} />
