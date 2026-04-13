@@ -355,6 +355,20 @@ export default function ConvitesCadastro() {
                 <Input value={form.departamento} onChange={(e) => setForm({ ...form, departamento: e.target.value })} placeholder="Departamento" />
               )}
             </div>
+            <div>
+              <Label>Grupo de Acesso</Label>
+              <Select value={form.grupo_acesso_id} onValueChange={(v) => setForm({ ...form, grupo_acesso_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione (opcional)" /></SelectTrigger>
+                <SelectContent>
+                  {gruposAcesso
+                    .filter((g) => g.tipo_colaborador === form.tipo || g.tipo_colaborador === "ambos")
+                    .map((g: any) => (
+                      <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Define o role automático ao ativar o colaborador</p>
+            </div>
             <p className="text-xs text-muted-foreground">O convite expira automaticamente em 7 dias.</p>
           </div>
           <DialogFooter>
