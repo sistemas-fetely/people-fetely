@@ -101,6 +101,8 @@ interface ContratoPJOption {
 export default function NotasFiscais() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { roles } = useAuth();
+  const isSuperAdmin = roles.includes("super_admin");
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("notas_fiscais", "create");
   const canEdit = hasPermission("notas_fiscais", "edit");
