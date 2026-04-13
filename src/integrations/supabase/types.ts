@@ -763,6 +763,7 @@ export type Database = {
           departamento: string | null
           email: string
           expira_em: string
+          grupo_acesso_id: string | null
           id: string
           nome: string
           preenchido_em: string | null
@@ -781,6 +782,7 @@ export type Database = {
           departamento?: string | null
           email: string
           expira_em?: string
+          grupo_acesso_id?: string | null
           id?: string
           nome: string
           preenchido_em?: string | null
@@ -799,6 +801,7 @@ export type Database = {
           departamento?: string | null
           email?: string
           expira_em?: string
+          grupo_acesso_id?: string | null
           id?: string
           nome?: string
           preenchido_em?: string | null
@@ -820,6 +823,13 @@ export type Database = {
             columns: ["contrato_pj_id"]
             isOneToOne: false
             referencedRelation: "contratos_pj"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "convites_cadastro_grupo_acesso_id_fkey"
+            columns: ["grupo_acesso_id"]
+            isOneToOne: false
+            referencedRelation: "grupos_acesso"
             referencedColumns: ["id"]
           },
         ]
@@ -1249,6 +1259,42 @@ export type Database = {
           total_colaboradores?: number | null
           total_encargos?: number | null
           total_liquido?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      grupos_acesso: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          descricao: string | null
+          id: string
+          is_system: boolean
+          nome: string
+          role_automatico: Database["public"]["Enums"]["app_role"]
+          tipo_colaborador: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          is_system?: boolean
+          nome: string
+          role_automatico?: Database["public"]["Enums"]["app_role"]
+          tipo_colaborador: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          is_system?: boolean
+          nome?: string
+          role_automatico?: Database["public"]["Enums"]["app_role"]
+          tipo_colaborador?: string
           updated_at?: string
         }
         Relationships: []
@@ -1806,6 +1852,7 @@ export type Database = {
           atribuido_manualmente: boolean
           created_at: string
           id: string
+          revogado_em: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -1813,6 +1860,7 @@ export type Database = {
           atribuido_manualmente?: boolean
           created_at?: string
           id?: string
+          revogado_em?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
@@ -1820,6 +1868,7 @@ export type Database = {
           atribuido_manualmente?: boolean
           created_at?: string
           id?: string
+          revogado_em?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
