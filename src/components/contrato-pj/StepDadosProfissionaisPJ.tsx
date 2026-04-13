@@ -15,6 +15,11 @@ const statusMap: Record<string, string> = {
   renovado: "Renovado",
 };
 
+function formatBRL(value: number): string {
+  if (!value) return "";
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 export function StepDadosProfissionaisPJ() {
   const { register, setValue, watch, formState: { errors } } = useFormContext<DadosProfissionaisPJForm>();
 
