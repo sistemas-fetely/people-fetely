@@ -433,6 +433,14 @@ export default function RecrutamentoDetalhe() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <CandidatoDrawer
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        candidato={selectedCandidato}
+        vagaSkills={(vaga?.skills_obrigatorias as string[] | null) || []}
+        vagaId={id!}
+      />
     </div>
   );
 }
