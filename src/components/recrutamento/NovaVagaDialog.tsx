@@ -133,7 +133,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   function resetAndClose() {
     setStep(1);
     setTitulo(""); setArea(""); setTipoContrato(""); setNivel("");
-    setGestorId(""); setLocalTrabalho(""); setJornada(""); setBeneficios("");
+    setGestorId(""); setLocalTrabalho(""); setJornada(""); setBeneficiosIds([]); setBeneficiosOutros("");
     setVigenciaFim(""); setMissao(""); setResponsabilidades([""]);
     setSkillsObrigatorias([]); setSkillsDesejadas([]); setFerramentas([""]);
     setFaixaMin(""); setFaixaMax("");
@@ -238,12 +238,52 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
 
             <div className="space-y-2">
               <Label>Jornada</Label>
-              <Input value={jornada} onChange={(e) => setJornada(e.target.value)} placeholder="Ex: Seg-Sex, 9h-18h" />
+              <Select value={jornada} onValueChange={setJornada}>
+                <SelectTrigger><SelectValue placeholder="Selecione a jornada" /></SelectTrigger>
+                <SelectContent>
+                  {jornadas.map((j) => (
+                    <SelectItem key={j.id} value={j.valor}>{j.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label>Benefícios</Label>
-              <Textarea value={beneficios} onChange={(e) => setBeneficios(e.target.value)} placeholder="Descreva os benefícios da posição" rows={3} />
+              <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+                {beneficiosParam.map((b) => (
+                  <div key={b.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`ben-${b.id}`}
+                      checked={beneficiosIds.includes(b.valor)}
+                      onCheckedChange={(checked) =>
+                        setBeneficiosIds(checked
+                          ? [...beneficiosIds, b.valor]
+                          : beneficiosIds.filter((v) => v !== b.valor))
+                      }
+                    />
+                    <label htmlFor={`ben-${b.id}`} className="text-sm cursor-pointer">{b.label}</label>
+                  </div>
+                ))}
+              </div>
+              {beneficiosIds.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {beneficiosIds.map((v) => {
+                    const param = beneficiosParam.find((b) => b.valor === v);
+                    return (
+                      <Badge key={v} variant="secondary" className="text-xs">
+                        {param?.label || v}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+              <Input
+                value={beneficiosOutros}
+                onChange={(e) => setBeneficiosOutros(e.target.value)}
+                placeholder="Outros benefícios não listados"
+                className="mt-2"
+              />
             </div>
 
             <div className="flex justify-end pt-2">
