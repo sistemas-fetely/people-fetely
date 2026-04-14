@@ -81,10 +81,8 @@ const adminItems: MenuItem[] = [
   { title: "Parâmetros Gerais", url: "/parametros?modulo=geral", icon: Settings, permModule: "parametros" },
   { title: "Parâmetros CLT", url: "/parametros?modulo=clt", icon: Settings, permModule: "parametros" },
   { title: "Parâmetros PJ", url: "/parametros?modulo=pj", icon: Settings, permModule: "parametros" },
-  { title: "Grupos de Acesso", url: "/parametros?modulo=grupos_acesso", icon: ShieldCheck, permModule: "parametros" },
   { title: "Configurações", url: "/configuracoes", icon: Settings, permModule: "usuarios" },
   { title: "Gerenciar Usuários", url: "/gerenciar-usuarios", icon: UserCheck, permModule: "usuarios" },
-  { title: "Configurar Perfis", url: "/configurar-perfis", icon: Shield, permModule: "usuarios", requireRole: "super_admin" },
 ];
 
 interface MenuGroupProps {
