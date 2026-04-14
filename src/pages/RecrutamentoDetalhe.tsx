@@ -61,7 +61,7 @@ export default function RecrutamentoDetalhe() {
   const [newCandidato, setNewCandidato] = useState({ nome: "", email: "", telefone: "", origem: "indicacao" });
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [selectedCandidato, setSelectedCandidato] = useState<any | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notaTexto, setNotaTexto] = useState("");
 
   // Contratar flow
   const [contratarOpen, setContratarOpen] = useState(false);
