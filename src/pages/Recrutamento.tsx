@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StatCard } from "@/components/StatCard";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Users, Search, UserCheck, Plus } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { format } from "date-fns";
+import { NovaVagaDialog } from "@/components/recrutamento/NovaVagaDialog";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   rascunho: { label: "Rascunho", className: "bg-muted text-muted-foreground" },
