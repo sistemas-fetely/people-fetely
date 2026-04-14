@@ -269,12 +269,30 @@ export default function GerenciarUsuarios() {
       queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
       queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-clt-users"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-pj-users"] });
       toast.success("Vínculo realizado com sucesso!");
       setLinkDialogOpen(false);
       setLinkColaboradorId("");
       setLinkContratoPjId("");
     },
     onError: () => toast.error("Erro ao vincular registro"),
+  });
+
+  const unlinkRecord = useMutation({
+    mutationFn: async (user_id: string) => {
+      await callManageUser("unlink_record", { user_id });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
+      queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-clt-users"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-pj-users"] });
+      toast.success("Vínculo removido com sucesso!");
+      setLinkDialogOpen(false);
+    },
+    onError: () => toast.error("Erro ao desvincular registro"),
   });
 
   const getUserRoles = (userId: string) =>
