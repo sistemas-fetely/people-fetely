@@ -154,7 +154,7 @@ export function AppSidebar() {
     : user?.email?.slice(0, 2).toUpperCase() || "??";
 
   const displayName = profile?.full_name || user?.email || "Usuário";
-  const primaryRole = roles[0] ? roleLabels[roles[0]] : "Colaborador";
+  const primaryRole = roleLabels[ROLE_PRIORITY.find(r => roles.includes(r)) || roles[0]] || "Colaborador";
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
