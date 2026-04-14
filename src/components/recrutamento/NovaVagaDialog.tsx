@@ -55,7 +55,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const [gestorId, setGestorId] = useState("");
   const [localTrabalho, setLocalTrabalho] = useState("");
   const [jornada, setJornada] = useState("");
-  const [beneficios, setBeneficios] = useState("");
+  const [beneficiosIds, setBeneficiosIds] = useState<string[]>([]);
+  const [beneficiosOutros, setBeneficiosOutros] = useState("");
   const [vigenciaFim, setVigenciaFim] = useState("");
 
   // Step 2
