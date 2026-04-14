@@ -72,6 +72,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const { data: locais = [] } = useParametros("local_trabalho");
   const { data: jornadas = [] } = useParametros("jornada");
   const { data: beneficiosParam = [] } = useParametros("beneficio");
+  const { data: cargos = [] } = useParametros("cargo");
 
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
