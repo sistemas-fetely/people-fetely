@@ -2,6 +2,7 @@ import {
   LayoutDashboard, Users, FileText, Calendar, ClipboardList, Award,
   GraduationCap, GitBranch, BarChart3, Settings, UserCircle, CreditCard,
   Briefcase, LogOut, ArrowUpDown, Send, UserCheck, ShieldCheck, ClipboardCheck,
+  Shield,
 } from "lucide-react";
 import logoFetely from "@/assets/logo_fetely.jpg";
 import { NavLink } from "@/components/NavLink";
@@ -43,6 +44,7 @@ interface MenuItem {
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   permModule?: string;
+  requireRole?: string;
 }
 
 const mainItems: MenuItem[] = [
@@ -82,6 +84,7 @@ const adminItems: MenuItem[] = [
   { title: "Grupos de Acesso", url: "/parametros?modulo=grupos_acesso", icon: ShieldCheck, permModule: "parametros" },
   { title: "Configurações", url: "/configuracoes", icon: Settings, permModule: "usuarios" },
   { title: "Gerenciar Usuários", url: "/gerenciar-usuarios", icon: UserCheck, permModule: "usuarios" },
+  { title: "Configurar Perfis", url: "/configurar-perfis", icon: Shield, permModule: "usuarios", requireRole: "super_admin" },
 ];
 
 interface MenuGroupProps {
@@ -89,11 +92,13 @@ interface MenuGroupProps {
   items: MenuItem[];
   collapsed: boolean;
   canViewModule: (mod: string) => boolean;
+  userRoles?: string[];
 }
 
-function MenuGroup({ label, items, collapsed, canViewModule }: MenuGroupProps) {
+function MenuGroup({ label, items, collapsed, canViewModule, userRoles = [] }: MenuGroupProps) {
   const location = useLocation();
   const visibleItems = items.filter((item) => {
+    if (item.requireRole && !userRoles.includes(item.requireRole)) return false;
     if (!item.permModule) return true;
     return canViewModule(item.permModule);
   });
@@ -171,15 +176,15 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 space-y-1">
-        <MenuGroup label="Principal" items={mainItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="Principal" items={mainItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="CLT" items={cltItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="CLT" items={cltItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="PJ" items={pjItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="PJ" items={pjItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="RH" items={rhItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="RH" items={rhItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="Admin" items={adminItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="Admin" items={adminItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
       </SidebarContent>
 
       <SidebarFooter className="p-4">
