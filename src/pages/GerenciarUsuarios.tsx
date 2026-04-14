@@ -561,12 +561,32 @@ export default function GerenciarUsuarios() {
                         </TableCell>
                         <TableCell>
                           {(() => {
+                            const link = getUserLink(profile.user_id);
                             const hasCLT = linkedCLT.some((c) => c.user_id === profile.user_id);
                             const hasPJ = linkedPJ.some((c) => c.user_id === profile.user_id);
-                            if (hasCLT && hasPJ) return <div className="flex gap-1"><Badge variant="outline" className="text-xs border-blue-300 text-blue-700">CLT</Badge><Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700">PJ</Badge></div>;
-                            if (hasCLT) return <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">CLT</Badge>;
-                            if (hasPJ) return <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700">PJ</Badge>;
-                            return <Badge variant="outline" className="text-xs border-muted-foreground/40 text-muted-foreground">Externo</Badge>;
+                            if (hasCLT || hasPJ) {
+                              return (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex gap-1 cursor-default">
+                                        {hasCLT && <Badge variant="outline" className="text-xs border-blue-300 text-blue-700"><LinkIcon className="h-3 w-3 mr-0.5" />CLT</Badge>}
+                                        {hasPJ && <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700"><LinkIcon className="h-3 w-3 mr-0.5" />PJ</Badge>}
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-xs font-medium">{link?.nome}</p>
+                                      <p className="text-xs text-muted-foreground">{link?.cargo}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              );
+                            }
+                            return (
+                              <Badge variant="outline" className="text-xs border-muted-foreground/40 text-muted-foreground">
+                                <Unlink className="h-3 w-3 mr-0.5" />Externo
+                              </Badge>
+                            );
                           })()}
                         </TableCell>
                         <TableCell>
