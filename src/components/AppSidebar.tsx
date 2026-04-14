@@ -176,15 +176,15 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 space-y-1">
-        <MenuGroup label="Principal" items={mainItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="Principal" items={mainItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="CLT" items={cltItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="CLT" items={cltItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="PJ" items={pjItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="PJ" items={pjItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="RH" items={rhItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="RH" items={rhItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
         <div className="mx-4 border-t border-sidebar-border/40" />
-        <MenuGroup label="Admin" items={adminItems} collapsed={collapsed} canViewModule={canView} />
+        <MenuGroup label="Admin" items={adminItems} collapsed={collapsed} canViewModule={canView} userRoles={roles} />
       </SidebarContent>
 
       <SidebarFooter className="p-4">
