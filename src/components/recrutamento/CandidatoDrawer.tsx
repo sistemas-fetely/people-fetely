@@ -236,24 +236,28 @@ export function CandidatoDrawer({ open, onOpenChange, candidato, vagaSkills, vag
     : null;
 
   // LGPD
-  const lgpdDate = candidato.consentimento_lgpd_at ? new Date(candidato.consentimento_lgpd_at) : null;
+  const lgpdDate = candidato?.consentimento_lgpd_at ? new Date(candidato.consentimento_lgpd_at) : null;
   const retentionDate = lgpdDate ? addDays(lgpdDate, 180) : null;
   const daysToRetention = retentionDate ? differenceInDays(retentionDate, new Date()) : null;
 
   // Advance
-  const currentIdx = KANBAN_STAGES.findIndex((s) => s.key === candidato.status);
-  const canAdvance = currentIdx >= 0 && currentIdx < KANBAN_STAGES.length - 2; // not contratado/recusado
+  const currentIdx = KANBAN_STAGES.findIndex((s) => s.key === candidato?.status);
+  const canAdvance = currentIdx >= 0 && currentIdx < KANBAN_STAGES.length - 2;
   const nextStage = canAdvance ? KANBAN_STAGES[currentIdx + 1] : null;
 
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 
-  const stageLabel = KANBAN_STAGES.find((s) => s.key === candidato.status)?.label || candidato.status;
+  const stageLabel = KANBAN_STAGES.find((s) => s.key === candidato?.status)?.label || candidato?.status || "";
 
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+          {!candidato ? (
+            <div className="flex items-center justify-center h-full text-muted-foreground">Carregando...</div>
+          ) : (
+          <>
           <SheetHeader className="pb-4">
             <div className="flex items-start gap-3">
               <div className="h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-semibold shrink-0">
