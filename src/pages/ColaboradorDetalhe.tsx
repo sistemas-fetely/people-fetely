@@ -619,7 +619,7 @@ export default function ColaboradorDetalhe() {
                   {acessosSistemas.map((a) => (
                     <div key={a.id} className="border rounded-lg p-3 flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-sm">{a.sistema}</p>
+                        <p className="font-medium text-sm">{(sistemasParametros || []).find((s) => s.valor === a.sistema)?.label || a.sistema}</p>
                         {a.usuario && <p className="text-xs text-muted-foreground">Usuário: {a.usuario}</p>}
                         {a.observacoes && <p className="text-xs text-muted-foreground">{a.observacoes}</p>}
                       </div>
