@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle, DialogTrigger,
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CheckCircle2, XCircle, UserCheck, UserX, Users, UserPlus,
-  Shield, ShieldCheck, ShieldAlert, Pencil, Trash2, Settings2, Link2,
+  Shield, ShieldCheck, ShieldAlert, Pencil, Trash2, Settings2, Link2, LinkIcon, Unlink,
   ChevronDown, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -159,7 +160,7 @@ export default function GerenciarUsuarios() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("colaboradores_clt")
-        .select("id, user_id")
+        .select("id, user_id, nome_completo, cargo")
         .not("user_id", "is", null);
       if (error) throw error;
       return data;
@@ -171,12 +172,20 @@ export default function GerenciarUsuarios() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contratos_pj")
-        .select("id, user_id")
+        .select("id, user_id, contato_nome, tipo_servico")
         .not("user_id", "is", null);
       if (error) throw error;
       return data;
     },
   });
+
+  const getUserLink = (userId: string) => {
+    const clt = linkedCLT.find((c) => c.user_id === userId);
+    if (clt) return { tipo: "CLT" as const, nome: clt.nome_completo, cargo: clt.cargo, id: clt.id };
+    const pj = linkedPJ.find((p) => p.user_id === userId);
+    if (pj) return { tipo: "PJ" as const, nome: pj.contato_nome, cargo: pj.tipo_servico, id: pj.id };
+    return null;
+  };
 
   const createUser = useMutation({
     mutationFn: async () => {
@@ -260,12 +269,30 @@ export default function GerenciarUsuarios() {
       queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
       queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-clt-users"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-pj-users"] });
       toast.success("Vínculo realizado com sucesso!");
       setLinkDialogOpen(false);
       setLinkColaboradorId("");
       setLinkContratoPjId("");
     },
     onError: () => toast.error("Erro ao vincular registro"),
+  });
+
+  const unlinkRecord = useMutation({
+    mutationFn: async (user_id: string) => {
+      await callManageUser("unlink_record", { user_id });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
+      queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-clt-users"] });
+      queryClient.invalidateQueries({ queryKey: ["linked-pj-users"] });
+      toast.success("Vínculo removido com sucesso!");
+      setLinkDialogOpen(false);
+    },
+    onError: () => toast.error("Erro ao desvincular registro"),
   });
 
   const getUserRoles = (userId: string) =>
@@ -534,12 +561,32 @@ export default function GerenciarUsuarios() {
                         </TableCell>
                         <TableCell>
                           {(() => {
+                            const link = getUserLink(profile.user_id);
                             const hasCLT = linkedCLT.some((c) => c.user_id === profile.user_id);
                             const hasPJ = linkedPJ.some((c) => c.user_id === profile.user_id);
-                            if (hasCLT && hasPJ) return <div className="flex gap-1"><Badge variant="outline" className="text-xs border-blue-300 text-blue-700">CLT</Badge><Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700">PJ</Badge></div>;
-                            if (hasCLT) return <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">CLT</Badge>;
-                            if (hasPJ) return <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700">PJ</Badge>;
-                            return <Badge variant="outline" className="text-xs border-muted-foreground/40 text-muted-foreground">Externo</Badge>;
+                            if (hasCLT || hasPJ) {
+                              return (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <div className="flex gap-1 cursor-default">
+                                        {hasCLT && <Badge variant="outline" className="text-xs border-blue-300 text-blue-700"><LinkIcon className="h-3 w-3 mr-0.5" />CLT</Badge>}
+                                        {hasPJ && <Badge variant="outline" className="text-xs border-emerald-300 text-emerald-700"><LinkIcon className="h-3 w-3 mr-0.5" />PJ</Badge>}
+                                      </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="text-xs font-medium">{link?.nome}</p>
+                                      <p className="text-xs text-muted-foreground">{link?.cargo}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              );
+                            }
+                            return (
+                              <Badge variant="outline" className="text-xs border-muted-foreground/40 text-muted-foreground">
+                                <Unlink className="h-3 w-3 mr-0.5" />Externo
+                              </Badge>
+                            );
                           })()}
                         </TableCell>
                         <TableCell>
@@ -896,12 +943,55 @@ export default function GerenciarUsuarios() {
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Vincular Cadastro</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-primary" />
+              Vincular Cadastro
+            </DialogTitle>
             <DialogDescription>
               Vincular o usuário <strong>{linkUser?.name}</strong> a um registro de colaborador CLT ou contrato PJ existente.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {/* Current link status */}
+            {linkUser && (() => {
+              const currentLink = getUserLink(linkUser.userId);
+              if (currentLink) {
+                return (
+                  <div className="rounded-lg border border-border p-3 bg-muted/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Vínculo atual</p>
+                        <p className="text-sm font-medium flex items-center gap-1.5 mt-0.5">
+                          <LinkIcon className="h-3.5 w-3.5 text-primary" />
+                          {currentLink.nome}
+                          <Badge variant="outline" className={`text-[10px] ml-1 ${currentLink.tipo === "CLT" ? "border-blue-300 text-blue-700" : "border-emerald-300 text-emerald-700"}`}>
+                            {currentLink.tipo}
+                          </Badge>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{currentLink.cargo}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive gap-1"
+                        onClick={() => unlinkRecord.mutate(linkUser.userId)}
+                        disabled={unlinkRecord.isPending}
+                      >
+                        <Unlink className="h-3.5 w-3.5" />
+                        {unlinkRecord.isPending ? "Removendo..." : "Desvincular"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div className="rounded-lg border border-dashed border-muted-foreground/30 p-3 text-center">
+                  <Unlink className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+                  <p className="text-sm text-muted-foreground">Sem vínculo ativo</p>
+                </div>
+              );
+            })()}
+
             <div className="space-y-2">
               <Label>Colaborador CLT</Label>
               <Select value={linkColaboradorId} onValueChange={setLinkColaboradorId}>

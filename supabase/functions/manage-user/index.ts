@@ -353,6 +353,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "unlink_record") {
+      const { user_id } = body;
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "user_id é obrigatório" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      await adminClient.from("colaboradores_clt").update({ user_id: null }).eq("user_id", user_id);
+      await adminClient.from("contratos_pj").update({ user_id: null }).eq("user_id", user_id);
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (action === "delete_user") {
       // Only super_admin can delete
       if (!isSuperAdmin) {
