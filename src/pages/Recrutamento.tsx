@@ -76,7 +76,7 @@ export default function Recrutamento() {
           <p className="text-muted-foreground text-sm mt-1">Gestão de vagas e candidatos</p>
         </div>
         {canCreate && (
-          <Button disabled>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nova Vaga
           </Button>
