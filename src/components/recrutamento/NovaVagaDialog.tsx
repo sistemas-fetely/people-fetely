@@ -203,24 +203,39 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
             <div className="space-y-2">
               <Label>Título da vaga *</Label>
               <Select value={titulo} onValueChange={(v) => {
-                const autoNivel = v.includes("Jr") ? "jr"
-                  : (v.includes("Pl") || v.includes("Pleno")) ? "pl"
-                  : (v.includes("Sr") || v.includes("Sênior")) ? "sr"
-                  : v.includes("Coord") ? "coordenacao"
-                  : ["CEO","COO","CFO","CMO","CPO","CTO","CHRO"].some(c => v.includes(c)) ? "c-level"
-                  : nivel;
                 setTitulo(v);
-                setNivel(autoNivel);
+                // Auto-fill from cargo data
+                const cargoMatch = cargosData.find((c) => c.nome === v);
+                if (cargoMatch) {
+                  const autoNivel = cargoMatch.nivel;
+                  setNivel(autoNivel);
+                  // Auto-fill Job Description & Skills from cargo
+                  if (cargoMatch.missao) setMissao(cargoMatch.missao);
+                  if (cargoMatch.responsabilidades?.length) setResponsabilidades(cargoMatch.responsabilidades);
+                  if (cargoMatch.skills_obrigatorias?.length) setSkillsObrigatorias(cargoMatch.skills_obrigatorias);
+                  if (cargoMatch.skills_desejadas?.length) setSkillsDesejadas(cargoMatch.skills_desejadas);
+                  if (cargoMatch.ferramentas?.length) {
+                    // Match ferramentas labels to param valores
+                    const matchedIds = [...ferramentasParam, ...sistemasParam]
+                      .filter((p) => cargoMatch.ferramentas.includes(p.label))
+                      .map((p) => p.valor);
+                    if (matchedIds.length) setFerramentasIds(matchedIds);
+                    const unmatched = cargoMatch.ferramentas.filter(
+                      (f) => ![...ferramentasParam, ...sistemasParam].some((p) => p.label === f)
+                    );
+                    if (unmatched.length) setFerramentasOutras(unmatched.join(", "));
+                  }
+                }
               }}>
                 <SelectTrigger><SelectValue placeholder="Selecione o cargo" /></SelectTrigger>
                 <SelectContent>
-                  {cargos.map((c) => (
-                    <SelectItem key={c.id} value={c.label}>{c.label}</SelectItem>
+                  {cargosData.map((c) => (
+                    <SelectItem key={c.id} value={c.nome}>{c.nome}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <p className="text-xs text-muted-foreground">
-                Não encontrou o cargo? Verifique Parâmetros → CLT → Cargos / Funções
+                Não encontrou o cargo? Cadastre em Admin → Cargos e Salários
               </p>
             </div>
 
