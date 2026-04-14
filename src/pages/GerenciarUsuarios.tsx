@@ -677,7 +677,7 @@ export default function GerenciarUsuarios() {
             <DialogDescription>{selectedUser?.name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
-            {ALL_ROLES.map((role) => {
+            {ALL_ROLES.filter((role) => isSuperAdmin || role !== "super_admin").map((role) => {
               const isGestorDireto = role === "gestor_direto";
               const currentRecord = selectedUser ? getUserRoleRecord(selectedUser.userId, role) : null;
               const isManual = currentRecord ? (currentRecord as any).atribuido_manualmente === true : false;
