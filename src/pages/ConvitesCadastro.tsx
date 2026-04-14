@@ -39,6 +39,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format, parseISO, addDays, differenceInDays, formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useParametros } from "@/hooks/useParametros";
+import { useCargos } from "@/hooks/useCargos";
 import { useCLevelCargos } from "@/hooks/useCLevelCargos";
 import { usePermissions } from "@/hooks/usePermissions";
 import { cn } from "@/lib/utils";
@@ -162,7 +163,8 @@ export default function ConvitesCadastro() {
   const [actionLoading, setActionLoading] = useState(false);
 
   const { data: departamentos } = useParametros("departamento");
-  const { data: cargos } = useParametros("cargo");
+  const { data: cargosRaw } = useCargos();
+  const cargos = (cargosRaw || []).map((c) => ({ id: c.id, valor: c.nome, label: c.nome, is_clevel: c.is_clevel }));
   const { isCargoClevel } = useCLevelCargos();
   const { canSeeSalary, isSuperAdmin } = usePermissions();
 

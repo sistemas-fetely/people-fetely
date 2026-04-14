@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { useParametros } from "@/hooks/useParametros";
+import { useCargos } from "@/hooks/useCargos";
 
 interface Props {
   dados: Record<string, any>;
@@ -14,7 +15,8 @@ interface Props {
 
 export function ConviteDadosProfissionaisCLT({ dados, editing, updateField }: Props) {
   const { data: departamentos, isLoading: loadingDepts } = useParametros("departamento");
-  const { data: cargos, isLoading: loadingCargos } = useParametros("cargo");
+  const { data: cargosData, isLoading: loadingCargos } = useCargos("clt");
+  const cargos = (cargosData || []).map((c) => ({ id: c.id, valor: c.nome, label: c.nome }));
   const { data: tiposContrato, isLoading: loadingTipos } = useParametros("tipo_contrato");
   const { data: jornadas, isLoading: loadingJornadas } = useParametros("jornada");
   const { data: locaisTrabalho, isLoading: loadingLocais } = useParametros("local_trabalho");

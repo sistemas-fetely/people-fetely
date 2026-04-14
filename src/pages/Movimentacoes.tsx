@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { StatCard } from "@/components/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useParametros } from "@/hooks/useParametros";
+import { useCargos } from "@/hooks/useCargos";
 import {
   useMovimentacoes, useColaboradoresAtivos, useContratosPJAtivos,
   useCriarMovimentacao, useAtualizarStatusMovimentacao, useExcluirMovimentacao,
@@ -42,7 +43,8 @@ export default function Movimentacoes() {
   const { data: movimentacoes = [], isLoading } = useMovimentacoes();
   const { data: colaboradores = [] } = useColaboradoresAtivos();
   const { data: contratosPJ = [] } = useContratosPJAtivos();
-  const { data: cargos = [], isLoading: loadingCargos } = useParametros("cargo");
+  const { data: cargosRaw = [], isLoading: loadingCargos } = useCargos();
+  const cargos = cargosRaw.map((c) => ({ id: c.id, label: c.nome }));
   const { data: departamentos = [], isLoading: loadingDeptos } = useParametros("departamento");
   const criarMut = useCriarMovimentacao();
   const statusMut = useAtualizarStatusMovimentacao();

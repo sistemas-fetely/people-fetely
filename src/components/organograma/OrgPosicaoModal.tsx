@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { useCreatePosicao, useUpdatePosicao, useDeletePosicao } from "@/hooks/useOrgMutations";
 import { useParametros } from "@/hooks/useParametros";
+import { useCargos } from "@/hooks/useCargos";
 import type { PosicaoNode } from "@/types/organograma";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Trash2, Loader2 } from "lucide-react";
@@ -33,7 +34,8 @@ export function OrgPosicaoModal({ open, onClose, editNode, allNodes }: Props) {
   const createMutation = useCreatePosicao();
   const updateMutation = useUpdatePosicao();
   const deleteMutation = useDeletePosicao();
-  const { data: cargosParam, isLoading: loadingCargos } = useParametros("cargo");
+  const { data: cargosRaw, isLoading: loadingCargos } = useCargos();
+  const cargosParam = (cargosRaw || []).map((c) => ({ id: c.id, label: c.nome }));
   const { data: deptParam, isLoading: loadingDepts } = useParametros("departamento");
 
   const [form, setForm] = useState({
