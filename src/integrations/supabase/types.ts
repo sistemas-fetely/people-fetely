@@ -2138,6 +2138,8 @@ export type Database = {
         Row: {
           area: string
           beneficios: string | null
+          beneficios_ids: string[] | null
+          beneficios_outros: string | null
           created_at: string | null
           criado_por: string | null
           departamento: string | null
@@ -2165,6 +2167,8 @@ export type Database = {
         Insert: {
           area: string
           beneficios?: string | null
+          beneficios_ids?: string[] | null
+          beneficios_outros?: string | null
           created_at?: string | null
           criado_por?: string | null
           departamento?: string | null
@@ -2192,6 +2196,8 @@ export type Database = {
         Update: {
           area?: string
           beneficios?: string | null
+          beneficios_ids?: string[] | null
+          beneficios_outros?: string | null
           created_at?: string | null
           criado_por?: string | null
           departamento?: string | null

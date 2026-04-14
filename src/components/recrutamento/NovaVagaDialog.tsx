@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 
 const SKILLS_CATALOGO = [
@@ -53,7 +55,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const [gestorId, setGestorId] = useState("");
   const [localTrabalho, setLocalTrabalho] = useState("");
   const [jornada, setJornada] = useState("");
-  const [beneficios, setBeneficios] = useState("");
+  const [beneficiosIds, setBeneficiosIds] = useState<string[]>([]);
+  const [beneficiosOutros, setBeneficiosOutros] = useState("");
   const [vigenciaFim, setVigenciaFim] = useState("");
 
   // Step 2
@@ -67,6 +70,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
 
   const { data: departamentos = [] } = useParametros("departamento");
   const { data: locais = [] } = useParametros("local_trabalho");
+  const { data: jornadas = [] } = useParametros("jornada");
+  const { data: beneficiosParam = [] } = useParametros("beneficio");
 
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
@@ -97,7 +102,9 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
         status: "rascunho",
         local_trabalho: localTrabalho || null,
         jornada: jornada || null,
-        beneficios: beneficios || null,
+        beneficios: beneficiosParam.filter(b => beneficiosIds.includes(b.valor)).map(b => b.label).join(", ") + (beneficiosOutros ? (beneficiosIds.length > 0 ? ", " : "") + beneficiosOutros : "") || null,
+        beneficios_ids: beneficiosIds.length > 0 ? beneficiosIds : null,
+        beneficios_outros: beneficiosOutros || null,
         vigencia_fim: vigenciaFim || null,
         vigencia_inicio: new Date().toISOString().split("T")[0],
         missao: missao || null,
@@ -126,7 +133,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   function resetAndClose() {
     setStep(1);
     setTitulo(""); setArea(""); setTipoContrato(""); setNivel("");
-    setGestorId(""); setLocalTrabalho(""); setJornada(""); setBeneficios("");
+    setGestorId(""); setLocalTrabalho(""); setJornada(""); setBeneficiosIds([]); setBeneficiosOutros("");
     setVigenciaFim(""); setMissao(""); setResponsabilidades([""]);
     setSkillsObrigatorias([]); setSkillsDesejadas([]); setFerramentas([""]);
     setFaixaMin(""); setFaixaMax("");
@@ -231,12 +238,52 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
 
             <div className="space-y-2">
               <Label>Jornada</Label>
-              <Input value={jornada} onChange={(e) => setJornada(e.target.value)} placeholder="Ex: Seg-Sex, 9h-18h" />
+              <Select value={jornada} onValueChange={setJornada}>
+                <SelectTrigger><SelectValue placeholder="Selecione a jornada" /></SelectTrigger>
+                <SelectContent>
+                  {jornadas.map((j) => (
+                    <SelectItem key={j.id} value={j.valor}>{j.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
               <Label>Benefícios</Label>
-              <Textarea value={beneficios} onChange={(e) => setBeneficios(e.target.value)} placeholder="Descreva os benefícios da posição" rows={3} />
+              <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+                {beneficiosParam.map((b) => (
+                  <div key={b.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`ben-${b.id}`}
+                      checked={beneficiosIds.includes(b.valor)}
+                      onCheckedChange={(checked) =>
+                        setBeneficiosIds(checked
+                          ? [...beneficiosIds, b.valor]
+                          : beneficiosIds.filter((v) => v !== b.valor))
+                      }
+                    />
+                    <label htmlFor={`ben-${b.id}`} className="text-sm cursor-pointer">{b.label}</label>
+                  </div>
+                ))}
+              </div>
+              {beneficiosIds.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {beneficiosIds.map((v) => {
+                    const param = beneficiosParam.find((b) => b.valor === v);
+                    return (
+                      <Badge key={v} variant="secondary" className="text-xs">
+                        {param?.label || v}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              )}
+              <Input
+                value={beneficiosOutros}
+                onChange={(e) => setBeneficiosOutros(e.target.value)}
+                placeholder="Outros benefícios não listados"
+                className="mt-2"
+              />
             </div>
 
             <div className="flex justify-end pt-2">
