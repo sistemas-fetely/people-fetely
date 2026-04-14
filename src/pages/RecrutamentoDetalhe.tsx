@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useParametros } from "@/hooks/useParametros";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -12,13 +13,18 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft, ChevronDown, Copy, Globe, MoreHorizontal, Plus, Loader2,
-  GripVertical, UserPlus, ArrowRight, XCircle, User
+  GripVertical, UserPlus, ArrowRight, XCircle, User, CheckCircle2
 } from "lucide-react";
 import { CandidatoDrawer } from "@/components/recrutamento/CandidatoDrawer";
 
@@ -45,6 +51,7 @@ export default function RecrutamentoDetalhe() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const { isSuperAdmin, isAdminRH } = usePermissions();
   const canSeeFaixa = isSuperAdmin || isAdminRH;
 
@@ -53,6 +60,15 @@ export default function RecrutamentoDetalhe() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [selectedCandidato, setSelectedCandidato] = useState<any | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Contratar flow
+  const [contratarOpen, setContratarOpen] = useState(false);
+  const [contratarCandidato, setContratarCandidato] = useState<any | null>(null);
+  const [contratarForm, setContratarForm] = useState({
+    cargo: "", tipo: "clt" as string, salario: "",
+    data_inicio: "", lider_direto_id: "", beneficios_ids: [] as string[], jornada: "",
+  });
+  const [encerrarVagaOpen, setEncerrarVagaOpen] = useState(false);
 
   const { data: beneficiosParam = [] } = useParametros("beneficio");
 
@@ -82,6 +98,23 @@ export default function RecrutamentoDetalhe() {
       return data;
     },
     enabled: !!id,
+  });
+
+  // Fetch potential leaders for the select
+  const { data: lideres = [] } = useQuery({
+    queryKey: ["lideres-options"],
+    queryFn: async () => {
+      const { data: profiles } = await supabase.from("profiles").select("id, user_id, full_name");
+      if (!profiles) return [];
+      // Get user_ids that have gestor_direto or admin_rh role
+      const { data: roles } = await supabase.from("user_roles").select("user_id, role");
+      const liderUserIds = new Set(
+        (roles || [])
+          .filter((r) => r.role === "gestor_direto" || r.role === "admin_rh" || r.role === "super_admin")
+          .map((r) => r.user_id)
+      );
+      return profiles.filter((p) => liderUserIds.has(p.user_id));
+    },
   });
 
   const updateStatusMutation = useMutation({
@@ -141,6 +174,70 @@ export default function RecrutamentoDetalhe() {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const contratarMutation = useMutation({
+    mutationFn: async () => {
+      if (!contratarCandidato || !vaga) throw new Error("Dados incompletos");
+
+      // 1. Create convite
+      const tipoConvite = contratarForm.tipo === "pj" ? "pj" : "clt";
+      const { error: conviteError } = await supabase.from("convites_cadastro").insert({
+        nome: contratarCandidato.nome,
+        email: contratarCandidato.email,
+        tipo: tipoConvite,
+        cargo: contratarForm.cargo,
+        departamento: vaga.area,
+        salario_previsto: contratarForm.salario ? Number(contratarForm.salario) : null,
+        data_inicio_prevista: contratarForm.data_inicio || null,
+        lider_direto_id: contratarForm.lider_direto_id || null,
+        criado_por: user?.id || null,
+        origem: "recrutamento",
+        dados_preenchidos: {
+          beneficios_ids: contratarForm.beneficios_ids,
+          jornada: contratarForm.jornada,
+        },
+      } as any);
+      if (conviteError) throw conviteError;
+
+      // 2. Update candidato status
+      const { error: candError } = await supabase
+        .from("candidatos")
+        .update({ status: "contratado" } as any)
+        .eq("id", contratarCandidato.id);
+      if (candError) throw candError;
+
+      // 3. Log history
+      await supabase.from("candidato_historico").insert({
+        candidato_id: contratarCandidato.id,
+        status_anterior: contratarCandidato.status,
+        status_novo: "contratado",
+        responsavel_id: user?.id || null,
+      } as any);
+    },
+    onSuccess: () => {
+      toast.success(`Convite gerado para ${contratarCandidato?.nome}! Acesse Convites de Cadastro para enviar.`);
+      setContratarOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["candidatos", id] });
+      // Ask about closing the vaga
+      setEncerrarVagaOpen(true);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const openContratarDialog = (candidato: any) => {
+    if (!vaga) return;
+    setContratarCandidato(candidato);
+    setContratarForm({
+      cargo: vaga.titulo || "",
+      tipo: vaga.tipo_contrato === "ambos" ? "clt" : (vaga.tipo_contrato || "clt"),
+      salario: "",
+      data_inicio: "",
+      lider_direto_id: vaga.gestor_id || "",
+      beneficios_ids: (vaga.beneficios_ids as string[] | null) || [],
+      jornada: vaga.jornada || "",
+    });
+    setContratarOpen(true);
+  };
+
   const copyLink = () => {
     const url = `${window.location.origin}/vagas/${id}`;
     navigator.clipboard.writeText(url);
@@ -156,7 +253,11 @@ export default function RecrutamentoDetalhe() {
     if (draggingId) {
       const c = candidatos.find((x) => x.id === draggingId);
       if (c && c.status !== stageKey) {
-        moveCandidatoMutation.mutate({ candidatoId: draggingId, newStatus: stageKey });
+        if (stageKey === "contratado") {
+          openContratarDialog(c);
+        } else {
+          moveCandidatoMutation.mutate({ candidatoId: draggingId, newStatus: stageKey });
+        }
       }
       setDraggingId(null);
     }
@@ -166,8 +267,12 @@ export default function RecrutamentoDetalhe() {
     const c = candidatos.find((x) => x.id === candidatoId);
     if (!c) return;
     const idx = KANBAN_STAGES.findIndex((s) => s.key === c.status);
-    if (idx < KANBAN_STAGES.length - 2) {
-      moveCandidatoMutation.mutate({ candidatoId, newStatus: KANBAN_STAGES[idx + 1].key });
+    if (idx < 0 || idx >= KANBAN_STAGES.length - 2) return;
+    const nextStatus = KANBAN_STAGES[idx + 1].key;
+    if (nextStatus === "contratado") {
+      openContratarDialog(c);
+    } else {
+      moveCandidatoMutation.mutate({ candidatoId, newStatus: nextStatus });
     }
   };
 
@@ -374,6 +479,11 @@ export default function RecrutamentoDetalhe() {
                                 <DropdownMenuItem onClick={() => { setSelectedCandidato(c); setDrawerOpen(true); }}>
                                   <User className="h-4 w-4 mr-2" /> Ver perfil
                                 </DropdownMenuItem>
+                                {c.status === "oferta" && (
+                                  <DropdownMenuItem onClick={() => openContratarDialog(c)}>
+                                    <CheckCircle2 className="h-4 w-4 mr-2" /> Contratar
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem onClick={() => advanceCandidato(c.id)}>
                                   <ArrowRight className="h-4 w-4 mr-2" /> Avançar
                                 </DropdownMenuItem>
@@ -433,6 +543,130 @@ export default function RecrutamentoDetalhe() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Contratar dialog */}
+      <Dialog open={contratarOpen} onOpenChange={setContratarOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-success" />
+              Contratar {contratarCandidato?.nome}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Preencha os dados para gerar o convite de cadastro automaticamente.
+          </p>
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
+            <div className="space-y-1">
+              <Label>Cargo</Label>
+              <Input value={contratarForm.cargo}
+                onChange={(e) => setContratarForm({ ...contratarForm, cargo: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label>Tipo de contrato</Label>
+              <Select value={contratarForm.tipo}
+                onValueChange={(v) => setContratarForm({ ...contratarForm, tipo: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="clt">CLT</SelectItem>
+                  <SelectItem value="pj">PJ</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {canSeeFaixa && (
+              <div className="space-y-1">
+                <Label>{contratarForm.tipo === "pj" ? "Honorários acordado (R$)" : "Salário acordado (R$)"}</Label>
+                <Input type="number" value={contratarForm.salario}
+                  onChange={(e) => setContratarForm({ ...contratarForm, salario: e.target.value })}
+                  placeholder="0,00" />
+              </div>
+            )}
+            <div className="space-y-1">
+              <Label>Data de início</Label>
+              <Input type="date" value={contratarForm.data_inicio}
+                onChange={(e) => setContratarForm({ ...contratarForm, data_inicio: e.target.value })} />
+            </div>
+            <div className="space-y-1">
+              <Label>Líder direto</Label>
+              <Select value={contratarForm.lider_direto_id}
+                onValueChange={(v) => setContratarForm({ ...contratarForm, lider_direto_id: v })}>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <SelectContent>
+                  {lideres.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.full_name || l.user_id}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label>Benefícios</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {beneficiosParam.map((b) => {
+                  const selected = contratarForm.beneficios_ids.includes(b.valor);
+                  return (
+                    <Badge
+                      key={b.valor}
+                      variant={selected ? "default" : "outline"}
+                      className="cursor-pointer text-xs"
+                      onClick={() => {
+                        setContratarForm({
+                          ...contratarForm,
+                          beneficios_ids: selected
+                            ? contratarForm.beneficios_ids.filter((x) => x !== b.valor)
+                            : [...contratarForm.beneficios_ids, b.valor],
+                        });
+                      }}
+                    >
+                      {b.label}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label>Jornada</Label>
+              <Input value={contratarForm.jornada}
+                onChange={(e) => setContratarForm({ ...contratarForm, jornada: e.target.value })}
+                placeholder="Ex: Segunda a sexta, 9h-18h" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setContratarOpen(false)}>Cancelar</Button>
+            <Button onClick={() => contratarMutation.mutate()}
+              disabled={!contratarForm.cargo.trim() || contratarMutation.isPending}>
+              {contratarMutation.isPending && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+              Gerar convite de cadastro
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Encerrar vaga alert */}
+      <AlertDialog open={encerrarVagaOpen} onOpenChange={setEncerrarVagaOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deseja encerrar esta vaga?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O candidato foi contratado. Deseja encerrar a vaga "{vaga.titulo}" agora?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setEncerrarVagaOpen(false);
+              navigate("/convites-cadastro");
+            }}>
+              Não, manter aberta
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              updateStatusMutation.mutate("encerrada");
+              setEncerrarVagaOpen(false);
+              navigate("/convites-cadastro");
+            }}>
+              Sim, encerrar vaga
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <CandidatoDrawer
         open={drawerOpen}
