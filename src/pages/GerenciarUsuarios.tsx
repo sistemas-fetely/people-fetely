@@ -160,7 +160,7 @@ export default function GerenciarUsuarios() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("colaboradores_clt")
-        .select("id, user_id")
+        .select("id, user_id, nome_completo, cargo")
         .not("user_id", "is", null);
       if (error) throw error;
       return data;
@@ -172,12 +172,20 @@ export default function GerenciarUsuarios() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("contratos_pj")
-        .select("id, user_id")
+        .select("id, user_id, contato_nome, tipo_servico")
         .not("user_id", "is", null);
       if (error) throw error;
       return data;
     },
   });
+
+  const getUserLink = (userId: string) => {
+    const clt = linkedCLT.find((c) => c.user_id === userId);
+    if (clt) return { tipo: "CLT" as const, nome: clt.nome_completo, cargo: clt.cargo, id: clt.id };
+    const pj = linkedPJ.find((p) => p.user_id === userId);
+    if (pj) return { tipo: "PJ" as const, nome: pj.contato_nome, cargo: pj.tipo_servico, id: pj.id };
+    return null;
+  };
 
   const createUser = useMutation({
     mutationFn: async () => {
