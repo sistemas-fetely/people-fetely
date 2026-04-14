@@ -943,12 +943,55 @@ export default function GerenciarUsuarios() {
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Vincular Cadastro</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="h-5 w-5 text-primary" />
+              Vincular Cadastro
+            </DialogTitle>
             <DialogDescription>
               Vincular o usuário <strong>{linkUser?.name}</strong> a um registro de colaborador CLT ou contrato PJ existente.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {/* Current link status */}
+            {linkUser && (() => {
+              const currentLink = getUserLink(linkUser.userId);
+              if (currentLink) {
+                return (
+                  <div className="rounded-lg border border-border p-3 bg-muted/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider">Vínculo atual</p>
+                        <p className="text-sm font-medium flex items-center gap-1.5 mt-0.5">
+                          <LinkIcon className="h-3.5 w-3.5 text-primary" />
+                          {currentLink.nome}
+                          <Badge variant="outline" className={`text-[10px] ml-1 ${currentLink.tipo === "CLT" ? "border-blue-300 text-blue-700" : "border-emerald-300 text-emerald-700"}`}>
+                            {currentLink.tipo}
+                          </Badge>
+                        </p>
+                        <p className="text-xs text-muted-foreground">{currentLink.cargo}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive hover:text-destructive gap-1"
+                        onClick={() => unlinkRecord.mutate(linkUser.userId)}
+                        disabled={unlinkRecord.isPending}
+                      >
+                        <Unlink className="h-3.5 w-3.5" />
+                        {unlinkRecord.isPending ? "Removendo..." : "Desvincular"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              }
+              return (
+                <div className="rounded-lg border border-dashed border-muted-foreground/30 p-3 text-center">
+                  <Unlink className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+                  <p className="text-sm text-muted-foreground">Sem vínculo ativo</p>
+                </div>
+              );
+            })()}
+
             <div className="space-y-2">
               <Label>Colaborador CLT</Label>
               <Select value={linkColaboradorId} onValueChange={setLinkColaboradorId}>
