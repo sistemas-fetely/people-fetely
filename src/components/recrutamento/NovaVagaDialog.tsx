@@ -57,15 +57,19 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const [responsabilidades, setResponsabilidades] = useState<string[]>([""]);
   const [skillsObrigatorias, setSkillsObrigatorias] = useState<string[]>([]);
   const [skillsDesejadas, setSkillsDesejadas] = useState<string[]>([]);
-  const [ferramentas, setFerramentas] = useState<string[]>([""]);
-  const [faixaMin, setFaixaMin] = useState("");
+  const [ferramentasIds, setFerramentasIds] = useState<string[]>([]);
+  const [ferramentasOutras, setFerramentasOutras] = useState("");
   const [faixaMax, setFaixaMax] = useState("");
 
   const { data: departamentos = [] } = useParametros("departamento");
   const { data: locais = [] } = useParametros("local_trabalho");
   const { data: jornadas = [] } = useParametros("jornada");
   const { data: beneficiosParam = [] } = useParametros("beneficio");
+  const { data: ferramentasParam = [] } = useParametros("ferramenta");
+  const { data: sistemasParam = [] } = useParametros("sistema");
   const { data: cargos = [] } = useParametros("cargo");
+
+  const skillsCatalogo = [...ferramentasParam, ...sistemasParam].map((p) => p.label);
 
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
