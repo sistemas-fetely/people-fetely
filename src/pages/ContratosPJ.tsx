@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useParametros } from "@/hooks/useParametros";
+import { useCargos } from "@/hooks/useCargos";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { Loader2 } from "lucide-react";
@@ -88,7 +89,8 @@ function ContratoPJForm({
   contrato: ContratoPJ | null;
   onSaved: () => void;
 }) {
-  const { data: cargos, isLoading: loadingCargos } = useParametros("cargo");
+  const { data: cargosRaw, isLoading: loadingCargos } = useCargos("pj");
+  const cargos = (cargosRaw || []).map((c) => ({ id: c.id, label: c.nome }));
   const { data: formasPagamento, isLoading: loadingFormas } = useParametros("forma_pagamento");
   const { data: departamentos, isLoading: loadingDepts } = useParametros("departamento");
 

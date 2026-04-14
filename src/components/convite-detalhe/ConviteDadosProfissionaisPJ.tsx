@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useParametros } from "@/hooks/useParametros";
+import { useCargos } from "@/hooks/useCargos";
 
 interface Props {
   dados: Record<string, any>;
@@ -22,7 +23,8 @@ const statusMap: Record<string, string> = {
 
 export function ConviteDadosProfissionaisPJ({ dados, editing, updateField }: Props) {
   const { data: departamentos, isLoading: loadingDepts } = useParametros("departamento");
-  const { data: cargos, isLoading: loadingCargos } = useParametros("cargo");
+  const { data: cargosData, isLoading: loadingCargos } = useCargos("pj");
+  const cargos = (cargosData || []).map((c) => ({ id: c.id, valor: c.nome, label: c.nome }));
   const { data: formasPagamento, isLoading: loadingFormas } = useParametros("forma_pagamento");
 
   const renderField = (label: string, key: string, type = "text", placeholder = "") => (
