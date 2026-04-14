@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StatCard } from "@/components/StatCard";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Briefcase, Users, Search, UserCheck, Plus } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { format } from "date-fns";
+import { NovaVagaDialog } from "@/components/recrutamento/NovaVagaDialog";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   rascunho: { label: "Rascunho", className: "bg-muted text-muted-foreground" },
@@ -26,6 +28,7 @@ const tipoContratoLabel: Record<string, string> = {
 export default function Recrutamento() {
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("recrutamento", "create");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: vagas = [], isLoading: loadingVagas } = useQuery({
     queryKey: ["vagas"],
@@ -73,7 +76,7 @@ export default function Recrutamento() {
           <p className="text-muted-foreground text-sm mt-1">Gestão de vagas e candidatos</p>
         </div>
         {canCreate && (
-          <Button disabled>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Nova Vaga
           </Button>
@@ -142,6 +145,7 @@ export default function Recrutamento() {
           )}
         </CardContent>
       </Card>
+      <NovaVagaDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>
   );
 }
