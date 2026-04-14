@@ -750,6 +750,12 @@ export default function GerenciarUsuarios() {
             <ConfigurarPerfisTab />
           </TabsContent>
         )}
+
+        {(isSuperAdmin || isAdminRH) && (
+          <TabsContent value="matriz" className="mt-4">
+            <MatrizPermissoes />
+          </TabsContent>
+        )}
       </Tabs>
 
       {/* Dialog for editing user roles */}
