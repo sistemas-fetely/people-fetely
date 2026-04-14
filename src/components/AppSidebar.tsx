@@ -44,6 +44,7 @@ interface MenuItem {
   url: string;
   icon: React.ComponentType<{ className?: string }>;
   permModule?: string;
+  requireRole?: string;
 }
 
 const mainItems: MenuItem[] = [
