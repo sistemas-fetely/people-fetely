@@ -153,15 +153,23 @@ export default function GerenciarUsuarios() {
 
   const createUser = useMutation({
     mutationFn: async () => {
-      await callManageUser("create", { ...newUser, colaborador_tipo: newUser.colaborador_tipo || null });
+      await callManageUser("create_user_standalone", {
+        email: newUser.email,
+        full_name: newUser.full_name,
+        roles: newUser.roles,
+        colaborador_id: newUser.tipo_acesso === "vinculado" && newUser.colaborador_id ? newUser.colaborador_id : undefined,
+        colaborador_tipo: newUser.tipo_acesso === "vinculado" ? newUser.colaborador_tipo : "all",
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
       queryClient.invalidateQueries({ queryKey: ["admin-user-roles"] });
       queryClient.invalidateQueries({ queryKey: ["admin-auth-users"] });
-      toast.success("Usuário criado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
+      queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
+      toast.success("Usuário criado! Um e-mail com link de acesso foi enviado.");
       setCreateOpen(false);
-      setNewUser({ email: "", password: "", full_name: "", roles: ["colaborador"], colaborador_tipo: "" });
+      setNewUser({ email: "", full_name: "", roles: ["colaborador"], tipo_acesso: "externo", colaborador_id: "", colaborador_tipo: "" });
     },
     onError: (err: Error) => toast.error(err.message || "Erro ao criar usuário"),
   });
