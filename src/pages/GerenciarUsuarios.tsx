@@ -753,7 +753,7 @@ export default function GerenciarUsuarios() {
 
         {(isSuperAdmin || isAdminRH) && (
           <TabsContent value="matriz" className="mt-4">
-            <MatrizPermissoes />
+            <MatrizPermissoes onNavigateToPerfis={() => handleTabChange("perfis")} />
           </TabsContent>
         )}
       </Tabs>
