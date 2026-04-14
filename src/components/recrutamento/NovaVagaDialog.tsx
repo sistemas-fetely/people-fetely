@@ -70,6 +70,31 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const { data: sistemasParam = [] } = useParametros("sistema");
   const { data: cargos = [] } = useParametros("cargo");
 
+  // PCS faixas salariais
+  const { data: faixasPCS } = useQuery({
+    queryKey: ["pcs-faixas", titulo, tipoContrato],
+    queryFn: async () => {
+      if (!titulo || !tipoContrato || tipoContrato === "ambos") return null;
+      const { data } = await supabase
+        .from("pcs_faixas")
+        .select("*")
+        .eq("cargo", titulo)
+        .eq("tipo", tipoContrato)
+        .eq("ativo", true)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!titulo && !!tipoContrato && tipoContrato !== "ambos",
+  });
+
+  // Auto-fill faixa when PCS data loads
+  useEffect(() => {
+    if (faixasPCS) {
+      setFaixaMin(String(faixasPCS.f1_min ?? ""));
+      setFaixaMax(String(faixasPCS.f1_max ?? ""));
+    }
+  }, [faixasPCS]);
+
   const skillsCatalogo = [...ferramentasParam, ...sistemasParam].map((p) => p.label);
 
   const { data: gestores = [] } = useQuery({
@@ -80,7 +105,6 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
         .select("id, full_name, user_id")
         .order("full_name");
       if (error) throw error;
-      // Filter profiles that have gestor_direto or admin_rh roles
       const { data: rolesData } = await supabase
         .from("user_roles")
         .select("user_id, role")
