@@ -92,11 +92,13 @@ interface MenuGroupProps {
   items: MenuItem[];
   collapsed: boolean;
   canViewModule: (mod: string) => boolean;
+  userRoles?: string[];
 }
 
-function MenuGroup({ label, items, collapsed, canViewModule }: MenuGroupProps) {
+function MenuGroup({ label, items, collapsed, canViewModule, userRoles = [] }: MenuGroupProps) {
   const location = useLocation();
   const visibleItems = items.filter((item) => {
+    if (item.requireRole && !userRoles.includes(item.requireRole)) return false;
     if (!item.permModule) return true;
     return canViewModule(item.permModule);
   });
