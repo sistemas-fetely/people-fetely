@@ -505,10 +505,13 @@ export function CandidatoDrawer({ open, onOpenChange, candidato, vagaSkills, vag
               </Button>
             )}
           </div>
+          </>
+          )}
         </SheetContent>
       </Sheet>
 
       {/* Reject dialog */}
+      {candidato && (
       <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -539,6 +542,7 @@ export function CandidatoDrawer({ open, onOpenChange, candidato, vagaSkills, vag
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      )}
     </>
   );
 }
