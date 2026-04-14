@@ -112,7 +112,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
         if (faixaMin) payload.faixa_min = Number(faixaMin);
         if (faixaMax) payload.faixa_max = Number(faixaMax);
       }
-      const { error } = await supabase.from("vagas").insert(payload);
+      const { error } = await supabase.from("vagas").insert(payload as any);
       if (error) throw error;
     },
     onSuccess: () => {
