@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCLevelCargos } from "@/hooks/useCLevelCargos";
+import { useParametros } from "@/hooks/useParametros";
 import { useQuery } from "@tanstack/react-query";
 import type { Tables } from "@/integrations/supabase/types";
 
