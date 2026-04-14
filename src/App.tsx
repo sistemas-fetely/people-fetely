@@ -176,6 +176,11 @@ const App = () => (
                   <Recrutamento />
                 </ProtectedRoute>
               } />
+              <Route path="/recrutamento/:id" element={
+                <ProtectedRoute permModule="recrutamento">
+                  <RecrutamentoDetalhe />
+                </ProtectedRoute>
+              } />
               <Route path="/avaliacoes" element={
                 <ProtectedRoute permModule="avaliacoes">
                   <PlaceholderPage title="Avaliações de Desempenho" description="Ciclos de avaliação e PDI" />
