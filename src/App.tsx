@@ -40,6 +40,7 @@ import Unsubscribe from "@/pages/Unsubscribe";
 import ConfigurarPerfis from "@/pages/ConfigurarPerfis";
 import Onboarding from "@/pages/Onboarding";
 import Recrutamento from "@/pages/Recrutamento";
+import RecrutamentoDetalhe from "@/pages/RecrutamentoDetalhe";
 
 const queryClient = new QueryClient();
 
@@ -173,6 +174,11 @@ const App = () => (
               <Route path="/recrutamento" element={
                 <ProtectedRoute permModule="recrutamento">
                   <Recrutamento />
+                </ProtectedRoute>
+              } />
+              <Route path="/recrutamento/:id" element={
+                <ProtectedRoute permModule="recrutamento">
+                  <RecrutamentoDetalhe />
                 </ProtectedRoute>
               } />
               <Route path="/avaliacoes" element={

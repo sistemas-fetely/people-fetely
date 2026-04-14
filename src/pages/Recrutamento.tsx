@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StatCard } from "@/components/StatCard";
@@ -26,6 +27,7 @@ const tipoContratoLabel: Record<string, string> = {
 };
 
 export default function Recrutamento() {
+  const navigate = useNavigate();
   const { hasPermission } = usePermissions();
   const canCreate = hasPermission("recrutamento", "create");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -120,7 +122,7 @@ export default function Recrutamento() {
                 {vagas.map((vaga) => {
                   const cfg = statusConfig[vaga.status] || statusConfig.rascunho;
                   return (
-                    <TableRow key={vaga.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableRow key={vaga.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/recrutamento/${vaga.id}`)}>
                       <TableCell className="font-medium">{vaga.titulo}</TableCell>
                       <TableCell>{vaga.area}</TableCell>
                       <TableCell>
