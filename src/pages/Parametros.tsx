@@ -39,7 +39,6 @@ const CATEGORIAS_GERAL: CategoriaConfig[] = [
 ];
 
 const CATEGORIAS_CLT: CategoriaConfig[] = [
-  { value: "cargo", label: "Cargos", icon: Package, description: "Cargos disponíveis para colaboradores" },
   { value: "tipo_contrato", label: "Tipos de Contrato", icon: Settings2, description: "Modalidades de contrato CLT conforme legislação" },
   { value: "jornada", label: "Jornadas", icon: Settings2, description: "Jornadas de trabalho e escalas" },
   { value: "tipo_equipamento", label: "Tipos de Equipamento", icon: Package, description: "Tipos de equipamentos disponíveis" },
@@ -50,7 +49,6 @@ const CATEGORIAS_CLT: CategoriaConfig[] = [
 ];
 
 const CATEGORIAS_PJ: CategoriaConfig[] = [
-  { value: "tipo_servico", label: "Tipos de Serviço PJ", icon: Package, description: "Tipos de serviço para contratos PJ" },
   { value: "forma_pagamento", label: "Formas de Pagamento", icon: Settings2, description: "Formas de pagamento para prestadores PJ" },
 ];
 
@@ -337,24 +335,8 @@ export default function Parametros() {
                   </TabsList>
 
                   {grouped.map((cat) => {
-                    const isCargos = cat.value === "cargo";
-                    const isTipoServico = cat.value === "tipo_servico";
-                    const isRedirectedToCargos = isCargos || isTipoServico;
                     return (
                       <TabsContent key={cat.value} value={cat.value}>
-                        {isRedirectedToCargos ? (
-                          <div className="rounded-lg border border-border p-6 bg-muted/30 text-center">
-                            <Briefcase className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-                            <h3 className="font-medium mb-1">Cargos e Salários</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Os cargos agora são gerenciados com faixas salariais integradas
-                              no Plano de Posições e Remuneração.
-                            </p>
-                            <Button variant="outline" size="sm" onClick={() => navigate('/cargos')}>
-                              Ir para Cargos e Salários →
-                            </Button>
-                          </div>
-                        ) : (
                         <Card>
                           <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <div>
