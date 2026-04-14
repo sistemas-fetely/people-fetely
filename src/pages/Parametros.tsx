@@ -3,7 +3,7 @@ import { useAllParametros } from "@/hooks/useParametros";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ import {
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Plus, Pencil, Trash2, Loader2, Monitor, Package, Settings2, FileText, Search, Briefcase } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Monitor, Package, Settings2, FileText, Search } from "lucide-react";
 import type { Parametro } from "@/hooks/useParametros";
 
 interface CategoriaConfig {
@@ -39,7 +39,6 @@ const CATEGORIAS_GERAL: CategoriaConfig[] = [
 ];
 
 const CATEGORIAS_CLT: CategoriaConfig[] = [
-  { value: "cargo", label: "Cargos", icon: Package, description: "Cargos disponíveis para colaboradores" },
   { value: "tipo_contrato", label: "Tipos de Contrato", icon: Settings2, description: "Modalidades de contrato CLT conforme legislação" },
   { value: "jornada", label: "Jornadas", icon: Settings2, description: "Jornadas de trabalho e escalas" },
   { value: "tipo_equipamento", label: "Tipos de Equipamento", icon: Package, description: "Tipos de equipamentos disponíveis" },
@@ -50,7 +49,6 @@ const CATEGORIAS_CLT: CategoriaConfig[] = [
 ];
 
 const CATEGORIAS_PJ: CategoriaConfig[] = [
-  { value: "tipo_servico", label: "Tipos de Serviço PJ", icon: Package, description: "Tipos de serviço para contratos PJ" },
   { value: "forma_pagamento", label: "Formas de Pagamento", icon: Settings2, description: "Formas de pagamento para prestadores PJ" },
 ];
 
@@ -194,7 +192,6 @@ export default function Parametros() {
   const [searchParams, setSearchParams] = useSearchParams();
   const modulo = searchParams.get("modulo") || "geral";
   const { isSuperAdmin } = usePermissions();
-  const navigate = useNavigate();
 
   const { data: allParams, isLoading } = useAllParametros();
   const { data: usageData } = useParametroUsage();
@@ -337,24 +334,8 @@ export default function Parametros() {
                   </TabsList>
 
                   {grouped.map((cat) => {
-                    const isCargos = cat.value === "cargo";
-                    const isTipoServico = cat.value === "tipo_servico";
-                    const isRedirectedToCargos = isCargos || isTipoServico;
                     return (
                       <TabsContent key={cat.value} value={cat.value}>
-                        {isRedirectedToCargos ? (
-                          <div className="rounded-lg border border-border p-6 bg-muted/30 text-center">
-                            <Briefcase className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-                            <h3 className="font-medium mb-1">Cargos e Salários</h3>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              Os cargos agora são gerenciados com faixas salariais integradas
-                              no Plano de Posições e Remuneração.
-                            </p>
-                            <Button variant="outline" size="sm" onClick={() => navigate('/cargos')}>
-                              Ir para Cargos e Salários →
-                            </Button>
-                          </div>
-                        ) : (
                         <Card>
                           <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <div>
@@ -397,11 +378,6 @@ export default function Parametros() {
                                               {!param.ativo && (
                                                 <Badge variant="secondary" className="text-[10px]">Inativo</Badge>
                                               )}
-                                              {isCargos && param.is_clevel && (
-                                                <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                                                  C-Level 🔒
-                                                </span>
-                                              )}
                                               <UsageBadge count={usageCount} />
                                             </div>
                                             {param.descricao && (
@@ -410,16 +386,6 @@ export default function Parametros() {
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2 ml-2">
-                                          {isCargos && isSuperAdmin && (
-                                            <div className="flex items-center gap-1.5" title="C-Level">
-                                              <span className="text-[10px] text-muted-foreground hidden sm:inline">C-Level</span>
-                                              <Switch
-                                                checked={param.is_clevel}
-                                                onCheckedChange={() => handleToggleCLevel(param)}
-                                                className="data-[state=checked]:bg-orange-500"
-                                              />
-                                            </div>
-                                          )}
                                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(param)}>
                                             <Pencil className="h-3.5 w-3.5" />
                                           </Button>
@@ -460,7 +426,6 @@ export default function Parametros() {
                             )}
                           </CardContent>
                         </Card>
-                        )}
                       </TabsContent>
                     );
                   })}
