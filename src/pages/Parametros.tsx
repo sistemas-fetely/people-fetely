@@ -379,11 +379,6 @@ export default function Parametros() {
                                               {!param.ativo && (
                                                 <Badge variant="secondary" className="text-[10px]">Inativo</Badge>
                                               )}
-                                              {isCargos && param.is_clevel && (
-                                                <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                                                  C-Level 🔒
-                                                </span>
-                                              )}
                                               <UsageBadge count={usageCount} />
                                             </div>
                                             {param.descricao && (
@@ -392,16 +387,6 @@ export default function Parametros() {
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2 ml-2">
-                                          {isCargos && isSuperAdmin && (
-                                            <div className="flex items-center gap-1.5" title="C-Level">
-                                              <span className="text-[10px] text-muted-foreground hidden sm:inline">C-Level</span>
-                                              <Switch
-                                                checked={param.is_clevel}
-                                                onCheckedChange={() => handleToggleCLevel(param)}
-                                                className="data-[state=checked]:bg-orange-500"
-                                              />
-                                            </div>
-                                          )}
                                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(param)}>
                                             <Pencil className="h-3.5 w-3.5" />
                                           </Button>
