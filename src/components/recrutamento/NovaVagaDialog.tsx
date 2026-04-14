@@ -291,8 +291,9 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
                   {beneficiosIds.map((v) => {
                     const param = beneficiosParam.find((b) => b.valor === v);
                     return (
-                      <Badge key={v} variant="secondary" className="text-xs">
+                      <Badge key={v} variant="secondary" className="text-xs gap-1">
                         {param?.label || v}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setBeneficiosIds(beneficiosIds.filter((x) => x !== v))} />
                       </Badge>
                     );
                   })}
