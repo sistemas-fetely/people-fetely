@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
   DialogHeader, DialogTitle, DialogTrigger,
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   CheckCircle2, XCircle, UserCheck, UserX, Users, UserPlus,
-  Shield, ShieldCheck, ShieldAlert, Pencil, Trash2, Settings2, Link2,
+  Shield, ShieldCheck, ShieldAlert, Pencil, Trash2, Settings2, Link2, LinkIcon, Unlink,
   ChevronDown, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
