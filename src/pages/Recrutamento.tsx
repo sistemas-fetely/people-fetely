@@ -122,7 +122,7 @@ export default function Recrutamento() {
                 {vagas.map((vaga) => {
                   const cfg = statusConfig[vaga.status] || statusConfig.rascunho;
                   return (
-                    <TableRow key={vaga.id} className="cursor-pointer hover:bg-muted/50">
+                    <TableRow key={vaga.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/recrutamento/${vaga.id}`)}>
                       <TableCell className="font-medium">{vaga.titulo}</TableCell>
                       <TableCell>{vaga.area}</TableCell>
                       <TableCell>
