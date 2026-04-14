@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import GruposAcessoTab from "@/components/grupos-acesso/GruposAcessoTab";
+import ConfigurarPerfisTab from "@/components/configurar-perfis/ConfigurarPerfisTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
