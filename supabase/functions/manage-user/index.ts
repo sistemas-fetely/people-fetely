@@ -27,15 +27,15 @@ Deno.serve(async (req) => {
     const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user: caller }, error: userError } = await anonClient.auth.getUser();
+    if (userError || !caller) {
+      console.error("Auth error:", userError?.message || "No user found");
       return new Response(JSON.stringify({ error: "Não autorizado" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const callerId = claimsData.claims.sub as string;
+    const callerId = caller.id;
 
     // Check super_admin role
     const { data: hasRole } = await anonClient.rpc("has_role", {
