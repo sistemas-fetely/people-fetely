@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 
     // Check super_admin role
     const { data: hasRole } = await anonClient.rpc("has_role", {
-      _user_id: caller.id,
+      _user_id: callerId,
       _role: "super_admin",
     });
     if (!hasRole) {
