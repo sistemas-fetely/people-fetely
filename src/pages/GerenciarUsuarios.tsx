@@ -82,6 +82,11 @@ async function callManageUser(action: string, payload: Record<string, unknown>) 
 
 export default function GerenciarUsuarios() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "usuarios";
+  const handleTabChange = (value: string) => {
+    setSearchParams(value === "usuarios" ? {} : { tab: value }, { replace: true });
+  };
   const { roles: myRoles } = useAuth();
   const isSuperAdmin = myRoles.includes("super_admin");
   const isAdminRH = myRoles.includes("admin_rh");
