@@ -227,6 +227,16 @@ const App = () => (
                   <Cargos />
                 </ProtectedRoute>
               } />
+              <Route path="/cargos/novo" element={
+                <ProtectedRoute permModule="parametros">
+                  <CargoForm />
+                </ProtectedRoute>
+              } />
+              <Route path="/cargos/:id" element={
+                <ProtectedRoute permModule="parametros">
+                  <CargoForm />
+                </ProtectedRoute>
+              } />
               </Route>
 
             <Route path="*" element={<NotFound />} />
