@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParametros } from "@/hooks/useParametros";
@@ -304,35 +305,31 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
 
             <div className="space-y-2">
               <Label>Benefícios</Label>
-              <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
-                {beneficiosParam.map((b) => (
-                  <div key={b.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`ben-${b.id}`}
-                      checked={beneficiosIds.includes(b.valor)}
-                      onCheckedChange={(checked) =>
-                        setBeneficiosIds(checked
-                          ? [...beneficiosIds, b.valor]
-                          : beneficiosIds.filter((v) => v !== b.valor))
+              <div className="flex flex-wrap gap-2">
+                {beneficiosParam.map((b) => {
+                  const selected = beneficiosIds.includes(b.valor);
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() =>
+                        setBeneficiosIds(selected
+                          ? beneficiosIds.filter((v) => v !== b.valor)
+                          : [...beneficiosIds, b.valor])
                       }
-                    />
-                    <label htmlFor={`ben-${b.id}`} className="text-sm cursor-pointer">{b.label}</label>
-                  </div>
-                ))}
+                      className={cn(
+                        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer",
+                        selected
+                          ? "border-transparent text-white"
+                          : "border-border text-muted-foreground bg-background hover:bg-muted"
+                      )}
+                      style={selected ? { backgroundColor: "#C2185B" } : undefined}
+                    >
+                      {b.label}
+                    </button>
+                  );
+                })}
               </div>
-              {beneficiosIds.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {beneficiosIds.map((v) => {
-                    const param = beneficiosParam.find((b) => b.valor === v);
-                    return (
-                      <Badge key={v} variant="secondary" className="text-xs gap-1">
-                        {param?.label || v}
-                        <X className="h-3 w-3 cursor-pointer" onClick={() => setBeneficiosIds(beneficiosIds.filter((x) => x !== v))} />
-                      </Badge>
-                    );
-                  })}
-                </div>
-              )}
               <Input
                 value={beneficiosOutros}
                 onChange={(e) => setBeneficiosOutros(e.target.value)}
@@ -380,17 +377,16 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
             <div className="space-y-2">
               <Label>Skills obrigatórias</Label>
               <div className="flex flex-wrap gap-2">
-                {skillsCatalogo.map((s) => (
-                  <Button key={s} variant={skillsObrigatorias.includes(s) ? "default" : "outline"} size="sm"
-                    className="text-xs h-7"
-                    onClick={() => setSkillsObrigatorias(
-                      skillsObrigatorias.includes(s)
-                        ? skillsObrigatorias.filter((x) => x !== s)
-                        : [...skillsObrigatorias, s]
-                    )}>
-                    {s}
-                  </Button>
-                ))}
+                {skillsCatalogo.map((s) => {
+                  const selected = skillsObrigatorias.includes(s);
+                  return (
+                    <button key={s} type="button"
+                      onClick={() => setSkillsObrigatorias(selected ? skillsObrigatorias.filter((x) => x !== s) : [...skillsObrigatorias, s])}
+                      className={cn("inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer", selected ? "border-transparent text-white" : "border-border text-muted-foreground bg-background hover:bg-muted")}
+                      style={selected ? { backgroundColor: "#1A4A3A" } : undefined}
+                    >{s}</button>
+                  );
+                })}
               </div>
             </div>
 
@@ -398,76 +394,47 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
             <div className="space-y-2">
               <Label>Skills desejadas</Label>
               <div className="flex flex-wrap gap-2">
-                {skillsCatalogo.filter((s) => !skillsObrigatorias.includes(s)).map((s) => (
-                  <Button key={s} variant={skillsDesejadas.includes(s) ? "secondary" : "outline"} size="sm"
-                    className="text-xs h-7"
-                    onClick={() => setSkillsDesejadas(
-                      skillsDesejadas.includes(s)
-                        ? skillsDesejadas.filter((x) => x !== s)
-                        : [...skillsDesejadas, s]
-                    )}>
-                    {s}
-                  </Button>
-                ))}
+                {skillsCatalogo.filter((s) => !skillsObrigatorias.includes(s)).map((s) => {
+                  const selected = skillsDesejadas.includes(s);
+                  return (
+                    <button key={s} type="button"
+                      onClick={() => setSkillsDesejadas(selected ? skillsDesejadas.filter((x) => x !== s) : [...skillsDesejadas, s])}
+                      className={cn("inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer", selected ? "border-transparent text-white" : "border-border text-muted-foreground bg-background hover:bg-muted")}
+                      style={selected ? { backgroundColor: "#1A6BBF" } : undefined}
+                    >{s}</button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Ferramentas */}
             <div className="space-y-2">
               <Label>Ferramentas / Sistemas</Label>
-              <div className="border rounded-md p-3 space-y-3 max-h-48 overflow-y-auto">
-                {ferramentasParam.length > 0 && (
-                  <>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ferramentas</p>
-                    {ferramentasParam.map((f) => (
-                      <div key={f.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`fer-${f.id}`}
-                          checked={ferramentasIds.includes(f.valor)}
-                          onCheckedChange={(checked) =>
-                            setFerramentasIds(checked
-                              ? [...ferramentasIds, f.valor]
-                              : ferramentasIds.filter((v) => v !== f.valor))
-                          }
-                        />
-                        <label htmlFor={`fer-${f.id}`} className="text-sm cursor-pointer">{f.label}</label>
-                      </div>
-                    ))}
-                  </>
-                )}
-                {sistemasParam.length > 0 && (
-                  <>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mt-2">Sistemas Corporativos</p>
-                    {sistemasParam.map((s) => (
-                      <div key={s.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`sis-${s.id}`}
-                          checked={ferramentasIds.includes(s.valor)}
-                          onCheckedChange={(checked) =>
-                            setFerramentasIds(checked
-                              ? [...ferramentasIds, s.valor]
-                              : ferramentasIds.filter((v) => v !== s.valor))
-                          }
-                        />
-                        <label htmlFor={`sis-${s.id}`} className="text-sm cursor-pointer">{s.label}</label>
-                      </div>
-                    ))}
-                  </>
-                )}
+              <div className="flex flex-wrap gap-2">
+                {[...ferramentasParam, ...sistemasParam].map((f) => {
+                  const selected = ferramentasIds.includes(f.valor);
+                  return (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() =>
+                        setFerramentasIds(selected
+                          ? ferramentasIds.filter((v) => v !== f.valor)
+                          : [...ferramentasIds, f.valor])
+                      }
+                      className={cn(
+                        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors cursor-pointer",
+                        selected
+                          ? "border-transparent text-white"
+                          : "border-border text-muted-foreground bg-background hover:bg-muted"
+                      )}
+                      style={selected ? { backgroundColor: "#5E35B1" } : undefined}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
               </div>
-              {ferramentasIds.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {ferramentasIds.map((v) => {
-                    const param = [...ferramentasParam, ...sistemasParam].find((p) => p.valor === v);
-                    return (
-                      <Badge key={v} variant="secondary" className="text-xs gap-1">
-                        {param?.label || v}
-                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFerramentasIds(ferramentasIds.filter((x) => x !== v))} />
-                      </Badge>
-                    );
-                  })}
-                </div>
-              )}
               <Input
                 value={ferramentasOutras}
                 onChange={(e) => setFerramentasOutras(e.target.value)}
