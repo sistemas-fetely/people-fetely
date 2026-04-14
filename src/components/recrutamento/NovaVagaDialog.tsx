@@ -16,14 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, ArrowRight, ArrowLeft, Loader2, X } from "lucide-react";
 
-const SKILLS_CATALOGO = [
-  "Adobe Illustrator", "Adobe Photoshop", "Canva Pro", "Figma",
-  "React / TypeScript", "Supabase", "Git", "ERP Bling", "Lovable",
-  "Excel Avançado", "Power BI", "CRM", "Negociação B2B",
-  "Copywriting", "Instagram Strategy", "Meta Ads",
-  "Supply Chain", "Importação / Incoterms",
-  "Legislação CLT", "eSocial", "Gestão de times",
-];
+// Skills catalog removed — now driven by ferramentas + sistemas parametros
 
 const NIVEIS = [
   { value: "jr", label: "Jr" },
@@ -64,7 +57,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const [responsabilidades, setResponsabilidades] = useState<string[]>([""]);
   const [skillsObrigatorias, setSkillsObrigatorias] = useState<string[]>([]);
   const [skillsDesejadas, setSkillsDesejadas] = useState<string[]>([]);
-  const [ferramentas, setFerramentas] = useState<string[]>([""]);
+  const [ferramentasIds, setFerramentasIds] = useState<string[]>([]);
+  const [ferramentasOutras, setFerramentasOutras] = useState("");
   const [faixaMin, setFaixaMin] = useState("");
   const [faixaMax, setFaixaMax] = useState("");
 
@@ -72,7 +66,11 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const { data: locais = [] } = useParametros("local_trabalho");
   const { data: jornadas = [] } = useParametros("jornada");
   const { data: beneficiosParam = [] } = useParametros("beneficio");
+  const { data: ferramentasParam = [] } = useParametros("ferramenta");
+  const { data: sistemasParam = [] } = useParametros("sistema");
   const { data: cargos = [] } = useParametros("cargo");
+
+  const skillsCatalogo = [...ferramentasParam, ...sistemasParam].map((p) => p.label);
 
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
@@ -112,7 +110,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
         responsabilidades: responsabilidades.filter(Boolean),
         skills_obrigatorias: skillsObrigatorias.filter(Boolean),
         skills_desejadas: skillsDesejadas.filter(Boolean),
-        ferramentas: ferramentas.filter(Boolean),
+        ferramentas: [...ferramentasParam, ...sistemasParam].filter(p => ferramentasIds.includes(p.valor)).map(p => p.label).concat(ferramentasOutras ? [ferramentasOutras] : []),
+        ferramentas_ids: ferramentasIds.length > 0 ? ferramentasIds : null,
         gestor_id: gestorId || null,
         criado_por: user?.id || null,
       };
@@ -136,7 +135,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
     setTitulo(""); setArea(""); setTipoContrato(""); setNivel("");
     setGestorId(""); setLocalTrabalho(""); setJornada(""); setBeneficiosIds([]); setBeneficiosOutros("");
     setVigenciaFim(""); setMissao(""); setResponsabilidades([""]);
-    setSkillsObrigatorias([]); setSkillsDesejadas([]); setFerramentas([""]);
+    setSkillsObrigatorias([]); setSkillsDesejadas([]); setFerramentasIds([]); setFerramentasOutras("");
     setFaixaMin(""); setFaixaMax("");
     onOpenChange(false);
   }
@@ -346,7 +345,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
             <div className="space-y-2">
               <Label>Skills obrigatórias</Label>
               <div className="flex flex-wrap gap-2">
-                {SKILLS_CATALOGO.map((s) => (
+                {skillsCatalogo.map((s) => (
                   <Button key={s} variant={skillsObrigatorias.includes(s) ? "default" : "outline"} size="sm"
                     className="text-xs h-7"
                     onClick={() => setSkillsObrigatorias(
@@ -364,7 +363,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
             <div className="space-y-2">
               <Label>Skills desejadas</Label>
               <div className="flex flex-wrap gap-2">
-                {SKILLS_CATALOGO.filter((s) => !skillsObrigatorias.includes(s)).map((s) => (
+                {skillsCatalogo.filter((s) => !skillsObrigatorias.includes(s)).map((s) => (
                   <Button key={s} variant={skillsDesejadas.includes(s) ? "secondary" : "outline"} size="sm"
                     className="text-xs h-7"
                     onClick={() => setSkillsDesejadas(
@@ -381,20 +380,65 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
             {/* Ferramentas */}
             <div className="space-y-2">
               <Label>Ferramentas / Sistemas</Label>
-              {ferramentas.map((f, i) => (
-                <div key={i} className="flex gap-2">
-                  <Input value={f} onChange={(e) => updateItem(ferramentas, setFerramentas, i, e.target.value)}
-                    placeholder={`Ferramenta ${i + 1}`} />
-                  {ferramentas.length > 1 && (
-                    <Button variant="ghost" size="icon" onClick={() => removeItem(ferramentas, setFerramentas, i)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+              <div className="border rounded-md p-3 space-y-3 max-h-48 overflow-y-auto">
+                {ferramentasParam.length > 0 && (
+                  <>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Ferramentas</p>
+                    {ferramentasParam.map((f) => (
+                      <div key={f.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`fer-${f.id}`}
+                          checked={ferramentasIds.includes(f.valor)}
+                          onCheckedChange={(checked) =>
+                            setFerramentasIds(checked
+                              ? [...ferramentasIds, f.valor]
+                              : ferramentasIds.filter((v) => v !== f.valor))
+                          }
+                        />
+                        <label htmlFor={`fer-${f.id}`} className="text-sm cursor-pointer">{f.label}</label>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {sistemasParam.length > 0 && (
+                  <>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mt-2">Sistemas Corporativos</p>
+                    {sistemasParam.map((s) => (
+                      <div key={s.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`sis-${s.id}`}
+                          checked={ferramentasIds.includes(s.valor)}
+                          onCheckedChange={(checked) =>
+                            setFerramentasIds(checked
+                              ? [...ferramentasIds, s.valor]
+                              : ferramentasIds.filter((v) => v !== s.valor))
+                          }
+                        />
+                        <label htmlFor={`sis-${s.id}`} className="text-sm cursor-pointer">{s.label}</label>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+              {ferramentasIds.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {ferramentasIds.map((v) => {
+                    const param = [...ferramentasParam, ...sistemasParam].find((p) => p.valor === v);
+                    return (
+                      <Badge key={v} variant="secondary" className="text-xs gap-1">
+                        {param?.label || v}
+                        <X className="h-3 w-3 cursor-pointer" onClick={() => setFerramentasIds(ferramentasIds.filter((x) => x !== v))} />
+                      </Badge>
+                    );
+                  })}
                 </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={() => addItem(ferramentas, setFerramentas)}>
-                <Plus className="h-3 w-3 mr-1" /> Adicionar
-              </Button>
+              )}
+              <Input
+                value={ferramentasOutras}
+                onChange={(e) => setFerramentasOutras(e.target.value)}
+                placeholder="Outras ferramentas não listadas"
+                className="mt-2"
+              />
             </div>
 
             {/* Faixa salarial — only for super_admin and admin_rh */}
