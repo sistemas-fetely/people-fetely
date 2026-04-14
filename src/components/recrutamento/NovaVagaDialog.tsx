@@ -83,30 +83,17 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const { data: sistemasParam = [] } = useParametros("sistema");
   const { data: cargosData = [] } = useCargos();
 
-  // PCS faixas salariais
-  const { data: faixasPCS } = useQuery({
-    queryKey: ["pcs-faixas", titulo, tipoContrato],
-    queryFn: async () => {
-      if (!titulo || !tipoContrato || tipoContrato === "ambos") return null;
-      const { data } = await supabase
-        .from("pcs_faixas")
-        .select("*")
-        .eq("cargo", titulo)
-        .eq("tipo", tipoContrato)
-        .eq("ativo", true)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!titulo && !!tipoContrato && tipoContrato !== "ambos",
-  });
-
-  // Auto-fill faixa when PCS data loads
+  // Auto-fill faixa from cargos table
   useEffect(() => {
-    if (faixasPCS) {
-      setFaixaMin(String(faixasPCS.f1_min ?? ""));
-      setFaixaMax(String(faixasPCS.f1_max ?? ""));
-    }
-  }, [faixasPCS]);
+    if (!titulo || !tipoContrato) return;
+    const cargoMatch = cargosData.find((c) => c.nome === titulo);
+    if (!cargoMatch) return;
+    const tipo = tipoContrato === "pj" ? "pj" : "clt";
+    const f1Min = (cargoMatch as any)[`faixa_${tipo}_f1_min`];
+    const f1Max = (cargoMatch as any)[`faixa_${tipo}_f1_max`];
+    if (f1Min != null) setFaixaMin(String(f1Min));
+    if (f1Max != null) setFaixaMax(String(f1Max));
+  }, [titulo, tipoContrato, cargosData]);
 
   const skillsCatalogo = SKILLS_CATALOGO;
 
