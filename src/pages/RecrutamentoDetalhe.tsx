@@ -2718,6 +2718,80 @@ function TesteTecnico({
             </div>
           </div>
 
+          {/* Validação de skills */}
+          {formResultado.skills_validadas.length > 0 && (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">Validação de skills declaradas</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Com base na entrega, confirme se as skills declaradas pelo candidato são reais.
+                </p>
+              </div>
+              {formResultado.skills_validadas.map((sv, i) => {
+                const skillInfo = (teste as any)?.skills_a_validar?.find(
+                  (s: any) => s.skill === sv.skill
+                );
+                return (
+                  <div key={i} className="p-3 rounded-lg border space-y-2"
+                    style={{
+                      borderColor: sv.resultado === "confirmado" ? "#1A4A3A40" :
+                        sv.resultado === "parcial" ? "#D9770640" :
+                        sv.resultado === "nao_confirmado" ? "#DC262640" :
+                        "var(--color-border-tertiary)",
+                      backgroundColor: sv.resultado === "confirmado" ? "#F0FFF4" :
+                        sv.resultado === "parcial" ? "#FFFBEB" :
+                        sv.resultado === "nao_confirmado" ? "#FEF2F2" :
+                        undefined,
+                    }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-semibold">{sv.skill}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Declarado: <span className="capitalize">{sv.nivel_declarado}</span>
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
+                        {[
+                          { value: "confirmado", label: "✓", title: "Confirmado", cor: "#1A4A3A" },
+                          { value: "parcial", label: "~", title: "Parcial", cor: "#D97706" },
+                          { value: "nao_confirmado", label: "✗", title: "Não confirmado", cor: "#DC2626" },
+                        ].map(op => (
+                          <button key={op.value} type="button"
+                            title={op.title}
+                            onClick={() => {
+                              const arr = [...formResultado.skills_validadas];
+                              arr[i] = { ...arr[i], resultado: op.value };
+                              setFormResultado(f => ({ ...f, skills_validadas: arr }));
+                            }}
+                            className="w-7 h-7 rounded-full text-xs font-bold border transition-colors"
+                            style={sv.resultado === op.value
+                              ? { backgroundColor: op.cor, color: "white", borderColor: op.cor }
+                              : { borderColor: "#E5E7EB", color: "#9CA3AF" }}>
+                            {op.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {skillInfo?.como_validar && (
+                      <p className="text-xs text-muted-foreground italic border-t pt-2">
+                        Como foi testada: {skillInfo.como_validar}
+                      </p>
+                    )}
+                    <Input
+                      value={sv.observacao}
+                      className="h-7 text-xs"
+                      placeholder="Observação opcional..."
+                      onChange={e => {
+                        const arr = [...formResultado.skills_validadas];
+                        arr[i] = { ...arr[i], observacao: e.target.value };
+                        setFormResultado(f => ({ ...f, skills_validadas: arr }));
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
           <Button className="w-full text-white" style={{ backgroundColor: corTema }}
             disabled={salvando || !formResultado.resultado}
             onClick={salvarResultado}>
