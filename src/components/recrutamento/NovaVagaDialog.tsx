@@ -79,7 +79,6 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const { data: locais = [] } = useParametros("local_trabalho");
   const { data: jornadas = [] } = useParametros("jornada");
   const { data: beneficiosParam = [] } = useParametros("beneficio");
-  const { data: ferramentasParam = [] } = useParametros("ferramenta");
   const { data: sistemasParam = [] } = useParametros("sistema");
   const { data: cargosData = [] } = useCargos();
 
@@ -97,17 +96,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
 
   const skillsCatalogo = SKILLS_CATALOGO;
 
-  // Deduplicar ferramentas + sistemas por label (case insensitive)
-  const ferramentasSistemasCatalogo = (() => {
-    const todos = [...ferramentasParam, ...sistemasParam];
-    const vistos = new Set<string>();
-    return todos.filter(item => {
-      const key = item.label.toLowerCase().trim();
-      if (vistos.has(key)) return false;
-      vistos.add(key);
-      return true;
-    });
-  })();
+  // Usar apenas sistemas — categoria única consolidada
+  const ferramentasSistemasCatalogo = sistemasParam;
 
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
