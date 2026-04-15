@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft, Copy, Globe, MoreHorizontal, Plus, Loader2,
-  UserPlus, ArrowRight, XCircle, User, CheckCircle2, ExternalLink, Users, Link, Trash2, Check, Mail, AlertTriangle, Pencil, X
+  UserPlus, ArrowRight, XCircle, User, CheckCircle2, ExternalLink, Users, Link, Trash2, Check, Mail, AlertTriangle, Pencil, X, Sparkles
 } from "lucide-react";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -1293,6 +1293,8 @@ export default function RecrutamentoDetalhe() {
                         candidatoId={selectedCandidato.id}
                         vagaId={id!}
                         tipo="rh"
+                        candidato={selectedCandidato}
+                        vaga={vaga}
                         readOnly={
                           selectedCandidato.status !== "entrevista_rh" &&
                           !["entrevista_gestor", "teste_tecnico", "oferta", "contratado"]
@@ -1306,6 +1308,8 @@ export default function RecrutamentoDetalhe() {
                             candidatoId={selectedCandidato.id}
                             vagaId={id!}
                             tipo="gestor"
+                            candidato={selectedCandidato}
+                            vaga={vaga}
                             readOnly={selectedCandidato.status !== "entrevista_gestor"}
                           />
                         </div>
