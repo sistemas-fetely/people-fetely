@@ -14,6 +14,8 @@ import { template as cadastroRecebido } from './cadastro-recebido.tsx'
 import { template as nfPagamento } from './nf-pagamento.tsx'
 import { template as cadastroAprovado } from './cadastro-aprovado.tsx'
 import { template as boasVindasPortal } from './boas-vindas-portal.tsx'
+import { template as candidaturaRecebida } from './candidatura-recebida.tsx'
+import { template as solicitarPerfilCandidato } from './solicitar-perfil-candidato.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'convite-cadastro': conviteCadastro,
@@ -21,4 +23,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'nf-pagamento': nfPagamento,
   'cadastro-aprovado': cadastroAprovado,
   'boas-vindas-portal': boasVindasPortal,
+  'candidatura-recebida': candidaturaRecebida,
+  'solicitar-perfil-candidato': solicitarPerfilCandidato,
 }
