@@ -88,6 +88,41 @@ export default function CargoForm() {
   const isNovo = !id || id === "novo";
   const qc = useQueryClient();
   const [form, setForm] = useState<FormState>(buildInitial);
+  const [enriquecendo, setEnriquecendo] = useState(false);
+
+  async function enriquecerComIA() {
+    if (!form.nome || !form.nivel) {
+      toast.error("Preencha o nome e o nível do cargo antes de enriquecer.");
+      return;
+    }
+    setEnriquecendo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("enrich-cargo", {
+        body: { nome: form.nome, nivel: form.nivel, departamento: form.departamento || undefined },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      setForm((f: any) => ({
+        ...f,
+        missao: data.missao || f.missao,
+        faixa_clt_f1_min: data.faixa_clt_f1_min?.toString() || f.faixa_clt_f1_min,
+        faixa_clt_f1_max: data.faixa_clt_f1_max?.toString() || f.faixa_clt_f1_max,
+        faixa_clt_f5_min: data.faixa_clt_f5_min?.toString() || f.faixa_clt_f5_min,
+        faixa_clt_f5_max: data.faixa_clt_f5_max?.toString() || f.faixa_clt_f5_max,
+        faixa_pj_f1_min: data.faixa_pj_f1_min?.toString() || f.faixa_pj_f1_min,
+        faixa_pj_f1_max: data.faixa_pj_f1_max?.toString() || f.faixa_pj_f1_max,
+        faixa_pj_f5_min: data.faixa_pj_f5_min?.toString() || f.faixa_pj_f5_min,
+        faixa_pj_f5_max: data.faixa_pj_f5_max?.toString() || f.faixa_pj_f5_max,
+      }));
+      toast.success("Informações preenchidas com dados de mercado. Revise antes de salvar.");
+    } catch (err: any) {
+      console.error("Erro ao enriquecer cargo:", err);
+      toast.error("Não foi possível buscar dados de mercado. Tente novamente.");
+    } finally {
+      setEnriquecendo(false);
+    }
+  }
 
   const { data: departamentos } = useQuery({
     queryKey: ["parametros-departamentos"],
