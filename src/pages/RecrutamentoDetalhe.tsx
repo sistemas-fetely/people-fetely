@@ -184,6 +184,19 @@ export default function RecrutamentoDetalhe() {
     enabled: !!id,
   });
 
+  // Buscar ofertas em lote
+  const { data: ofertasCandidatos = [] } = useQuery({
+    queryKey: ["ofertas-vaga", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ofertas_candidato" as any)
+        .select("candidato_id, status, enviado_em, salario_proposto")
+        .eq("vaga_id", id!);
+      return (data ?? []) as any[];
+    },
+    enabled: !!id,
+  });
+
   const { data: vaga, isLoading: vagaLoading } = useQuery({
     queryKey: ["vaga", id],
     queryFn: async () => {
@@ -400,6 +413,7 @@ export default function RecrutamentoDetalhe() {
       toast.success(`Convite gerado para ${contratarCandidato?.nome}! Acesse Convites de Cadastro para enviar.`);
       setContratarOpen(false);
       queryClient.invalidateQueries({ queryKey: ["candidatos", id] });
+      queryClient.invalidateQueries({ queryKey: ["ofertas-vaga", id] });
       // Ask about closing the vaga
       setEncerrarVagaOpen(true);
     },
@@ -487,8 +501,13 @@ export default function RecrutamentoDetalhe() {
         if (testeCand.resultado === "reprovado") return { label: "Reprovado", cor: "#DC2626" };
         return { label: "Aprovado", cor: "#1A4A3A" };
       }
-      case "oferta":
+      case "oferta": {
+        const ofertaCand = ofertasCandidatos.find((o: any) => o.candidato_id === c.id);
+        if (!ofertaCand?.enviado_em) return { label: "Registrar oferta", cor: "#DC2626" };
+        if (ofertaCand.status === "aceita") return { label: "Oferta aceita", cor: "#1A4A3A" };
+        if (ofertaCand.status === "recusada") return { label: "Oferta recusada", cor: "#DC2626" };
         return { label: "Em negociação", cor: "#D97706" };
+      }
       default:
         return null;
     }
@@ -654,6 +673,34 @@ export default function RecrutamentoDetalhe() {
           "O resultado do Teste Técnico é Reprovado. Tem certeza que quer avançar?",
           { duration: 5000 }
         );
+      }
+    }
+
+    // Bloqueio: Oferta → Contratado sem oferta aceita
+    if (c.status === "oferta" && nextStatus === "contratado") {
+      const { data: oferta } = await supabase
+        .from("ofertas_candidato" as any)
+        .select("status, enviado_em")
+        .eq("candidato_id", candidatoId)
+        .eq("vaga_id", id!)
+        .maybeSingle();
+
+      if (!(oferta as any)?.enviado_em) {
+        toast.error(
+          "Registre e envie a proposta antes de contratar.",
+          { duration: 5000 }
+        );
+        setSelectedCandidato(c);
+        return;
+      }
+
+      if ((oferta as any).status !== "aceita") {
+        toast.error(
+          "A proposta precisa estar com status 'Aceita' antes de contratar.",
+          { duration: 5000 }
+        );
+        setSelectedCandidato(c);
+        return;
       }
     }
 
@@ -1257,10 +1304,11 @@ export default function RecrutamentoDetalhe() {
               </div>
 
               <Tabs defaultValue="perfil">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-7">
                   <TabsTrigger value="perfil" className="text-xs">Perfil</TabsTrigger>
                   <TabsTrigger value="entrevistas" className="text-xs">Entrevistas</TabsTrigger>
                   <TabsTrigger value="teste" className="text-xs">Teste</TabsTrigger>
+                  <TabsTrigger value="oferta" className="text-xs">Oferta</TabsTrigger>
                   <TabsTrigger value="avaliacao" className="text-xs">Avaliação</TabsTrigger>
                   <TabsTrigger value="historico" className="text-xs">Histórico</TabsTrigger>
                   <TabsTrigger value="notas" className="text-xs">Notas</TabsTrigger>
@@ -1486,6 +1534,16 @@ export default function RecrutamentoDetalhe() {
                     vagaId={id!}
                     candidato={selectedCandidato}
                     vaga={vaga}
+                  />
+                </TabsContent>
+
+                <TabsContent value="oferta" className="mt-4">
+                  <ModuloOferta
+                    candidatoId={selectedCandidato.id}
+                    vagaId={id!}
+                    candidato={selectedCandidato}
+                    vaga={vaga}
+                    canSeeFaixa={canSeeFaixa}
                   />
                 </TabsContent>
 
@@ -2845,6 +2903,302 @@ function TesteTecnico({
           </Button>
         </div>
       )}
+    </div>
+  );
+}
+
+function ModuloOferta({
+  candidatoId,
+  vagaId,
+  candidato,
+  vaga,
+  canSeeFaixa,
+}: {
+  candidatoId: string;
+  vagaId: string;
+  candidato: any;
+  vaga: any;
+  canSeeFaixa: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [salvando, setSalvando] = useState(false);
+  const [enviando, setEnviando] = useState(false);
+
+  const [form, setForm] = useState({
+    tipo_contrato: "clt",
+    salario_proposto: "",
+    data_inicio: "",
+    beneficios: "",
+    observacoes: "",
+    status: "em_negociacao",
+  });
+
+  const { data: oferta } = useQuery({
+    queryKey: ["oferta-candidato", candidatoId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("ofertas_candidato" as any)
+        .select("*")
+        .eq("candidato_id", candidatoId)
+        .eq("vaga_id", vagaId)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!candidatoId && !!vagaId,
+  });
+
+  useEffect(() => {
+    if (oferta) {
+      setForm({
+        tipo_contrato: (oferta as any).tipo_contrato ?? "clt",
+        salario_proposto: (oferta as any).salario_proposto?.toString() ?? "",
+        data_inicio: (oferta as any).data_inicio ?? "",
+        beneficios: (oferta as any).beneficios ?? "",
+        observacoes: (oferta as any).observacoes ?? "",
+        status: (oferta as any).status ?? "em_negociacao",
+      });
+    }
+  }, [oferta]);
+
+  async function salvarOferta() {
+    setSalvando(true);
+    try {
+      const { error } = await supabase
+        .from("ofertas_candidato" as any)
+        .upsert({
+          candidato_id: candidatoId,
+          vaga_id: vagaId,
+          tipo_contrato: form.tipo_contrato,
+          salario_proposto: form.salario_proposto ? Number(form.salario_proposto) : null,
+          data_inicio: form.data_inicio || null,
+          beneficios: form.beneficios || null,
+          observacoes: form.observacoes || null,
+          status: form.status,
+          updated_at: new Date().toISOString(),
+        } as any, { onConflict: "candidato_id,vaga_id" });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["oferta-candidato", candidatoId] });
+      queryClient.invalidateQueries({ queryKey: ["ofertas-vaga", vagaId] });
+      toast.success("Proposta salva!");
+    } catch (e: any) {
+      toast.error("Erro ao salvar: " + e.message);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function enviarProposta() {
+    if (!candidato?.email) {
+      toast.error("Candidato sem e-mail cadastrado.");
+      return;
+    }
+    setEnviando(true);
+    try {
+      const { error: saveError } = await supabase
+        .from("ofertas_candidato" as any)
+        .upsert({
+          candidato_id: candidatoId,
+          vaga_id: vagaId,
+          tipo_contrato: form.tipo_contrato,
+          salario_proposto: form.salario_proposto ? Number(form.salario_proposto) : null,
+          data_inicio: form.data_inicio || null,
+          beneficios: form.beneficios || null,
+          observacoes: form.observacoes || null,
+          status: "em_negociacao",
+          enviado_em: new Date().toISOString(),
+          enviado_por: user?.id || null,
+          updated_at: new Date().toISOString(),
+        } as any, { onConflict: "candidato_id,vaga_id" });
+      if (saveError) throw saveError;
+
+      const emailResult = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "proposta-candidato",
+          recipientEmail: candidato.email,
+          idempotencyKey: `proposta-${candidatoId}-${Date.now()}`,
+          templateData: {
+            nome: candidato.nome,
+            cargo: vaga?.titulo ?? "",
+            tipo_contrato: form.tipo_contrato.toUpperCase(),
+            salario: form.salario_proposto
+              ? `R$ ${Number(form.salario_proposto).toLocaleString("pt-BR")}`
+              : null,
+            data_inicio: form.data_inicio
+              ? (() => {
+                  const [ano, mes, dia] = form.data_inicio.split("-");
+                  return `${dia}/${mes}/${ano}`;
+                })()
+              : null,
+            beneficios: form.beneficios || null,
+            observacoes: form.observacoes || null,
+          },
+        },
+      });
+
+      if (emailResult.error) {
+        toast.warning("Proposta salva mas e-mail não enviado: " + emailResult.error.message);
+      } else {
+        toast.success(`Proposta enviada para ${candidato.email}!`);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["oferta-candidato", candidatoId] });
+      queryClient.invalidateQueries({ queryKey: ["ofertas-vaga", vagaId] });
+    } catch (e: any) {
+      toast.error("Erro ao enviar proposta: " + e.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function atualizarStatus(novoStatus: string) {
+    try {
+      const { error } = await supabase
+        .from("ofertas_candidato" as any)
+        .update({
+          status: novoStatus,
+          respondido_em: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as any)
+        .eq("candidato_id", candidatoId)
+        .eq("vaga_id", vagaId);
+      if (error) throw error;
+      setForm(f => ({ ...f, status: novoStatus }));
+      queryClient.invalidateQueries({ queryKey: ["oferta-candidato", candidatoId] });
+      queryClient.invalidateQueries({ queryKey: ["ofertas-vaga", vagaId] });
+      toast.success(
+        novoStatus === "aceita" ? "Proposta marcada como aceita!" : "Proposta marcada como recusada."
+      );
+    } catch (e: any) {
+      toast.error("Erro ao atualizar status: " + e.message);
+    }
+  }
+
+  const jaEnviada = !!(oferta as any)?.enviado_em;
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm" style={{ backgroundColor: "#D97706" }}>
+            <ClipboardList className="h-4 w-4" />
+          </div>
+          <p className="text-sm font-semibold">Proposta de oferta</p>
+        </div>
+        {jaEnviada && (
+          <span className="text-xs text-muted-foreground">
+            Enviada em {new Date((oferta as any).enviado_em).toLocaleDateString("pt-BR")}
+          </span>
+        )}
+      </div>
+
+      {/* Status badges quando já enviada */}
+      {jaEnviada && (
+        <div className="space-y-3">
+          <p className="text-xs font-medium text-muted-foreground">Status da proposta</p>
+          <div className="flex gap-2">
+            {[
+              { value: "em_negociacao", label: "⏳ Em negociação", cor: "#D97706" },
+              { value: "aceita", label: "✅ Aceita", cor: "#1A4A3A" },
+              { value: "recusada", label: "❌ Recusada", cor: "#DC2626" },
+            ].map(op => (
+              <button key={op.value}
+                onClick={() => atualizarStatus(op.value)}
+                className="flex-1 py-1.5 rounded-lg text-xs font-medium border transition-colors"
+                style={form.status === op.value
+                  ? { backgroundColor: op.cor, color: "white", borderColor: op.cor }
+                  : { borderColor: "#E5E7EB", color: "#6B7280" }}>
+                {op.label}
+              </button>
+            ))}
+          </div>
+
+          {form.status === "recusada" && (
+            <div className="p-3 rounded-lg border" style={{ backgroundColor: "#FEF2F2", borderColor: "#FECACA" }}>
+              <p className="text-xs font-medium" style={{ color: "#DC2626" }}>Proposta recusada</p>
+              <div className="mt-2">
+                <Button variant="outline" size="sm" className="text-xs"
+                  onClick={() => atualizarStatus("em_negociacao")}>
+                  Reabrir negociação
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Formulário */}
+      <div className="space-y-3">
+        {/* Tipo contrato */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">Tipo de contrato</Label>
+          <Select value={form.tipo_contrato} onValueChange={v => setForm(f => ({ ...f, tipo_contrato: v }))}>
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="clt">CLT</SelectItem>
+              <SelectItem value="pj">PJ</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Salário */}
+        {canSeeFaixa && (
+          <div className="space-y-1.5">
+            <Label className="text-xs">
+              {form.tipo_contrato === "pj" ? "Honorários propostos (R$)" : "Salário proposto (R$)"}
+            </Label>
+            <Input type="number" value={form.salario_proposto} className="h-9"
+              placeholder="0,00"
+              onChange={e => setForm(f => ({ ...f, salario_proposto: e.target.value }))}
+            />
+          </div>
+        )}
+
+        {/* Data de início */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">Data de início prevista</Label>
+          <Input type="date" value={form.data_inicio} className="h-9"
+            onChange={e => setForm(f => ({ ...f, data_inicio: e.target.value }))}
+          />
+        </div>
+
+        {/* Benefícios */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">Benefícios incluídos</Label>
+          <Textarea value={form.beneficios} rows={2} className="resize-none text-sm"
+            placeholder="VR, VT, Plano de Saúde..."
+            onChange={e => setForm(f => ({ ...f, beneficios: e.target.value }))}
+          />
+        </div>
+
+        {/* Observações */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">Observações</Label>
+          <Textarea value={form.observacoes} rows={2} className="resize-none text-sm"
+            placeholder="Informações adicionais sobre a oferta..."
+            onChange={e => setForm(f => ({ ...f, observacoes: e.target.value }))}
+          />
+        </div>
+
+        {/* Ações */}
+        <div className="flex gap-2 pt-1">
+          <Button variant="outline" size="sm" disabled={salvando}
+            onClick={salvarOferta}>
+            {salvando ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : null}
+            Salvar rascunho
+          </Button>
+          <Button size="sm" disabled={enviando}
+            style={{ backgroundColor: "#D97706" }}
+            onClick={enviarProposta}>
+            {enviando
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />Enviando...</>
+              : jaEnviada ? "Reenviar proposta" : `Enviar para ${candidato?.nome?.split(" ")[0]}`}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
