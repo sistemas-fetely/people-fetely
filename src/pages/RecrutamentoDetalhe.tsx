@@ -250,6 +250,23 @@ export default function RecrutamentoDetalhe() {
     toast.success("Link copiado!");
   };
 
+  async function excluirVaga() {
+    setExcluindo(true);
+    try {
+      await supabase.from("candidatos").delete().eq("vaga_id", id!);
+      const { error } = await supabase.from("vagas").delete().eq("id", id!);
+      if (error) throw error;
+      toast.success("Vaga excluída com sucesso.");
+      queryClient.invalidateQueries({ queryKey: ["vagas"] });
+      navigate("/recrutamento");
+    } catch (e: any) {
+      toast.error("Erro ao excluir vaga: " + e.message);
+    } finally {
+      setExcluindo(false);
+      setConfirmarExclusao(false);
+    }
+  }
+
   const getInitials = (name: string) =>
     name.split(" ").map((n) => n[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 
