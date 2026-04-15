@@ -37,7 +37,7 @@ export default function Recrutamento() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vagas")
-        .select("*")
+        .select("*, gestor:profiles!vagas_gestor_id_fkey(id, full_name)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
@@ -116,6 +116,7 @@ export default function Recrutamento() {
                   <TableHead>Status</TableHead>
                   <TableHead className="text-center">Candidatos</TableHead>
                   <TableHead>Abertura</TableHead>
+                  <TableHead>Gestor</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -138,6 +139,9 @@ export default function Recrutamento() {
                         {vaga.vigencia_inicio
                           ? format(new Date(vaga.vigencia_inicio), "dd/MM/yyyy")
                           : format(new Date(vaga.created_at), "dd/MM/yyyy")}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {(vaga as any).gestor?.full_name ?? "—"}
                       </TableCell>
                     </TableRow>
                   );
