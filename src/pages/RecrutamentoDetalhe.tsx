@@ -2424,6 +2424,7 @@ function TesteTecnico({
             entregaveis: formDesafio.desafio_entregaveis,
             criterios: formDesafio.desafio_criterios,
             prazo: (() => { const [ano, mes, dia] = formDesafio.prazo_entrega.split("-"); return `${dia}/${mes}/${ano}`; })(),
+            link_portal: `${window.location.origin}/vagas/${vagaId}`,
           },
         },
       });
@@ -2461,6 +2462,7 @@ function TesteTecnico({
               const [ano, mes, dia] = formDesafio.prazo_entrega.split("-");
               return `${dia}/${mes}/${ano}`;
             })(),
+            link_portal: `${window.location.origin}/vagas/${vagaId}`,
           },
         },
       });
