@@ -1380,6 +1380,35 @@ export default function RecrutamentoDetalhe() {
                     </div>
                   )}
 
+                  {/* Skills validadas pelo teste */}
+                  {selectedCandidato?.id && (() => {
+                    const testeDoC = testesTecnicos.find((t: any) => t.candidato_id === selectedCandidato.id);
+                    const validadas = (testeDoC as any)?.skills_validadas?.filter((s: any) => s.resultado);
+                    if (!validadas?.length) return null;
+                    return (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          Skills validadas no teste
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {validadas.map((s: any, i: number) => (
+                            <span key={i}
+                              className="px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1"
+                              style={{
+                                backgroundColor: s.resultado === "confirmado" ? "#D8F3DC" :
+                                  s.resultado === "parcial" ? "#FEF3C7" : "#FEE2E2",
+                                color: s.resultado === "confirmado" ? "#1A4A3A" :
+                                  s.resultado === "parcial" ? "#D97706" : "#DC2626",
+                              }}>
+                              {s.resultado === "confirmado" ? "✓" :
+                               s.resultado === "parcial" ? "~" : "✗"} {s.skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Motivação */}
                   {selectedCandidato.mensagem && (
                     <div className="space-y-1">
