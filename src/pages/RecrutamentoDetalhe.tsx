@@ -876,23 +876,3 @@ export default function RecrutamentoDetalhe() {
     </div>
   );
 }
-
-function CollapsibleSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <Collapsible defaultOpen>
-      <Card>
-        <CollapsibleTrigger className="w-full">
-          <CardHeader className="py-3 px-4 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm">{title}</CardTitle>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <CardContent className="pt-0 px-4 pb-3">
-            {children}
-          </CardContent>
-        </CollapsibleContent>
-      </Card>
-    </Collapsible>
-  );
-}
