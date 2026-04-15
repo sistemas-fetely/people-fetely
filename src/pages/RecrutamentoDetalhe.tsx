@@ -380,9 +380,9 @@ export default function RecrutamentoDetalhe() {
             <Link className="h-4 w-4 mr-2" /> Copiar link
           </Button>
           {vaga.status === "rascunho" && (
-            <Button size="sm" onClick={() => updateStatusMutation.mutate("aberta")}
-              disabled={updateStatusMutation.isPending}>
-              {updateStatusMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Button size="sm" onClick={publicarVaga}
+              disabled={publicando}>
+              {publicando && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               <Globe className="h-4 w-4 mr-2" /> Publicar
             </Button>
           )}
@@ -892,6 +892,51 @@ export default function RecrutamentoDetalhe() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Dialog de vaga publicada */}
+      <Dialog open={vagaPublicada} onOpenChange={setVagaPublicada}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                <Check className="h-4 w-4 text-primary-foreground" />
+              </div>
+              Vaga publicada!
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            A vaga <strong>{vaga?.titulo}</strong> está aberta e o portal
+            de candidatura já está no ar. Compartilhe o link abaixo.
+          </p>
+          <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+            <p className="text-sm text-muted-foreground truncate flex-1 font-mono">
+              {window.location.origin}/vagas/{id}
+            </p>
+            <Button size="sm" variant="outline" onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/vagas/${id}`);
+              toast.success("Link copiado!");
+            }}>
+              <Copy className="h-3.5 w-3.5 mr-1.5" /> Copiar
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Compartilhe este link no LinkedIn, WhatsApp ou onde preferir.
+            Os candidatos podem se inscrever sem precisar de login.
+          </p>
+          <div className="flex gap-2 mt-2">
+            <Button className="flex-1" onClick={() => {
+              navigator.clipboard.writeText(`${window.location.origin}/vagas/${id}`);
+              toast.success("Link copiado!");
+              setVagaPublicada(false);
+            }}>
+              <Copy className="h-4 w-4 mr-2" /> Copiar e fechar
+            </Button>
+            <Button variant="outline" onClick={() => setVagaPublicada(false)}>
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
