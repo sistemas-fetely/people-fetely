@@ -436,6 +436,77 @@ export default function Parametros() {
                                   {cat.items.map((param) => {
                                     const usageCount = getUsageCount(param);
                                     const isInUse = usageCount !== undefined && usageCount > 0;
+                                    const isSistemaItem = param.categoria === "sistema";
+                                    const sistemaMeta = isSistemaItem ? parseSistemaMeta(param.descricao) : null;
+
+                                    if (isSistemaItem) {
+                                      return (
+                                        <div
+                                          key={param.id}
+                                          className={`flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors ${!param.ativo ? "opacity-60" : ""}`}
+                                        >
+                                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                                            <div className="w-8 h-8 rounded bg-muted flex items-center justify-center flex-shrink-0">
+                                              <Monitor className="h-4 w-4 text-muted-foreground" />
+                                            </div>
+                                            <div className="min-w-0">
+                                              <div className="flex items-center gap-2">
+                                                <p className="text-sm font-medium">{param.label}</p>
+                                                {!param.ativo && (
+                                                  <Badge variant="secondary" className="text-[10px]">Inativo</Badge>
+                                                )}
+                                              </div>
+                                              {sistemaMeta?.url && (
+                                                <a
+                                                  href={sistemaMeta.url}
+                                                  target="_blank"
+                                                  rel="noopener noreferrer"
+                                                  className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1"
+                                                >
+                                                  {sistemaMeta.url}
+                                                  <ExternalLink className="h-3 w-3" />
+                                                </a>
+                                              )}
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-3 ml-2">
+                                            {sistemaMeta && sistemaMeta.custo_mensal > 0 && (
+                                              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                R$ {sistemaMeta.custo_mensal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}/mês
+                                              </span>
+                                            )}
+                                            <Badge variant="outline" className="text-xs whitespace-nowrap">
+                                              {sistemaMeta?.tipo_licenca === "por_usuario" ? "Por usuário" :
+                                               sistemaMeta?.tipo_licenca === "conta_unica" ? "Conta única" : "Gratuito"}
+                                            </Badge>
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                  <MoreHorizontal className="h-4 w-4" />
+                                                </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => openEdit(param)}>
+                                                  <Pencil className="h-3.5 w-3.5 mr-2" /> Editar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleToggleAtivo(param)}>
+                                                  {param.ativo ? "Desativar" : "Ativar"}
+                                                </DropdownMenuItem>
+                                                {!isInUse && (
+                                                  <DropdownMenuItem
+                                                    className="text-destructive focus:text-destructive"
+                                                    onClick={() => setDeleteTarget(param)}
+                                                  >
+                                                    <Trash2 className="h-3.5 w-3.5 mr-2" /> Excluir
+                                                  </DropdownMenuItem>
+                                                )}
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+
                                     return (
                                       <div
                                         key={param.id}
