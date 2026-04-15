@@ -146,7 +146,16 @@ export default function Recrutamento() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge className={cfg.className}>{cfg.label}</Badge>
+                        {(vaga as any).num_vagas > 1 ? (
+                          <span className="text-xs font-medium px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: "#D8F3DC", color: "#1A4A3A" }}>
+                            {(vaga as any).vagas_preenchidas ?? 0}/{(vaga as any).num_vagas}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">1</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
                       </TableCell>
                       <TableCell className="text-center">{candidatosPorVaga[vaga.id] || 0}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
