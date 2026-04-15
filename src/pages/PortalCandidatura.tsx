@@ -27,6 +27,7 @@ export default function PortalCandidatura() {
     skills_candidato: [] as { skill: string; nivel: string }[],
     sistemas_candidato: [] as { sistema: string; nivel: string }[],
     mensagem: "",
+    pretensao_salarial: "",
     consentimento_lgpd: false,
   });
 
@@ -146,6 +147,8 @@ export default function PortalCandidatura() {
             skills_obrigatorias: vaga?.skills_obrigatorias,
             skills_desejadas: vaga?.skills_desejadas,
             ferramentas: sistemasVaga,
+            faixa_min: (vaga as any)?.faixa_min ?? null,
+            faixa_max: (vaga as any)?.faixa_max ?? null,
           },
           candidato: {
             skills_candidato: form.skills_candidato,
@@ -153,6 +156,7 @@ export default function PortalCandidatura() {
             experiencias: form.experiencias,
             formacoes: form.formacoes,
             mensagem: form.mensagem,
+            pretensao_salarial: form.pretensao_salarial ? Number(form.pretensao_salarial) : null,
           },
         },
       });
@@ -182,6 +186,7 @@ export default function PortalCandidatura() {
             skills_candidato: form.skills_candidato,
             sistemas_candidato: form.sistemas_candidato,
             mensagem: form.mensagem || null,
+            pretensao_salarial: form.pretensao_salarial ? Number(form.pretensao_salarial) : null,
             consentimento_lgpd: true,
             consentimento_lgpd_at: new Date().toISOString(),
             status: "recebido",
@@ -710,6 +715,24 @@ export default function PortalCandidatura() {
             placeholder="Conte um pouco sobre você e por que essa vaga faz sentido na sua história..."
             onChange={(e) => setForm((f) => ({ ...f, mensagem: e.target.value }))}
           />
+        </div>
+
+        {/* SEÇÃO 6 — Pretensão salarial */}
+        <div className="bg-card rounded-xl p-6 space-y-3 shadow-sm border">
+          <h2 className="font-semibold text-sm uppercase tracking-wide" style={{ color: "#1A4A3A" }}>
+            Pretensão salarial
+          </h2>
+          <p className="text-xs text-muted-foreground">Informe o valor mensal bruto (R$). Campo opcional mas ajuda no processo.</p>
+          <div className="relative">
+            <span className="absolute left-3 top-2.5 text-sm text-muted-foreground">R$</span>
+            <Input
+              type="number"
+              value={form.pretensao_salarial}
+              onChange={(e) => setForm((f) => ({ ...f, pretensao_salarial: e.target.value }))}
+              placeholder="Ex: 4000"
+              className="pl-10"
+            />
+          </div>
         </div>
 
         {/* LGPD + Enviar */}
