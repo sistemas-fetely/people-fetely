@@ -197,6 +197,14 @@ CANDIDATO:
 - Candidato Sr em vaga Jr (overqualified) → 25-40
 - Candidato Jr em vaga Sr (underqualified) → 10-28
 
+REGRA DO RESUMO — OBRIGATÓRIA:
+O campo "resumo" é o que o recrutador lê para decidir. Seja direto e útil. Formato obrigatório em 3 partes:
+1. "Nível detectado: [X] → Vaga: [Y]" — sempre começar assim.
+2. Principal gap (se negativo) ou principal força (se positivo) — 1 frase.
+3. Recomendação final: "Recomendação: Avançar" ou "Recomendação: Avaliar com cautela" ou "Recomendação: Não recomendado". Sempre terminar com uma dessas 3 opções.
+Exemplo bom: "Nível detectado: Sr → Vaga: Jr. Candidato com 8 anos de experiência em gestão comercial, muito acima do escopo da vaga. Recomendação: Não recomendado."
+Exemplo bom: "Nível detectado: Jr → Vaga: Jr. Skills básicas corretas, falta experiência prática mas formação sólida. Recomendação: Avançar."
+
 Responda APENAS com JSON válido:
 {
   "skills_match": 0-35,
@@ -209,7 +217,7 @@ Responda APENAS com JSON válido:
   "alerta": "overqualified|overqualified_leve|underqualified|null",
   "alerta_texto": "string explicando o risco em 1 linha, ou null se não há alerta",
   "alerta_salarial": "acima_leve|acima_critico|abaixo|null",
-  "resumo": "2 linhas explicando o fit — mencionar nível detectado vs nível da vaga"
+  "resumo": "3 linhas: (1) nível detectado vs nível da vaga, (2) principal gap ou principal força, (3) recomendação clara: Avançar / Avaliar com cautela / Não recomendado"
 }`,
             },
           ],
