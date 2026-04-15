@@ -123,13 +123,27 @@ export default function RecrutamentoDetalhe() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vagas")
-        .select("*, gestor:profiles!vagas_gestor_id_fkey(id, full_name)")
+        .select("*")
         .eq("id", id!)
         .single();
       if (error) throw error;
       return data;
     },
     enabled: !!id,
+  });
+
+  const { data: gestorNome } = useQuery({
+    queryKey: ["gestor-nome", (vaga as any)?.gestor_id],
+    queryFn: async () => {
+      if (!(vaga as any)?.gestor_id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", (vaga as any).gestor_id)
+        .maybeSingle();
+      return data?.full_name ?? null;
+    },
+    enabled: !!(vaga as any)?.gestor_id,
   });
 
   const { data: candidatos = [], isLoading: candidatosLoading } = useQuery({
@@ -695,7 +709,7 @@ export default function RecrutamentoDetalhe() {
               { label: "Nível", value: vaga.nivel },
               { label: "Local", value: vaga.local_trabalho },
               { label: "Jornada", value: vaga.jornada },
-              { label: "Gestor", value: (vaga as any).gestor?.full_name ?? "—" },
+              { label: "Gestor", value: gestorNome ?? "—" },
               { label: "Vigência", value: vaga.vigencia_fim ? new Date(vaga.vigencia_fim).toLocaleDateString("pt-BR") : "—" },
             ].map(item => item.value ? (
               <div key={item.label} className="flex justify-between gap-2">

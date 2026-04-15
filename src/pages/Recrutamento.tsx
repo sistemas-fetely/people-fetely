@@ -37,10 +37,23 @@ export default function Recrutamento() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vagas")
-        .select("*, gestor:profiles!vagas_gestor_id_fkey(id, full_name)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  const { data: gestoresMap = {} } = useQuery({
+    queryKey: ["gestores-map"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name");
+      return (data ?? []).reduce((acc: Record<string, string>, p: any) => {
+        acc[p.id] = p.full_name;
+        return acc;
+      }, {});
     },
   });
 
@@ -141,7 +154,7 @@ export default function Recrutamento() {
                           : format(new Date(vaga.created_at), "dd/MM/yyyy")}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
-                        {(vaga as any).gestor?.full_name ?? "—"}
+                        {gestoresMap[(vaga as any).gestor_id] ?? "—"}
                       </TableCell>
                     </TableRow>
                   );
