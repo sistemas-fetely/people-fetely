@@ -86,6 +86,9 @@ export default function RecrutamentoDetalhe() {
 
   const [editarVagaOpen, setEditarVagaOpen] = useState(false);
   const [editarForm, setEditarForm] = useState<any>({});
+  const [editandoEmail, setEditandoEmail] = useState(false);
+  const [novoEmail, setNovoEmail] = useState("");
+  const [salvandoEmail, setSalvandoEmail] = useState(false);
 
   async function solicitarPerfilCompleto(candidato: any) {
     if (!candidato.email) {
@@ -113,6 +116,29 @@ export default function RecrutamentoDetalhe() {
       toast.error("Erro ao enviar e-mail: " + e.message);
     } finally {
       setSolicitando(false);
+    }
+  }
+
+  async function salvarEmailCandidato(candidatoId: string, email: string) {
+    if (!email || !email.includes("@")) {
+      toast.error("E-mail inválido.");
+      return;
+    }
+    setSalvandoEmail(true);
+    try {
+      const { error } = await supabase
+        .from("candidatos")
+        .update({ email } as any)
+        .eq("id", candidatoId);
+      if (error) throw error;
+      setSelectedCandidato((c: any) => ({ ...c, email }));
+      queryClient.invalidateQueries({ queryKey: ["candidatos", id] });
+      setEditandoEmail(false);
+      toast.success("E-mail atualizado!");
+    } catch (e: any) {
+      toast.error("Erro ao atualizar e-mail: " + e.message);
+    } finally {
+      setSalvandoEmail(false);
     }
   }
 
@@ -978,7 +1004,7 @@ export default function RecrutamentoDetalhe() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Sheet open={!!selectedCandidato} onOpenChange={(open) => { if (!open) setSelectedCandidato(null); }}>
+      <Sheet open={!!selectedCandidato} onOpenChange={(open) => { if (!open) { setSelectedCandidato(null); setEditandoEmail(false); setNovoEmail(""); } }}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           {selectedCandidato && (
             <div className="space-y-6 py-4">
@@ -988,7 +1014,37 @@ export default function RecrutamentoDetalhe() {
                 </div>
                 <div className="min-w-0 space-y-1">
                   <p className="text-lg font-semibold leading-tight">{selectedCandidato.nome}</p>
-                  <p className="text-sm text-muted-foreground">{selectedCandidato.email}</p>
+                  {editandoEmail ? (
+                    <div className="flex items-center gap-1">
+                      <Input
+                        value={novoEmail}
+                        onChange={e => setNovoEmail(e.target.value)}
+                        className="h-7 text-xs px-2 w-48"
+                        placeholder="novo@email.com"
+                        onKeyDown={e => {
+                          if (e.key === "Enter") salvarEmailCandidato(selectedCandidato.id, novoEmail);
+                          if (e.key === "Escape") setEditandoEmail(false);
+                        }}
+                        autoFocus
+                      />
+                      <Button variant="ghost" size="icon" className="h-7 w-7"
+                        onClick={() => salvarEmailCandidato(selectedCandidato.id, novoEmail)}>
+                        {salvandoEmail ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7"
+                        onClick={() => setEditandoEmail(false)}>
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 group">
+                      <p className="text-sm text-muted-foreground">{selectedCandidato.email}</p>
+                      <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => { setNovoEmail(selectedCandidato.email); setEditandoEmail(true); }}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
                   {selectedCandidato.telefone && (
                     <p className="text-sm text-muted-foreground">{selectedCandidato.telefone}</p>
                   )}
