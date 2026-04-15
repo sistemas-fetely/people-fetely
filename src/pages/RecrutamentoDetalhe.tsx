@@ -1078,7 +1078,7 @@ export default function RecrutamentoDetalhe() {
                 </TabsContent>
 
                 <TabsContent value="historico" className="mt-4">
-                  <p className="text-sm text-muted-foreground italic">Histórico de movimentações do candidato.</p>
+                  <HistoricoCandidato candidatoId={selectedCandidato?.id} />
                 </TabsContent>
 
                 <TabsContent value="notas" className="space-y-3 mt-4">
