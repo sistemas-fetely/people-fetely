@@ -59,14 +59,14 @@ const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
   financeiro: "Puramente financeiro. Folha, NF, pagamentos PJ. Sem dados operacionais de RH.",
   fiscal: "NF-e e integração ERP. Subconjunto do financeiro. (Integração ERP — em breve)",
   operacional: "Ponto, turnos e NRs da unidade fabril. (Unidade Fabril — em breve)",
-  recrutador: "Gerencia vagas e candidatos. (Módulo Recrutamento — em breve)",
+  recrutador: "Gestão completa de recrutamento e seleção. Sem acesso a dados financeiros ou configurações do sistema.",
 };
 
 const ACTIVE_ROLES: AppRole[] = [
-  "super_admin", "admin_rh", "gestor_rh", "gestor_direto", "colaborador", "financeiro"
+  "super_admin", "admin_rh", "gestor_rh", "recrutador", "gestor_direto", "colaborador", "financeiro"
 ];
 const FUTURE_ROLES: AppRole[] = [
-  "admin_ti", "recrutador", "fiscal", "operacional"
+  "admin_ti", "fiscal", "operacional"
 ];
 const ALL_ROLES: AppRole[] = [...ACTIVE_ROLES, ...FUTURE_ROLES];
 
