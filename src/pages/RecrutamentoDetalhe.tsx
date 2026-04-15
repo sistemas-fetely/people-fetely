@@ -637,8 +637,13 @@ export default function RecrutamentoDetalhe() {
       }
       case "triagem": {
         const score = (c as any).score_total ?? 0;
-        if (score < 40) return { label: `Score ${score}%`, cor: "#DC2626" };
-        return { label: `Score ${score}%`, cor: score >= 80 ? "#1A4A3A" : "#D97706" };
+        const alerta = (c as any).score_detalhado?.alerta;
+        if (alerta?.startsWith("overqualified")) return { label: "Overqualified", cor: "#D97706" };
+        if (alerta === "underqualified") return { label: "Underqualified", cor: "#DC2626" };
+        if (score === 0) return { label: "Sem score", cor: "#6B7280" };
+        if (score >= 80) return { label: "Recomendado", cor: "#1A4A3A" };
+        if (score >= 50) return { label: "Avaliar", cor: "#D97706" };
+        return { label: "Abaixo do mínimo", cor: "#DC2626" };
       }
       case "entrevista_rh": {
         const temEntrevistaRH = entrevistasRH.some((e: any) => e.candidato_id === c.id);
