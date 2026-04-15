@@ -1270,8 +1270,6 @@ export default function RecrutamentoDetalhe() {
               </div>
             ) : null}
           </div>
-            ) : null}
-          </div>
         </div>
       </div>
 
