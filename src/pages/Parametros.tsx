@@ -42,8 +42,7 @@ interface CategoriaConfig {
 const CATEGORIAS_GERAL: CategoriaConfig[] = [
   { value: "departamento", label: "Departamentos", icon: Monitor, description: "Departamentos da empresa para rateio de custos" },
   { value: "local_trabalho", label: "Locais de Trabalho", icon: Monitor, description: "Locais de trabalho disponíveis para colaboradores" },
-  { value: "sistema", label: "Sistemas", icon: Monitor, description: "Sistemas de acesso para colaboradores" },
-  { value: "ferramenta", label: "Ferramentas", icon: Wrench, description: "Ferramentas e softwares utilizados pela empresa" },
+  { value: "sistema", label: "Sistemas e Ferramentas", icon: Monitor, description: "Sistemas e ferramentas utilizados pela empresa" },
   { value: "beneficio", label: "Benefícios", icon: Heart, description: "Tipos de benefícios oferecidos pela empresa" },
   { value: "tipo_equipamento", label: "Tipos de Equipamento", icon: Package, description: "Tipos de equipamentos e seus estados" },
 ];
