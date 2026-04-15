@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft, Copy, Globe, MoreHorizontal, Plus, Loader2,
-  UserPlus, ArrowRight, XCircle, User, CheckCircle2, ExternalLink, Users, Link, Trash2, Check, Mail, AlertTriangle, Pencil, X
+  UserPlus, ArrowRight, XCircle, User, CheckCircle2, ExternalLink, Users, Link, Trash2, Check, Mail, AlertTriangle, Pencil, X, Sparkles
 } from "lucide-react";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -1293,6 +1293,8 @@ export default function RecrutamentoDetalhe() {
                         candidatoId={selectedCandidato.id}
                         vagaId={id!}
                         tipo="rh"
+                        candidato={selectedCandidato}
+                        vaga={vaga}
                         readOnly={
                           selectedCandidato.status !== "entrevista_rh" &&
                           !["entrevista_gestor", "teste_tecnico", "oferta", "contratado"]
@@ -1306,6 +1308,8 @@ export default function RecrutamentoDetalhe() {
                             candidatoId={selectedCandidato.id}
                             vagaId={id!}
                             tipo="gestor"
+                            candidato={selectedCandidato}
+                            vaga={vaga}
                             readOnly={selectedCandidato.status !== "entrevista_gestor"}
                           />
                         </div>
@@ -1746,11 +1750,15 @@ function FormularioEntrevista({
   vagaId,
   tipo,
   readOnly = false,
+  candidato,
+  vaga,
 }: {
   candidatoId: string;
   vagaId: string;
   tipo: "rh" | "gestor";
   readOnly?: boolean;
+  candidato?: any;
+  vaga?: any;
 }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -1763,6 +1771,15 @@ function FormularioEntrevista({
     recomendacao: "",
     observacoes: "",
   });
+
+  const [gerandoResumo, setGerandoResumo] = useState(false);
+  const [resumoIA, setResumoIA] = useState<{
+    resumo: string;
+    pontos_fortes: string[];
+    pontos_atencao: string[];
+    recomendacao_ia: string;
+    score_fit: number;
+  } | null>(null);
 
   const { data: entrevista, isLoading } = useQuery({
     queryKey: ["entrevista", candidatoId, tipo],
@@ -1827,6 +1844,54 @@ function FormularioEntrevista({
     }
   }
 
+  async function gerarResumoIA() {
+    if (!candidato) return;
+    setGerandoResumo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-candidato", {
+        body: {
+          candidato: {
+            nome: candidato.nome,
+            experiencias: candidato.experiencias ?? [],
+            formacoes: candidato.formacoes ?? [],
+            skills_candidato: candidato.skills_candidato ?? [],
+            sistemas_candidato: candidato.sistemas_candidato ?? [],
+            score_total: candidato.score_total ?? 0,
+            mensagem: candidato.mensagem ?? "",
+          },
+          vaga: {
+            titulo: vaga?.titulo ?? "",
+            skills_obrigatorias: vaga?.skills_obrigatorias ?? [],
+            skills_desejadas: vaga?.skills_desejadas ?? [],
+          },
+          tipo,
+        },
+      });
+      if (error) throw error;
+
+      setResumoIA(data);
+      // Pre-fill empty fields with AI analysis (still editable)
+      setForm(f => ({
+        ...f,
+        pontos_fortes: f.pontos_fortes || data.pontos_fortes?.join("\n") || "",
+        pontos_atencao: f.pontos_atencao || data.pontos_atencao?.join("\n") || "",
+        recomendacao: f.recomendacao || data.recomendacao_ia || "",
+      }));
+    } catch (e: any) {
+      console.error("Erro ao gerar resumo:", e);
+      toast.error("Não foi possível gerar o resumo. Preencha manualmente.");
+    } finally {
+      setGerandoResumo(false);
+    }
+  }
+
+  // Auto-generate AI summary when form opens for the first time without saved data
+  useEffect(() => {
+    if (!entrevista && candidato && !gerandoResumo && !resumoIA && !readOnly && !isLoading) {
+      gerarResumoIA();
+    }
+  }, [entrevista, candidato, isLoading]);
+
   const titulo = tipo === "rh" ? "Entrevista RH" : "Entrevista Gestor";
   const corTema = tipo === "rh" ? "#2563EB" : "#7C3AED";
 
@@ -1864,6 +1929,97 @@ function FormularioEntrevista({
           </span>
         )}
       </div>
+
+      {/* Resumo da IA */}
+      {(gerandoResumo || resumoIA) && (
+        <div className="rounded-lg border p-3 space-y-2"
+          style={{ borderColor: corTema + "40", backgroundColor: corTema + "08" }}>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold flex items-center gap-1.5"
+              style={{ color: corTema }}>
+              <Sparkles className="h-3.5 w-3.5" />
+              Pré-análise por IA
+            </p>
+            {!gerandoResumo && (
+              <button
+                type="button"
+                onClick={gerarResumoIA}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Atualizar
+              </button>
+            )}
+          </div>
+          {gerandoResumo ? (
+            <div className="flex items-center gap-2 py-2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">
+                Analisando perfil do candidato...
+              </p>
+            </div>
+          ) : resumoIA && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">Fit com a vaga</p>
+                <span className="text-sm font-semibold" style={{ color:
+                  resumoIA.score_fit >= 70 ? "#1A4A3A" :
+                  resumoIA.score_fit >= 40 ? "#D97706" : "#DC2626"
+                }}>
+                  {resumoIA.score_fit}%
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {resumoIA.resumo}
+              </p>
+              {resumoIA.pontos_fortes?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium mb-1" style={{ color: "#1A4A3A" }}>
+                    Pontos fortes identificados
+                  </p>
+                  <ul className="space-y-0.5">
+                    {resumoIA.pontos_fortes.map((p: string, i: number) => (
+                      <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
+                        <span style={{ color: "#1A4A3A" }}>·</span> {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {resumoIA.pontos_atencao?.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium mb-1 text-amber-600">
+                    Pontos de atenção
+                  </p>
+                  <ul className="space-y-0.5">
+                    {resumoIA.pontos_atencao.map((p: string, i: number) => (
+                      <li key={i} className="text-xs text-muted-foreground flex gap-1.5">
+                        <span className="text-amber-500">·</span> {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="flex items-center gap-2 pt-1 border-t"
+                style={{ borderColor: corTema + "30" }}>
+                <p className="text-xs text-muted-foreground">Sugestão da IA:</p>
+                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  resumoIA.recomendacao_ia === "avançar"
+                    ? "bg-[#D8F3DC] text-[#1A4A3A]"
+                    : resumoIA.recomendacao_ia === "aguardar"
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-red-100 text-red-700"
+                }`}>
+                  {resumoIA.recomendacao_ia === "avançar" ? "✓ Avançar" :
+                   resumoIA.recomendacao_ia === "aguardar" ? "⏳ Aguardar" : "✗ Não avançar"}
+                </span>
+                <p className="text-xs text-muted-foreground ml-auto italic">
+                  Você decide
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <Label className="text-xs">Impressão geral *</Label>
