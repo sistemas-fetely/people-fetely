@@ -86,28 +86,16 @@ export default function RecrutamentoDetalhe() {
     setSolicitando(true);
     try {
       const link = `${window.location.origin}/vagas/${id}`;
-      const { error } = await supabase.functions.invoke("enviar-email", {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
         body: {
-          to: candidato.email,
-          subject: `${vaga?.titulo} — Complete seu perfil na Fetely`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 32px;">
-              <h2 style="color: #1A4A3A; margin-bottom: 8px;">Olá, ${candidato.nome}!</h2>
-              <p style="color: #6B7280; margin-bottom: 24px;">
-                Recebemos seu interesse na vaga de <strong>${vaga?.titulo}</strong> na Fetely.
-                Para avançarmos no processo, precisamos que você complete seu perfil.
-              </p>
-              <a href="${link}" 
-                 style="display: inline-block; background: #1A4A3A; color: white; 
-                        padding: 12px 24px; border-radius: 8px; text-decoration: none;
-                        font-weight: 500;">
-                Completar meu perfil →
-              </a>
-              <p style="color: #9CA3AF; font-size: 12px; margin-top: 32px;">
-                Fetely · Vamos celebrar!! Venha criar algo novo...
-              </p>
-            </div>
-          `,
+          templateName: "solicitar-perfil-candidato",
+          recipientEmail: candidato.email,
+          idempotencyKey: `solicitar-perfil-${candidato.id}`,
+          templateData: {
+            nome: candidato.nome,
+            cargo: vaga?.titulo ?? "",
+            link_vaga: link,
+          },
         },
       });
       if (error) throw error;
