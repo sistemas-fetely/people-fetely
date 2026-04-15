@@ -190,13 +190,12 @@ export default function RecrutamentoDetalhe() {
           nivel: dados.nivel,
           local_trabalho: dados.local_trabalho,
           jornada: dados.jornada,
-          salario_min: dados.salario_min ? Number(dados.salario_min) : null,
-          salario_max: dados.salario_max ? Number(dados.salario_max) : null,
+          faixa_min: dados.salario_min ? Number(dados.salario_min) : null,
+          faixa_max: dados.salario_max ? Number(dados.salario_max) : null,
           skills_obrigatorias: dados.skills_obrigatorias,
           skills_desejadas: dados.skills_desejadas,
           ferramentas: dados.ferramentas,
-          beneficios: dados.beneficios,
-          descricao: dados.descricao,
+          missao: dados.descricao,
         } as any)
         .eq("id", id!);
       if (error) throw error;
