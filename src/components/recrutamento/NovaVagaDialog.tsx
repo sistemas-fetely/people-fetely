@@ -366,20 +366,34 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
 
             {/* Responsabilidades */}
             <div className="space-y-2">
-              <Label>Responsabilidades</Label>
+              <Label className="text-sm font-medium">Responsabilidades</Label>
+              <p className="text-xs text-muted-foreground">Liste as principais atividades desta posição</p>
               {responsabilidades.map((r, i) => (
-                <div key={i} className="flex gap-2">
-                  <Input value={r} onChange={(e) => updateItem(responsabilidades, setResponsabilidades, i, e.target.value)}
-                    placeholder={`Responsabilidade ${i + 1}`} />
-                  {responsabilidades.length > 1 && (
-                    <Button variant="ghost" size="icon" onClick={() => removeItem(responsabilidades, setResponsabilidades, i)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
+                <div key={i} className="flex items-start gap-2">
+                  <span className="mt-2.5 h-1.5 w-1.5 rounded-full bg-[#1A4A3A] flex-shrink-0" />
+                  <Input
+                    value={r}
+                    onChange={(e) => updateItem(responsabilidades, setResponsabilidades, i, e.target.value)}
+                    placeholder={`Responsabilidade ${i + 1}`}
+                    className="flex-1 border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-[#1A4A3A] bg-transparent"
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+                    onClick={() => removeItem(responsabilidades, setResponsabilidades, i)}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               ))}
-              <Button variant="outline" size="sm" onClick={() => addItem(responsabilidades, setResponsabilidades)}>
-                <Plus className="h-3 w-3 mr-1" /> Adicionar
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[#1A4A3A] hover:text-[#1A4A3A] hover:bg-[#1A4A3A]/5 pl-0 mt-1"
+                onClick={() => addItem(responsabilidades, setResponsabilidades)}
+              >
+                <Plus className="h-3.5 w-3.5 mr-1.5" /> Adicionar responsabilidade
               </Button>
             </div>
 
