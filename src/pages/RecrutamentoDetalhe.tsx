@@ -157,6 +157,33 @@ export default function RecrutamentoDetalhe() {
     enabled: !!id,
   });
 
+  // Buscar entrevistas do gestor em lote
+  const { data: entrevistasGestor = [] } = useQuery({
+    queryKey: ["entrevista-gestor", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("entrevistas_candidato")
+        .select("candidato_id, recomendacao")
+        .eq("vaga_id", id!)
+        .eq("tipo", "gestor");
+      return (data ?? []) as any[];
+    },
+    enabled: !!id,
+  });
+
+  // Buscar testes técnicos em lote
+  const { data: testesTecnicos = [] } = useQuery({
+    queryKey: ["testes-tecnicos-vaga", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("testes_tecnicos" as any)
+        .select("candidato_id, enviado_em, resultado")
+        .eq("vaga_id", id!);
+      return (data ?? []) as any[];
+    },
+    enabled: !!id,
+  });
+
   const { data: vaga, isLoading: vagaLoading } = useQuery({
     queryKey: ["vaga", id],
     queryFn: async () => {
@@ -788,6 +815,24 @@ export default function RecrutamentoDetalhe() {
                           </span>
                         </div>
                       )}
+
+                      {/* Status / próxima ação */}
+                      {(() => {
+                        const statusCard = getStatusCard(c);
+                        if (!statusCard) return null;
+                        return (
+                          <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                            <span className="text-xs text-muted-foreground">Status</span>
+                            <span className="text-xs font-medium px-2 py-0.5 rounded-full"
+                              style={{
+                                backgroundColor: statusCard.cor + "18",
+                                color: statusCard.cor,
+                              }}>
+                              {statusCard.label}
+                            </span>
+                          </div>
+                        );
+                      })()}
 
                       {/* Hover actions */}
                       <div className="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -2339,6 +2384,40 @@ function TesteTecnico({
       toast.success(`Desafio enviado para ${candidato.email}!`);
     } catch (e: any) {
       toast.error("Erro ao enviar: " + e.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  async function reenviarDesafio() {
+    if (!candidato?.email) {
+      toast.error("Candidato sem e-mail cadastrado.");
+      return;
+    }
+    setEnviando(true);
+    try {
+      await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "teste-tecnico-candidato",
+          recipientEmail: candidato.email,
+          idempotencyKey: `teste-tecnico-reenvio-${candidatoId}-${Date.now()}`,
+          templateData: {
+            nome: candidato.nome,
+            cargo: vaga?.titulo ?? "",
+            contexto: formDesafio.desafio_contexto,
+            descricao: formDesafio.desafio_descricao,
+            entregaveis: formDesafio.desafio_entregaveis,
+            criterios: formDesafio.desafio_criterios,
+            prazo: (() => {
+              const [ano, mes, dia] = formDesafio.prazo_entrega.split("-");
+              return `${dia}/${mes}/${ano}`;
+            })(),
+          },
+        },
+      });
+      toast.success(`Teste reenviado para ${candidato.email}!`);
+    } catch (e: any) {
+      toast.error("Erro ao reenviar: " + e.message);
     } finally {
       setEnviando(false);
     }
