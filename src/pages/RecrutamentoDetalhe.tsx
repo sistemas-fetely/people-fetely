@@ -311,6 +311,7 @@ export default function RecrutamentoDetalhe() {
       if (dados.ferramentas !== undefined) updateData.ferramentas = dados.ferramentas;
       if (dados.descricao !== undefined) updateData.missao = dados.descricao;
       if (dados.gestor_id !== undefined) updateData.gestor_id = dados.gestor_id || null;
+      if (dados.num_vagas !== undefined) updateData.num_vagas = dados.num_vagas;
 
       const { error } = await supabase
         .from("vagas")
@@ -408,6 +409,14 @@ export default function RecrutamentoDetalhe() {
         status_novo: "contratado",
         responsavel_id: user?.id || null,
       } as any);
+
+      // 4. Incrementar vagas_preenchidas
+      await supabase
+        .from("vagas")
+        .update({
+          vagas_preenchidas: ((vaga as any).vagas_preenchidas ?? 0) + 1
+        } as any)
+        .eq("id", id!);
     },
     onSuccess: () => {
       toast.success(`Convite gerado para ${contratarCandidato?.nome}!`);
@@ -781,11 +790,28 @@ export default function RecrutamentoDetalhe() {
           </Button>
           <div>
             <h1 className="text-lg font-semibold">{vaga.titulo}</h1>
-            <p className="text-xs text-muted-foreground">
-              {vaga.area}
-              {vaga.tipo_contrato ? ` · ${vaga.tipo_contrato.toUpperCase()}` : ""}
-              {vaga.local_trabalho ? ` · ${vaga.local_trabalho}` : ""}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">
+                {vaga.area}
+                {vaga.tipo_contrato ? ` · ${vaga.tipo_contrato.toUpperCase()}` : ""}
+                {vaga.local_trabalho ? ` · ${vaga.local_trabalho}` : ""}
+              </p>
+              {((vaga as any)?.num_vagas ?? 1) > 1 && (() => {
+                const nv = (vaga as any).num_vagas ?? 1;
+                const vr = nv - ((vaga as any).vagas_preenchidas ?? 0);
+                return (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{
+                      backgroundColor: vr > 0 ? "#D8F3DC" : "#FEE2E2",
+                      color: vr > 0 ? "#1A4A3A" : "#DC2626",
+                    }}>
+                    {vr > 0
+                      ? `${(vaga as any).vagas_preenchidas ?? 0}/${nv} · ${vr} restante${vr > 1 ? "s" : ""}`
+                      : "Todas as vagas preenchidas"}
+                  </span>
+                );
+              })()}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -808,6 +834,7 @@ export default function RecrutamentoDetalhe() {
                   beneficios: (vaga as any).beneficios ?? [],
                   descricao: (vaga as any).descricao ?? "",
                   gestor_id: (vaga as any).gestor_id ?? "",
+                  num_vagas: (vaga as any).num_vagas ?? 1,
                 });
                 setEditarVagaOpen(true);
               }}
@@ -1776,6 +1803,25 @@ export default function RecrutamentoDetalhe() {
                     <SelectItem value="c_level">C-Level</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            {/* Número de vagas */}
+            <div className="space-y-1">
+              <Label>Número de vagas</Label>
+              <div className="flex items-center gap-3">
+                <button type="button"
+                  className="w-8 h-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted"
+                  onClick={() => setEditarForm((f: any) => ({ ...f, num_vagas: Math.max(1, (f.num_vagas ?? 1) - 1) }))}>
+                  −
+                </button>
+                <span className="text-lg font-semibold w-8 text-center">
+                  {editarForm.num_vagas ?? 1}
+                </span>
+                <button type="button"
+                  className="w-8 h-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted"
+                  onClick={() => setEditarForm((f: any) => ({ ...f, num_vagas: (f.num_vagas ?? 1) + 1 }))}>
+                  +
+                </button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">

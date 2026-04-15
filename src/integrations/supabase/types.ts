@@ -2786,6 +2786,7 @@ export type Database = {
           local_trabalho: string | null
           missao: string | null
           nivel: string
+          num_vagas: number
           publicado_em: string | null
           responsabilidades: string[] | null
           skills_desejadas: string[] | null
@@ -2794,6 +2795,7 @@ export type Database = {
           tipo_contrato: string
           titulo: string
           updated_at: string | null
+          vagas_preenchidas: number
           vigencia_fim: string | null
           vigencia_inicio: string | null
         }
@@ -2819,6 +2821,7 @@ export type Database = {
           local_trabalho?: string | null
           missao?: string | null
           nivel?: string
+          num_vagas?: number
           publicado_em?: string | null
           responsabilidades?: string[] | null
           skills_desejadas?: string[] | null
@@ -2827,6 +2830,7 @@ export type Database = {
           tipo_contrato?: string
           titulo: string
           updated_at?: string | null
+          vagas_preenchidas?: number
           vigencia_fim?: string | null
           vigencia_inicio?: string | null
         }
@@ -2852,6 +2856,7 @@ export type Database = {
           local_trabalho?: string | null
           missao?: string | null
           nivel?: string
+          num_vagas?: number
           publicado_em?: string | null
           responsabilidades?: string[] | null
           skills_desejadas?: string[] | null
@@ -2860,6 +2865,7 @@ export type Database = {
           tipo_contrato?: string
           titulo?: string
           updated_at?: string | null
+          vagas_preenchidas?: number
           vigencia_fim?: string | null
           vigencia_inicio?: string | null
         }
