@@ -378,6 +378,13 @@ export default function RecrutamentoDetalhe() {
               disabled={updateStatusMutation.isPending}>
               Reabrir vaga
             </Button>
+           )}
+          {podeExcluir && (
+            <Button variant="outline" size="sm"
+              className="text-destructive border-destructive/30 hover:bg-destructive/10"
+              onClick={() => setConfirmarExclusao(true)}>
+              <Trash2 className="h-4 w-4 mr-2" /> Excluir vaga
+            </Button>
           )}
         </div>
       </div>
