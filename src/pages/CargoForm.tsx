@@ -216,7 +216,25 @@ export default function CargoForm() {
       <div className="space-y-6">
         <div>
           <Label>Nome do cargo *</Label>
-          <Input value={form.nome} onChange={(e) => setField("nome", e.target.value)} placeholder="Ex: Analista Design Jr" />
+          <div className="flex gap-2">
+            <Input value={form.nome} onChange={(e) => setField("nome", e.target.value)} placeholder="Ex: Analista Design Jr" className="flex-1" />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={enriquecerComIA}
+              disabled={!form.nome || !form.nivel || enriquecendo}
+              title="Preencher missão, skills e faixas salariais com dados de mercado"
+            >
+              {enriquecendo ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Buscando...</>
+              ) : (
+                <><Sparkles className="h-4 w-4 mr-2" />Enriquecer com IA</>
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Preencha o nome e o nível, depois clique em "Enriquecer com IA" para sugerir missão e faixas salariais de mercado.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
