@@ -125,9 +125,10 @@ export default function Recrutamento() {
                 <TableRow>
                   <TableHead>Título</TableHead>
                   <TableHead>Área</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Candidatos</TableHead>
+                   <TableHead>Tipo</TableHead>
+                   <TableHead>Vagas</TableHead>
+                   <TableHead>Status</TableHead>
+                   <TableHead className="text-center">Candidatos</TableHead>
                   <TableHead>Abertura</TableHead>
                   <TableHead>Gestor</TableHead>
                 </TableRow>

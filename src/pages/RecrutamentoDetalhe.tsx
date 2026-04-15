@@ -1805,6 +1805,25 @@ export default function RecrutamentoDetalhe() {
                 </Select>
               </div>
             </div>
+            {/* Número de vagas */}
+            <div className="space-y-1">
+              <Label>Número de vagas</Label>
+              <div className="flex items-center gap-3">
+                <button type="button"
+                  className="w-8 h-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted"
+                  onClick={() => setEditarForm((f: any) => ({ ...f, num_vagas: Math.max(1, (f.num_vagas ?? 1) - 1) }))}>
+                  −
+                </button>
+                <span className="text-lg font-semibold w-8 text-center">
+                  {editarForm.num_vagas ?? 1}
+                </span>
+                <button type="button"
+                  className="w-8 h-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted"
+                  onClick={() => setEditarForm((f: any) => ({ ...f, num_vagas: (f.num_vagas ?? 1) + 1 }))}>
+                  +
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Local de trabalho</Label>
