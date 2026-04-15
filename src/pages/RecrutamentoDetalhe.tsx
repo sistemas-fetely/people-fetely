@@ -102,7 +102,7 @@ export default function RecrutamentoDetalhe() {
         body: {
           templateName: "solicitar-perfil-candidato",
           recipientEmail: candidato.email,
-          idempotencyKey: `solicitar-perfil-${candidato.id}`,
+          idempotencyKey: `solicitar-perfil-${candidato.id}-${Date.now()}`,
           templateData: {
             nome: candidato.nome,
             cargo: vaga?.titulo ?? "",
