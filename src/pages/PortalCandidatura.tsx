@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, Loader2, Plus, CheckCircle2, FileText, Upload } from "lucide-react";
+import { Check, Loader2, Plus, CheckCircle2, FileText, Upload, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 export default function PortalCandidatura() {
@@ -299,6 +299,126 @@ export default function PortalCandidatura() {
           </p>
         </div>
 
+        {/* Upload de currículo — PRIMEIRO */}
+        <div className="rounded-xl overflow-hidden shadow-sm border">
+          {/* Header explicativo */}
+          <div className="px-6 py-4" style={{ backgroundColor: "#1A4A3A" }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
+                <Sparkles className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  Comece pelo seu currículo
+                </p>
+                <p className="text-xs" style={{ color: "rgba(255,255,255,0.7)" }}>
+                  A IA lê o PDF e preenche o formulário automaticamente
+                </p>
+              </div>
+            </div>
+          </div>
+          {/* Área de upload */}
+          <div className="bg-card px-6 pb-6 pt-4 space-y-3">
+            {/* O que acontece — 3 passos visuais */}
+            {!pdfCarregado && !importando && (
+              <div className="flex items-center gap-2 mb-4">
+                {[
+                  { num: "1", texto: "Faça upload do PDF" },
+                  { num: "2", texto: "IA lê e extrai os dados" },
+                  { num: "3", texto: "Formulário preenchido" },
+                ].map((p, i) => (
+                  <div key={i} className="flex items-center gap-1.5 flex-1">
+                    <span className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 text-white"
+                      style={{ backgroundColor: "#1A4A3A" }}>
+                      {p.num}
+                    </span>
+                    <span className="text-xs text-muted-foreground leading-tight">{p.texto}</span>
+                    {i < 2 && <span className="text-muted-foreground/40 text-xs">→</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!pdfCarregado ? (
+              <div
+                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+                  arrastando ? "border-[#1A4A3A] bg-[#1A4A3A]/5" : "border-border hover:border-[#1A4A3A]/40"
+                }`}
+                onDragOver={(e) => { e.preventDefault(); setArrastando(true); }}
+                onDragLeave={() => setArrastando(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setArrastando(false);
+                  const file = e.dataTransfer.files[0];
+                  if (file?.type === "application/pdf") processarPDF(file);
+                  else toast.error("Apenas arquivos PDF são aceitos.");
+                }}
+                onClick={() => document.getElementById("pdf-upload")?.click()}
+              >
+                <input id="pdf-upload" type="file" accept=".pdf" className="hidden"
+                  onChange={(e) => { const file = e.target.files?.[0]; if (file) processarPDF(file); }} />
+                {importando ? (
+                  <div className="space-y-3">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#1A4A3A" }} />
+                    <p className="text-sm font-semibold" style={{ color: "#1A4A3A" }}>
+                      Lendo seu currículo...
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      A IA está extraindo suas experiências, formações e skills
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto"
+                      style={{ backgroundColor: "rgba(26,74,58,0.1)" }}>
+                      <FileText className="h-6 w-6" style={{ color: "#1A4A3A" }} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">
+                        Arraste seu currículo ou clique para selecionar
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        PDF · máx. 5MB · Exportado do LinkedIn ou qualquer currículo
+                      </p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Selecionar PDF
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-4 rounded-xl border bg-green-50 border-green-200">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: "#1A4A3A" }}>
+                  <Check className="h-5 w-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: "#1A4A3A" }}>
+                    Currículo lido com sucesso!
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {nomePDF} · Formulário preenchido automaticamente — revise abaixo
+                  </p>
+                </div>
+                <Button type="button" variant="ghost" size="sm" className="text-muted-foreground"
+                  onClick={() => { setPdfCarregado(false); setNomePDF(""); }}>
+                  Trocar
+                </Button>
+              </div>
+            )}
+
+            {/* Dica: pode preencher manualmente */}
+            {!pdfCarregado && !importando && (
+              <p className="text-xs text-center text-muted-foreground">
+                Prefere preencher manualmente? Os campos abaixo ficam disponíveis mesmo sem upload.
+              </p>
+            )}
+          </div>
+        </div>
+
         {/* SEÇÃO 1 — Identificação */}
         <div className="bg-card rounded-xl p-6 space-y-4 shadow-sm border">
           <h2 className="font-semibold text-sm uppercase tracking-wide" style={{ color: "#1A4A3A" }}>
@@ -328,95 +448,6 @@ export default function PortalCandidatura() {
               placeholder="linkedin.com/in/seu-perfil"
             />
           </div>
-        </div>
-
-        {/* Upload de currículo */}
-        <div className="bg-card rounded-xl p-6 space-y-4 shadow-sm border">
-          <h2 className="font-semibold text-sm uppercase tracking-wide" style={{ color: "#1A4A3A" }}>
-            Currículo
-          </h2>
-
-          {!pdfCarregado ? (
-            <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-                arrastando ? "border-[#1A4A3A] bg-[#1A4A3A]/5" : "border-border hover:border-[#1A4A3A]/40"
-              }`}
-              onDragOver={(e) => { e.preventDefault(); setArrastando(true); }}
-              onDragLeave={() => setArrastando(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setArrastando(false);
-                const file = e.dataTransfer.files[0];
-                if (file?.type === "application/pdf") processarPDF(file);
-                else toast.error("Apenas arquivos PDF são aceitos.");
-              }}
-              onClick={() => document.getElementById("pdf-upload")?.click()}
-            >
-              <input
-                id="pdf-upload"
-                type="file"
-                accept=".pdf"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) processarPDF(file);
-                }}
-              />
-
-              {importando ? (
-                <div className="space-y-3">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto" style={{ color: "#1A4A3A" }} />
-                  <p className="text-sm font-medium" style={{ color: "#1A4A3A" }}>
-                    Lendo seu currículo...
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    A IA está extraindo suas informações
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto" style={{ backgroundColor: "rgba(26,74,58,0.1)" }}>
-                    <FileText className="h-6 w-6" style={{ color: "#1A4A3A" }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      Arraste seu currículo ou clique para selecionar
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      PDF · máx. 5MB · Exportado do LinkedIn ou qualquer currículo
-                    </p>
-                  </div>
-                  <Button type="button" variant="outline" size="sm">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Selecionar PDF
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 p-4 rounded-xl border bg-green-50 border-green-200">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#1A4A3A" }}>
-                <Check className="h-5 w-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium" style={{ color: "#1A4A3A" }}>
-                  Currículo importado com sucesso!
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {nomePDF} · Revise os campos abaixo
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground"
-                onClick={() => { setPdfCarregado(false); setNomePDF(""); }}
-              >
-                Trocar
-              </Button>
-            </div>
-          )}
         </div>
 
         {/* SEÇÃO 2 — Experiências */}
