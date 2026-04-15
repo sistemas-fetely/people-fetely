@@ -445,6 +445,48 @@ export default function RecrutamentoDetalhe() {
     }
   }
 
+  function getStatusCard(c: any) {
+    switch (c.status) {
+      case "recebido": {
+        const temPerfil = (c as any).experiencias?.length > 0 || (c as any).skills_candidato?.length > 0;
+        if (!temPerfil) return { label: "Perfil incompleto", cor: "#D97706" };
+        return null;
+      }
+      case "triagem": {
+        const score = (c as any).score_total ?? 0;
+        if (score < 40) return { label: `Score ${score}%`, cor: "#DC2626" };
+        return { label: `Score ${score}%`, cor: score >= 80 ? "#1A4A3A" : "#D97706" };
+      }
+      case "entrevista_rh": {
+        const temEntrevistaRH = entrevistasRH.some((e: any) => e.candidato_id === c.id);
+        if (!temEntrevistaRH) return { label: "Preencher formulário", cor: "#DC2626" };
+        const recRH = entrevistasRH.find((e: any) => e.candidato_id === c.id)?.recomendacao;
+        if (recRH === "nao_avançar") return { label: "Não avançar", cor: "#DC2626" };
+        if (recRH === "aguardar") return { label: "Aguardar", cor: "#D97706" };
+        return { label: "Formulário ok", cor: "#1A4A3A" };
+      }
+      case "entrevista_gestor": {
+        const temEntrevistaG = entrevistasGestor.some((e: any) => e.candidato_id === c.id);
+        if (!temEntrevistaG) return { label: "Preencher formulário", cor: "#DC2626" };
+        const recG = entrevistasGestor.find((e: any) => e.candidato_id === c.id)?.recomendacao;
+        if (recG === "nao_avançar") return { label: "Não avançar", cor: "#DC2626" };
+        if (recG === "aguardar") return { label: "Aguardar", cor: "#D97706" };
+        return { label: "Formulário ok", cor: "#1A4A3A" };
+      }
+      case "teste_tecnico": {
+        const teste = testesTecnicos.find((t: any) => t.candidato_id === c.id);
+        if (!teste?.enviado_em) return { label: "Enviar teste", cor: "#DC2626" };
+        if (!teste?.resultado || teste.resultado === "pendente") return { label: "Aguardando entrega", cor: "#D97706" };
+        if (teste.resultado === "reprovado") return { label: "Reprovado", cor: "#DC2626" };
+        return { label: "Aprovado", cor: "#1A4A3A" };
+      }
+      case "oferta":
+        return { label: "Em negociação", cor: "#D97706" };
+      default:
+        return null;
+    }
+  }
+
   async function excluirVaga() {
     setExcluindo(true);
     try {
@@ -2495,6 +2537,31 @@ function TesteTecnico({
               {f === "desafio" ? "Desafio enviado" : "Registrar resultado"}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Botão reenviar — disponível quando já foi enviado */}
+      {jaEnviado && fase === "desafio" && (
+        <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border">
+          <div>
+            <p className="text-xs font-medium">Desafio enviado</p>
+            <p className="text-xs text-muted-foreground">
+              {new Date((teste as any).enviado_em).toLocaleDateString("pt-BR", {
+                day: "2-digit", month: "2-digit", year: "numeric",
+                hour: "2-digit", minute: "2-digit"
+              })}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={enviando}
+            onClick={reenviarDesafio}
+          >
+            {enviando
+              ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />Reenviando...</>
+              : <>↩ Reenviar</>}
+          </Button>
         </div>
       )}
 
