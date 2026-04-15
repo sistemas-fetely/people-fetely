@@ -939,6 +939,10 @@ export default function RecrutamentoDetalhe() {
           <Button variant="outline" size="sm" onClick={() => setAddCandidatoOpen(true)}>
             <UserPlus className="h-4 w-4 mr-2" /> Adicionar Candidato
           </Button>
+          <Button variant="outline" size="sm" onClick={recalcularTodosScores} className="gap-1.5">
+            <Sparkles className="h-3.5 w-3.5" />
+            Recalcular scores
+          </Button>
           <Button variant="outline" size="sm" onClick={copyLink}>
             <Link className="h-4 w-4 mr-2" /> Copiar link
           </Button>
