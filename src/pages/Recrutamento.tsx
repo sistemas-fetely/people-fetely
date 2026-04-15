@@ -44,6 +44,19 @@ export default function Recrutamento() {
     },
   });
 
+  const { data: gestoresMap = {} } = useQuery({
+    queryKey: ["gestores-map"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name");
+      return (data ?? []).reduce((acc: Record<string, string>, p: any) => {
+        acc[p.id] = p.full_name;
+        return acc;
+      }, {});
+    },
+  });
+
   const { data: candidatos = [] } = useQuery({
     queryKey: ["candidatos-count"],
     queryFn: async () => {

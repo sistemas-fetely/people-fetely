@@ -132,6 +132,20 @@ export default function RecrutamentoDetalhe() {
     enabled: !!id,
   });
 
+  const { data: gestorNome } = useQuery({
+    queryKey: ["gestor-nome", (vaga as any)?.gestor_id],
+    queryFn: async () => {
+      if (!(vaga as any)?.gestor_id) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", (vaga as any).gestor_id)
+        .maybeSingle();
+      return data?.full_name ?? null;
+    },
+    enabled: !!(vaga as any)?.gestor_id,
+  });
+
   const { data: candidatos = [], isLoading: candidatosLoading } = useQuery({
     queryKey: ["candidatos", id],
     queryFn: async () => {
