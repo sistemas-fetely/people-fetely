@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { publicUrl } from "@/lib/urls";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";

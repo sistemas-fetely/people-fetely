@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { publicUrl } from "@/lib/urls";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
