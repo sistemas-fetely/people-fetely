@@ -124,6 +124,7 @@ export default function RecrutamentoDetalhe() {
       toast.error("Erro ao enviar e-mail: " + e.message);
     } finally {
       setSolicitando(false);
+    }
   }
 
   async function processarPDFCandidato(file: File) {
@@ -195,7 +196,8 @@ export default function RecrutamentoDetalhe() {
       console.error("Erro ao calcular score:", e);
     }
   }
-  }
+
+
 
   async function salvarEmailCandidato(candidatoId: string, email: string) {
     if (!email || !email.includes("@")) {
