@@ -39,14 +39,14 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 };
 
 const KANBAN_STAGES = [
-  { key: "recebido", label: "Recebido" },
-  { key: "triagem", label: "Triagem" },
-  { key: "entrevista_rh", label: "Entrevista RH" },
-  { key: "entrevista_gestor", label: "Entrevista Gestor" },
-  { key: "teste_tecnico", label: "Teste Técnico" },
-  { key: "oferta", label: "Oferta" },
-  { key: "contratado", label: "Contratado" },
-  { key: "recusado", label: "Recusado" },
+  { key: "recebido",          label: "Recebido",           cor: "#6B7280", bg: "#F3F4F6" },
+  { key: "triagem",           label: "Triagem",            cor: "#D97706", bg: "#FFFBEB" },
+  { key: "entrevista_rh",     label: "Entrevista RH",      cor: "#2563EB", bg: "#EFF6FF" },
+  { key: "entrevista_gestor", label: "Entrevista Gestor",  cor: "#7C3AED", bg: "#F5F3FF" },
+  { key: "teste_tecnico",     label: "Teste Técnico",      cor: "#0891B2", bg: "#ECFEFF" },
+  { key: "oferta",            label: "Oferta",             cor: "#D97706", bg: "#FFF7ED" },
+  { key: "contratado",        label: "Contratado",         cor: "#1A4A3A", bg: "#D8F3DC" },
+  { key: "recusado",          label: "Recusado",           cor: "#DC2626", bg: "#FEF2F2" },
 ] as const;
 
 export default function RecrutamentoDetalhe() {
