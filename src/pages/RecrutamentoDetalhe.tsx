@@ -119,6 +119,29 @@ export default function RecrutamentoDetalhe() {
     }
   }
 
+  async function salvarEmailCandidato(candidatoId: string, email: string) {
+    if (!email || !email.includes("@")) {
+      toast.error("E-mail inválido.");
+      return;
+    }
+    setSalvandoEmail(true);
+    try {
+      const { error } = await supabase
+        .from("candidatos")
+        .update({ email } as any)
+        .eq("id", candidatoId);
+      if (error) throw error;
+      setSelectedCandidato((c: any) => ({ ...c, email }));
+      queryClient.invalidateQueries({ queryKey: ["candidatos", id] });
+      setEditandoEmail(false);
+      toast.success("E-mail atualizado!");
+    } catch (e: any) {
+      toast.error("Erro ao atualizar e-mail: " + e.message);
+    } finally {
+      setSalvandoEmail(false);
+    }
+  }
+
   const { data: beneficiosParam = [] } = useParametros("beneficio");
 
   const { data: vaga, isLoading: vagaLoading } = useQuery({
