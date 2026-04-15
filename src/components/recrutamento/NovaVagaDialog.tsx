@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -97,7 +97,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
 
   const skillsCatalogo = SKILLS_CATALOGO;
 
-  const ferramentasSistemasCatalogo = useMemo(() => {
+  // Deduplicar ferramentas + sistemas por label (case insensitive)
+  const ferramentasSistemasCatalogo = (() => {
     const todos = [...ferramentasParam, ...sistemasParam];
     const vistos = new Set<string>();
     return todos.filter(item => {
@@ -106,7 +107,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
       vistos.add(key);
       return true;
     });
-  }, [ferramentasParam, sistemasParam]);
+  })();
 
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
