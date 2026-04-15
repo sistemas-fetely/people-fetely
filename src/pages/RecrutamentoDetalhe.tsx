@@ -1530,7 +1530,7 @@ export default function RecrutamentoDetalhe() {
                   <SelectValue placeholder="Selecione o gestor" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">— Sem gestor —</SelectItem>
+                  <SelectItem value="__none__">— Sem gestor —</SelectItem>
                   {lideres.map((l: any) => (
                     <SelectItem key={l.id} value={l.id}>
                       {l.full_name}
