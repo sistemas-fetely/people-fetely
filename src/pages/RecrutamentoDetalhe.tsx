@@ -75,6 +75,7 @@ export default function RecrutamentoDetalhe() {
   const [encerrarVagaOpen, setEncerrarVagaOpen] = useState(false);
   const [confirmarExclusao, setConfirmarExclusao] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+  const [publicando, setPublicando] = useState(false);
 
   const { data: beneficiosParam = [] } = useParametros("beneficio");
 
