@@ -391,6 +391,16 @@ export default function Parametros() {
                                             {param.descricao && (
                                               <p className="text-xs text-muted-foreground truncate">{param.descricao}</p>
                                             )}
+                                            {param.categoria === "tipo_equipamento" && estadosEquipamento.length > 0 && (
+                                              <div className="mt-1.5 flex items-center gap-1 flex-wrap">
+                                                <span className="text-xs text-muted-foreground mr-1">Estados:</span>
+                                                {estadosEquipamento.map((e) => (
+                                                  <Badge key={e.id} variant="secondary" className="text-[10px]">
+                                                    {e.label}
+                                                  </Badge>
+                                                ))}
+                                              </div>
+                                            )}
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2 ml-2">
