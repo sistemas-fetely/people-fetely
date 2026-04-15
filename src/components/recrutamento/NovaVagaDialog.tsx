@@ -55,6 +55,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const [beneficiosSelecionados, setBeneficiosSelecionados] = useState<string[]>([]);
   const [novoBeneficio, setNovoBeneficio] = useState("");
   const [vigenciaFim, setVigenciaFim] = useState("");
+  const [numVagas, setNumVagas] = useState(1);
 
   // Step 2
   const [missao, setMissao] = useState("");
@@ -155,6 +156,8 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
         ferramentas_ids: ferramentasSelecionadas.length > 0 ? ferramentasSelecionadas : null,
         gestor_id: gestorId || null,
         criado_por: user?.id || null,
+        num_vagas: numVagas,
+        vagas_preenchidas: 0,
       };
       if (canSeeFaixa) {
         if (faixaMin) payload.faixa_min = Number(faixaMin);
@@ -180,6 +183,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
     setFerramentasSelecionadas([]); setNovaFerramenta("");
     setFaixaMin(""); setFaixaMax("");
     setNovaSkillObrig(""); setNovaSkillDesej("");
+    setNumVagas(1);
     onOpenChange(false);
   }
 
@@ -271,6 +275,28 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              {/* Número de vagas */}
+              <div className="space-y-2">
+                <Label>Número de vagas</Label>
+                <div className="flex items-center gap-3">
+                  <button type="button"
+                    className="w-8 h-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted transition-colors"
+                    onClick={() => setNumVagas(v => Math.max(1, v - 1))}>
+                    −
+                  </button>
+                  <span className="text-lg font-semibold w-8 text-center">{numVagas}</span>
+                  <button type="button"
+                    className="w-8 h-8 rounded-full border flex items-center justify-center text-lg font-medium hover:bg-muted transition-colors"
+                    onClick={() => setNumVagas(v => v + 1)}>
+                    +
+                  </button>
+                  {numVagas > 1 && (
+                    <span className="text-xs text-muted-foreground">
+                      {numVagas} posições num único processo
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="space-y-2">
                 <Label>Gestor responsável</Label>
