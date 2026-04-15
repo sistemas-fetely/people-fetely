@@ -248,25 +248,34 @@ export type Database = {
           candidato_id: string
           created_at: string
           id: string
+          justificativa: string | null
           responsavel_id: string | null
+          score_no_momento: number | null
           status_anterior: string | null
           status_novo: string
+          vaga_id: string | null
         }
         Insert: {
           candidato_id: string
           created_at?: string
           id?: string
+          justificativa?: string | null
           responsavel_id?: string | null
+          score_no_momento?: number | null
           status_anterior?: string | null
           status_novo: string
+          vaga_id?: string | null
         }
         Update: {
           candidato_id?: string
           created_at?: string
           id?: string
+          justificativa?: string | null
           responsavel_id?: string | null
+          score_no_momento?: number | null
           status_anterior?: string | null
           status_novo?: string
+          vaga_id?: string | null
         }
         Relationships: [
           {
@@ -274,6 +283,13 @@ export type Database = {
             columns: ["candidato_id"]
             isOneToOne: false
             referencedRelation: "candidatos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "candidato_historico_vaga_id_fkey"
+            columns: ["vaga_id"]
+            isOneToOne: false
+            referencedRelation: "vagas"
             referencedColumns: ["id"]
           },
         ]
