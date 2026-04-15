@@ -1686,6 +1686,9 @@ export default function RecrutamentoDetalhe() {
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {(selectedCandidato as any).score_detalhado.alerta_texto}
                               </p>
+                            )}
+                          </div>
+                        </div>
                       )}
                       {(selectedCandidato as any).score_detalhado?.alerta_salarial && (
                         <div className="flex items-start gap-2 p-2 rounded-md border" style={{
@@ -1707,8 +1710,6 @@ export default function RecrutamentoDetalhe() {
                                 {(vaga as any)?.faixa_max && <> · Faixa: até R$ {Number((vaga as any).faixa_max).toLocaleString("pt-BR")}</>}
                               </p>
                             )}
-                          </div>
-                        </div>
                           </div>
                         </div>
                       )}
