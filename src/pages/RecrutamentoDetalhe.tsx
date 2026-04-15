@@ -124,7 +124,77 @@ export default function RecrutamentoDetalhe() {
       toast.error("Erro ao enviar e-mail: " + e.message);
     } finally {
       setSolicitando(false);
+  }
+
+  async function processarPDFCandidato(file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("PDF muito grande. Máximo 5MB.");
+      return;
     }
+    setAddCandidatoImportando(true);
+    setAddCandidatoNomePDF(file.name);
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const { data, error } = await supabase.functions.invoke("score-candidato", {
+        body: { action: "parse_pdf", pdf_base64: base64 },
+      });
+      if (error) throw error;
+
+      const perfil = data?.perfil;
+      if (perfil) {
+        setNewCandidato(prev => ({
+          ...prev,
+          nome: perfil.nome || prev.nome,
+          email: perfil.email || prev.email,
+          telefone: perfil.telefone || prev.telefone,
+          experiencias: perfil.experiencias ?? [],
+          formacoes: perfil.formacoes ?? [],
+          skills_candidato: (perfil.skills_identificadas ?? []).map((s: string) => ({ skill: s, nivel: "nao_informado" })),
+        }));
+        setAddCandidatoPdfCarregado(true);
+        toast.success("CV lido! Revise os dados antes de salvar.");
+      }
+    } catch (e: any) {
+      toast.error("Erro ao ler o CV: " + e.message);
+    } finally {
+      setAddCandidatoImportando(false);
+    }
+  }
+
+  async function calcularScoreCandidato(candidatoId: string, candidatoData: typeof newCandidato) {
+    if (!vaga) return;
+    try {
+      await supabase.functions.invoke("score-candidato", {
+        body: {
+          action: "calcular_score",
+          candidato_id: candidatoId,
+          vaga: {
+            titulo: vaga.titulo,
+            nivel: (vaga as any).nivel,
+            skills_obrigatorias: (vaga as any).skills_obrigatorias ?? [],
+            skills_desejadas: (vaga as any).skills_desejadas ?? [],
+            ferramentas: (vaga as any).ferramentas ?? [],
+          },
+          candidato: {
+            skills_candidato: candidatoData.skills_candidato,
+            sistemas_candidato: candidatoData.sistemas_candidato,
+            experiencias: candidatoData.experiencias,
+            formacoes: candidatoData.formacoes,
+            mensagem: candidatoData.mensagem,
+          },
+        },
+      });
+      queryClient.invalidateQueries({ queryKey: ["candidatos", id] });
+    } catch (e) {
+      console.error("Erro ao calcular score:", e);
+    }
+  }
   }
 
   async function salvarEmailCandidato(candidatoId: string, email: string) {
