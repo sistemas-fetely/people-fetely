@@ -272,8 +272,11 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
                 <Select value={gestorId} onValueChange={setGestorId}>
                   <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
                   <SelectContent>
-                    {gestores.map((g) => (
-                      <SelectItem key={g.id} value={g.user_id}>{g.full_name}</SelectItem>
+                {gestores.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.nome}{g.cargo ? ` — ${g.cargo}` : ""}{" "}
+                        <span className="text-muted-foreground text-xs">({g.tipo})</span>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
