@@ -391,14 +391,43 @@ export default function Parametros() {
                                             {param.descricao && (
                                               <p className="text-xs text-muted-foreground truncate">{param.descricao}</p>
                                             )}
-                                            {param.categoria === "tipo_equipamento" && estadosEquipamento.length > 0 && (
-                                              <div className="mt-1.5 flex items-center gap-1 flex-wrap">
-                                                <span className="text-xs text-muted-foreground mr-1">Estados:</span>
-                                                {estadosEquipamento.map((e) => (
-                                                  <Badge key={e.id} variant="secondary" className="text-[10px]">
-                                                    {e.label}
-                                                  </Badge>
-                                                ))}
+                                            {param.categoria === "tipo_equipamento" && (
+                                              <div className="mt-2 pt-2 border-t">
+                                                <div className="flex flex-wrap gap-1 mb-1">
+                                                  {estadosEquipamento.length > 0 ? (
+                                                    estadosEquipamento.map((e) => (
+                                                      <span key={e.id} className="text-xs px-2 py-0.5 rounded-full bg-muted">{e.label}</span>
+                                                    ))
+                                                  ) : (
+                                                    <span className="text-xs text-muted-foreground">Nenhum estado cadastrado</span>
+                                                  )}
+                                                </div>
+                                                <Collapsible>
+                                                  <CollapsibleTrigger asChild>
+                                                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1 text-muted-foreground">
+                                                      <ChevronDown className="h-3 w-3" />
+                                                      Gerenciar estados
+                                                    </Button>
+                                                  </CollapsibleTrigger>
+                                                  <CollapsibleContent className="mt-2 space-y-1">
+                                                    {estadosEquipamento.map((e) => (
+                                                      <div key={e.id} className="flex items-center justify-between rounded px-2 py-1 bg-muted/50">
+                                                        <span className="text-xs">{e.label}</span>
+                                                        <div className="flex gap-1">
+                                                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(e)}>
+                                                            <Pencil className="h-3 w-3" />
+                                                          </Button>
+                                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(e)}>
+                                                            <Trash2 className="h-3 w-3" />
+                                                          </Button>
+                                                        </div>
+                                                      </div>
+                                                    ))}
+                                                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1 w-full" onClick={() => openNew("estado_equipamento")}>
+                                                      <Plus className="h-3 w-3" /> Adicionar estado
+                                                    </Button>
+                                                  </CollapsibleContent>
+                                                </Collapsible>
                                               </div>
                                             )}
                                           </div>
