@@ -177,7 +177,7 @@ export default function RecrutamentoDetalhe() {
     queryFn: async () => {
       const { data } = await supabase
         .from("testes_tecnicos" as any)
-        .select("candidato_id, enviado_em, entregue_em, resultado, prazo_entrega")
+        .select("candidato_id, enviado_em, entregue_em, resultado, prazo_entrega, skills_validadas")
         .eq("vaga_id", id!);
       return (data ?? []) as any[];
     },
