@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSkillsCatalogo, salvarNovaSkill } from "@/hooks/useSkillsCatalogo";
 import { useFerramentasCatalogo, salvarNovaFerramenta } from "@/hooks/useFerramentasCatalogo";
 import { useBeneficiosCatalogo, salvarNovoBeneficio } from "@/hooks/useBeneficiosCatalogo";
+import { useResponsabilidadesCatalogo, salvarNovaResponsabilidade } from "@/hooks/useResponsabilidadesCatalogo";
 import { toast } from "sonner";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
