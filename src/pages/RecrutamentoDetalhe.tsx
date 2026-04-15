@@ -180,6 +180,35 @@ export default function RecrutamentoDetalhe() {
     onError: (err: any) => toast.error(err.message),
   });
 
+  const editarVagaMutation = useMutation({
+    mutationFn: async (dados: any) => {
+      const { error } = await supabase
+        .from("vagas")
+        .update({
+          titulo: dados.titulo,
+          area: dados.area,
+          nivel: dados.nivel,
+          local_trabalho: dados.local_trabalho,
+          jornada: dados.jornada,
+          salario_min: dados.salario_min ? Number(dados.salario_min) : null,
+          salario_max: dados.salario_max ? Number(dados.salario_max) : null,
+          skills_obrigatorias: dados.skills_obrigatorias,
+          skills_desejadas: dados.skills_desejadas,
+          ferramentas: dados.ferramentas,
+          beneficios: dados.beneficios,
+          descricao: dados.descricao,
+        } as any)
+        .eq("id", id!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Vaga atualizada!");
+      queryClient.invalidateQueries({ queryKey: ["vaga", id] });
+      setEditarVagaOpen(false);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
   const moveCandidatoMutation = useMutation({
     mutationFn: async ({ candidatoId, newStatus }: { candidatoId: string; newStatus: string }) => {
       const { error } = await supabase
