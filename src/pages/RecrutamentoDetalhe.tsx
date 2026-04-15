@@ -685,7 +685,7 @@ export default function RecrutamentoDetalhe() {
         .eq("vaga_id", id!)
         .maybeSingle();
 
-      if (!oferta?.enviado_em) {
+      if (!(oferta as any)?.enviado_em) {
         toast.error(
           "Registre e envie a proposta antes de contratar.",
           { duration: 5000 }
@@ -1304,10 +1304,11 @@ export default function RecrutamentoDetalhe() {
               </div>
 
               <Tabs defaultValue="perfil">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-7">
                   <TabsTrigger value="perfil" className="text-xs">Perfil</TabsTrigger>
                   <TabsTrigger value="entrevistas" className="text-xs">Entrevistas</TabsTrigger>
                   <TabsTrigger value="teste" className="text-xs">Teste</TabsTrigger>
+                  <TabsTrigger value="oferta" className="text-xs">Oferta</TabsTrigger>
                   <TabsTrigger value="avaliacao" className="text-xs">Avaliação</TabsTrigger>
                   <TabsTrigger value="historico" className="text-xs">Histórico</TabsTrigger>
                   <TabsTrigger value="notas" className="text-xs">Notas</TabsTrigger>
@@ -1533,6 +1534,16 @@ export default function RecrutamentoDetalhe() {
                     vagaId={id!}
                     candidato={selectedCandidato}
                     vaga={vaga}
+                  />
+                </TabsContent>
+
+                <TabsContent value="oferta" className="mt-4">
+                  <ModuloOferta
+                    candidatoId={selectedCandidato.id}
+                    vagaId={id!}
+                    candidato={selectedCandidato}
+                    vaga={vaga}
+                    canSeeFaixa={canSeeFaixa}
                   />
                 </TabsContent>
 
