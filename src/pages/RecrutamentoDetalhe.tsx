@@ -182,6 +182,8 @@ export default function RecrutamentoDetalhe() {
             skills_obrigatorias: (vaga as any).skills_obrigatorias ?? [],
             skills_desejadas: (vaga as any).skills_desejadas ?? [],
             ferramentas: (vaga as any).ferramentas ?? [],
+            faixa_min: (vaga as any).faixa_min ?? null,
+            faixa_max: (vaga as any).faixa_max ?? null,
           },
           candidato: {
             skills_candidato: candidatoData.skills_candidato,
@@ -189,6 +191,7 @@ export default function RecrutamentoDetalhe() {
             experiencias: candidatoData.experiencias,
             formacoes: candidatoData.formacoes,
             mensagem: candidatoData.mensagem,
+            pretensao_salarial: (candidatoData as any).pretensao_salarial ?? null,
           },
         },
       });
@@ -222,6 +225,8 @@ export default function RecrutamentoDetalhe() {
               skills_obrigatorias: (vaga as any).skills_obrigatorias ?? [],
               skills_desejadas: (vaga as any).skills_desejadas ?? [],
               ferramentas: (vaga as any).ferramentas ?? [],
+              faixa_min: (vaga as any).faixa_min ?? null,
+              faixa_max: (vaga as any).faixa_max ?? null,
             },
             candidato: {
               skills_candidato: (c as any).skills_candidato ?? [],
@@ -229,6 +234,7 @@ export default function RecrutamentoDetalhe() {
               experiencias: (c as any).experiencias ?? [],
               formacoes: (c as any).formacoes ?? [],
               mensagem: (c as any).mensagem ?? "",
+              pretensao_salarial: (c as any).pretensao_salarial ?? null,
             },
           },
         });
