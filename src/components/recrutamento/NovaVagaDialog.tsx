@@ -105,6 +105,12 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const ferramentasEspecificas = ferramentasCatalogo.filter(f => f.area !== "todos");
   const ferramentasTransversais = ferramentasCatalogo.filter(f => f.area === "todos");
 
+  // Responsabilidades from database
+  const { data: responsabilidadesCatalogo = [] } = useResponsabilidadesCatalogo(
+    area || undefined,
+    nivelNormalizado !== "todos" ? nivelNormalizado : undefined
+  );
+
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
     queryFn: async () => {
