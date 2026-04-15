@@ -251,7 +251,6 @@ export default function RecrutamentoDetalhe() {
     toast.success("Link copiado!");
   };
 
-  const [publicando, setPublicando] = useState(false);
   async function publicarVaga() {
     setPublicando(true);
     try {
