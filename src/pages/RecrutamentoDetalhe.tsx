@@ -182,6 +182,8 @@ export default function RecrutamentoDetalhe() {
             skills_obrigatorias: (vaga as any).skills_obrigatorias ?? [],
             skills_desejadas: (vaga as any).skills_desejadas ?? [],
             ferramentas: (vaga as any).ferramentas ?? [],
+            faixa_min: (vaga as any).faixa_min ?? null,
+            faixa_max: (vaga as any).faixa_max ?? null,
           },
           candidato: {
             skills_candidato: candidatoData.skills_candidato,
@@ -189,6 +191,7 @@ export default function RecrutamentoDetalhe() {
             experiencias: candidatoData.experiencias,
             formacoes: candidatoData.formacoes,
             mensagem: candidatoData.mensagem,
+            pretensao_salarial: (candidatoData as any).pretensao_salarial ?? null,
           },
         },
       });
@@ -222,6 +225,8 @@ export default function RecrutamentoDetalhe() {
               skills_obrigatorias: (vaga as any).skills_obrigatorias ?? [],
               skills_desejadas: (vaga as any).skills_desejadas ?? [],
               ferramentas: (vaga as any).ferramentas ?? [],
+              faixa_min: (vaga as any).faixa_min ?? null,
+              faixa_max: (vaga as any).faixa_max ?? null,
             },
             candidato: {
               skills_candidato: (c as any).skills_candidato ?? [],
@@ -229,6 +234,7 @@ export default function RecrutamentoDetalhe() {
               experiencias: (c as any).experiencias ?? [],
               formacoes: (c as any).formacoes ?? [],
               mensagem: (c as any).mensagem ?? "",
+              pretensao_salarial: (c as any).pretensao_salarial ?? null,
             },
           },
         });
@@ -1679,6 +1685,29 @@ export default function RecrutamentoDetalhe() {
                             {(selectedCandidato as any).score_detalhado.alerta_texto && (
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {(selectedCandidato as any).score_detalhado.alerta_texto}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {(selectedCandidato as any).score_detalhado?.alerta_salarial && (
+                        <div className="flex items-start gap-2 p-2 rounded-md border" style={{
+                          backgroundColor: (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "#FEF2F2" : "#FFF7ED",
+                          borderColor: (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "#DC262630" : "#D9770630"
+                        }}>
+                          <span className="text-sm flex-shrink-0">💰</span>
+                          <div>
+                            <p className="text-xs font-medium" style={{
+                              color: (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "#DC2626" : "#D97706"
+                            }}>
+                              {(selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "Pretensão muito acima da faixa" :
+                               (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_leve" ? "Pretensão levemente acima da faixa" :
+                               "Pretensão abaixo da faixa — avaliar"}
+                            </p>
+                            {(selectedCandidato as any).pretensao_salarial && (
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Pretensão: R$ {Number((selectedCandidato as any).pretensao_salarial).toLocaleString("pt-BR")}
+                                {(vaga as any)?.faixa_max && <> · Faixa: até R$ {Number((vaga as any).faixa_max).toLocaleString("pt-BR")}</>}
                               </p>
                             )}
                           </div>
