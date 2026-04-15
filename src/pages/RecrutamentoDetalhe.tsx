@@ -1686,7 +1686,29 @@ export default function RecrutamentoDetalhe() {
                               <p className="text-xs text-muted-foreground mt-0.5">
                                 {(selectedCandidato as any).score_detalhado.alerta_texto}
                               </p>
+                      )}
+                      {(selectedCandidato as any).score_detalhado?.alerta_salarial && (
+                        <div className="flex items-start gap-2 p-2 rounded-md border" style={{
+                          backgroundColor: (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "#FEF2F2" : "#FFF7ED",
+                          borderColor: (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "#DC262630" : "#D9770630"
+                        }}>
+                          <span className="text-sm flex-shrink-0">💰</span>
+                          <div>
+                            <p className="text-xs font-medium" style={{
+                              color: (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "#DC2626" : "#D97706"
+                            }}>
+                              {(selectedCandidato as any).score_detalhado.alerta_salarial === "acima_critico" ? "Pretensão muito acima da faixa" :
+                               (selectedCandidato as any).score_detalhado.alerta_salarial === "acima_leve" ? "Pretensão levemente acima da faixa" :
+                               "Pretensão abaixo da faixa — avaliar"}
+                            </p>
+                            {(selectedCandidato as any).pretensao_salarial && (
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                Pretensão: R$ {Number((selectedCandidato as any).pretensao_salarial).toLocaleString("pt-BR")}
+                                {(vaga as any)?.faixa_max && <> · Faixa: até R$ {Number((vaga as any).faixa_max).toLocaleString("pt-BR")}</>}
+                              </p>
                             )}
+                          </div>
+                        </div>
                           </div>
                         </div>
                       )}
