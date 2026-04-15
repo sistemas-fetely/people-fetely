@@ -22,7 +22,7 @@ import {
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Plus, Pencil, Trash2, Loader2, Monitor, Package, Settings2, FileText, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Monitor, Package, Settings2, FileText, Search, Wrench, Heart } from "lucide-react";
 import type { Parametro } from "@/hooks/useParametros";
 
 interface CategoriaConfig {
