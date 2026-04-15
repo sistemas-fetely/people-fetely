@@ -72,7 +72,7 @@ export default function PortalCandidatura() {
           </h1>
         </div>
         <p className="text-xs text-muted-foreground italic hidden sm:block max-w-[260px] text-right">
-          Questionando a forma como celebramos. Criando algo novo...
+          Vamos celebrar!! Venha criar algo novo...
         </p>
       </div>
     </header>
