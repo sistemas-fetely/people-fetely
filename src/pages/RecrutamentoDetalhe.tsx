@@ -1176,25 +1176,27 @@ export default function RecrutamentoDetalhe() {
       <div className="border-t flex-shrink-0">
         <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Col 1 — Info */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Informações</p>
-            {[
-              { label: "Tipo", value: vaga.tipo_contrato === "clt" ? "CLT" : vaga.tipo_contrato === "pj" ? "PJ" : "CLT/PJ" },
-              { label: "Nível", value: vaga.nivel },
-              { label: "Local", value: vaga.local_trabalho },
-              { label: "Jornada", value: vaga.jornada },
-              { label: "Gestor", value: gestorNome ?? "—" },
-              { label: "Vigência", value: vaga.vigencia_fim ? new Date(vaga.vigencia_fim).toLocaleDateString("pt-BR") : "—" },
-            ].map(item => item.value ? (
-              <div key={item.label} className="flex justify-between gap-2">
-                <span className="text-xs text-muted-foreground">{item.label}</span>
-                <span className="text-xs font-medium text-right">{item.value}</span>
-              </div>
-            ) : null)}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+              {[
+                { label: "Tipo", value: vaga.tipo_contrato === "clt" ? "CLT" : vaga.tipo_contrato === "pj" ? "PJ" : "CLT/PJ" },
+                { label: "Nível", value: vaga.nivel },
+                { label: "Local", value: vaga.local_trabalho },
+                { label: "Jornada", value: vaga.jornada },
+                { label: "Gestor", value: gestorNome ?? "—" },
+                { label: "Vigência", value: vaga.vigencia_fim ? new Date(vaga.vigencia_fim).toLocaleDateString("pt-BR") : "—" },
+              ].map(item => item.value ? (
+                <div key={item.label}>
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                  <p className="text-sm font-medium">{item.value}</p>
+                </div>
+              ) : null)}
+            </div>
             {vaga.missao && (
               <div className="pt-2 border-t">
                 <p className="text-xs font-medium text-muted-foreground uppercase mb-1">Missão</p>
-                <p className="text-xs text-muted-foreground whitespace-pre-wrap">{vaga.missao}</p>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{vaga.missao}</p>
               </div>
             )}
           </div>
