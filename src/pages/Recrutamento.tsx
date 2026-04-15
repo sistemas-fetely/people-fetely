@@ -162,6 +162,7 @@ export default function Recrutamento() {
                       </TableCell>
                       <TableCell>
                         <Badge className={cfg.className}>{cfg.label}</Badge>
+                      </TableCell>
                       <TableCell className="text-center">{candidatosPorVaga[vaga.id] || 0}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {vaga.vigencia_inicio
