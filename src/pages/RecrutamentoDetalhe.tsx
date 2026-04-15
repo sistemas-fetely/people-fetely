@@ -27,7 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowLeft, Copy, Globe, MoreHorizontal, Plus, Loader2,
-  UserPlus, ArrowRight, XCircle, User, CheckCircle2, ExternalLink, Users, Link, Trash2, Check, Mail, AlertTriangle, Pencil, X, Sparkles, ClipboardList
+  UserPlus, ArrowRight, XCircle, User, CheckCircle2, ExternalLink, Users, Link, Trash2, Check, Mail, AlertTriangle, Pencil, X, Sparkles, ClipboardList, FileText, Upload
 } from "lucide-react";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
@@ -59,7 +59,15 @@ export default function RecrutamentoDetalhe() {
   const podeExcluir = isSuperAdmin || isAdminRH;
 
   const [addCandidatoOpen, setAddCandidatoOpen] = useState(false);
-  const [newCandidato, setNewCandidato] = useState({ nome: "", email: "", telefone: "", origem: "indicacao" });
+  const [newCandidato, setNewCandidato] = useState({
+    nome: "", email: "", telefone: "", origem: "indicacao",
+    experiencias: [] as any[], formacoes: [] as any[],
+    skills_candidato: [] as any[], sistemas_candidato: [] as any[], mensagem: "",
+  });
+  const [addCandidatoArrastando, setAddCandidatoArrastando] = useState(false);
+  const [addCandidatoImportando, setAddCandidatoImportando] = useState(false);
+  const [addCandidatoPdfCarregado, setAddCandidatoPdfCarregado] = useState(false);
+  const [addCandidatoNomePDF, setAddCandidatoNomePDF] = useState("");
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [selectedCandidato, setSelectedCandidato] = useState<any | null>(null);
   const [notaTexto, setNotaTexto] = useState("");
