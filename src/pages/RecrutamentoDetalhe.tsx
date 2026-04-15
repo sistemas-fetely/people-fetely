@@ -2286,6 +2286,7 @@ function TesteTecnico({
     nota: 0,
     pontos_avaliados: "",
     resultado: "",
+    skills_validadas: [] as { skill: string; nivel_declarado: string; resultado: string; observacao: string }[],
   });
 
   const { data: teste, isLoading } = useQuery({
@@ -2316,6 +2317,14 @@ function TesteTecnico({
         nota: (teste as any).nota ?? 0,
         pontos_avaliados: (teste as any).pontos_avaliados ?? "",
         resultado: (teste as any).resultado ?? "",
+        skills_validadas: (teste as any).skills_validadas?.length > 0
+          ? (teste as any).skills_validadas
+          : ((teste as any).skills_a_validar ?? []).map((s: any) => ({
+              skill: s.skill,
+              nivel_declarado: s.nivel_declarado,
+              resultado: "",
+              observacao: "",
+            })),
       });
       if ((teste as any).enviado_em) setFase("resultado");
     }
@@ -2354,7 +2363,19 @@ function TesteTecnico({
           desafio_entregaveis: data.entregaveis || "",
           desafio_criterios: data.criterios || "",
         }));
-        toast.success("Desafio gerado! Revise antes de enviar ao candidato.");
+        // Salvar skills_a_validar no banco
+        if (data.skills_a_validar?.length > 0) {
+          await supabase
+            .from("testes_tecnicos" as any)
+            .upsert({
+              candidato_id: candidatoId,
+              vaga_id: vagaId,
+              skills_a_validar: data.skills_a_validar,
+              updated_at: new Date().toISOString(),
+            } as any, { onConflict: "candidato_id,vaga_id" });
+          queryClient.invalidateQueries({ queryKey: ["teste-tecnico", candidatoId] });
+        }
+        toast.success("Desafio gerado com validadores de skills! Revise antes de enviar.");
       } else {
         toast.error("Resposta inesperada da IA. Preencha manualmente.");
       }
