@@ -100,17 +100,21 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const { data: gestores = [] } = useQuery({
     queryKey: ["gestores-para-vaga"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, full_name, user_id")
-        .order("full_name");
-      if (error) throw error;
-      const { data: rolesData } = await supabase
-        .from("user_roles")
-        .select("user_id, role")
-        .in("role", ["gestor_direto", "admin_rh", "gestor_rh", "super_admin"]);
-      const gestorUserIds = new Set((rolesData || []).map((r) => r.user_id));
-      return (data || []).filter((p) => gestorUserIds.has(p.user_id));
+      const { data: clt } = await supabase
+        .from("colaboradores_clt")
+        .select("id, nome_completo, cargo, departamento")
+        .eq("status", "ativo")
+        .order("nome_completo");
+      const { data: pj } = await supabase
+        .from("contratos_pj")
+        .select("id, contato_nome, tipo_servico, departamento")
+        .eq("status", "ativo")
+        .order("contato_nome");
+      const todos = [
+        ...(clt ?? []).map((c) => ({ id: c.id, nome: c.nome_completo, cargo: c.cargo, tipo: "CLT" as const })),
+        ...(pj ?? []).map((c) => ({ id: c.id, nome: c.contato_nome, cargo: c.tipo_servico, tipo: "PJ" as const })),
+      ];
+      return todos.sort((a, b) => a.nome.localeCompare(b.nome));
     },
     enabled: open,
   });
