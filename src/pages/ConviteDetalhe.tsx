@@ -454,7 +454,7 @@ export default function ConviteDetalhe() {
             }} editing={editing} updateField={updateField} />
           </TabsContent>
           <TabsContent value="empresa">
-            <ConviteDadosEmpresaCLT dados={formData} editing={editing} updateField={updateField} />
+            <ConviteDadosEmpresaCLT dados={{ ...formData, _convite_dados_contratacao: (convite as any).dados_contratacao }} editing={editing} updateField={updateField} />
           </TabsContent>
           <TabsContent value="bancarios">
             <ConviteDadosBancarios dados={formData} editing={editing} updateField={updateField} />
