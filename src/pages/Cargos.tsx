@@ -13,9 +13,18 @@ import {
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet";
-import { Lock, Plus, Search, Pencil, Sparkles } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Lock, Plus, Search, Pencil, Sparkles, MoreHorizontal, Trash2 } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const nivelLabels: Record<string, string> = {
   jr: "Júnior", pl: "Pleno", sr: "Sênior",
@@ -209,6 +218,47 @@ export default function Cargos() {
   const [search, setSearch] = useState("");
   const [filtroDepartamento, setFiltroDepartamento] = useState("todos");
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [deleteTarget, setDeleteTarget] = useState<Cargo | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const checks = await Promise.all([
+        supabase.from("colaboradores_clt").select("id", { count: "exact", head: true }).eq("cargo", deleteTarget.nome),
+        supabase.from("contratos_pj").select("id", { count: "exact", head: true }).eq("tipo_servico", deleteTarget.nome),
+        supabase.from("vagas").select("id", { count: "exact", head: true }).eq("titulo", deleteTarget.nome),
+        supabase.from("convites_cadastro").select("id", { count: "exact", head: true }).eq("cargo", deleteTarget.nome),
+      ]);
+      const [clt, pj, vagas, convites] = checks;
+      const usos: string[] = [];
+      if ((clt.count || 0) > 0) usos.push(`${clt.count} colaborador(es) CLT`);
+      if ((pj.count || 0) > 0) usos.push(`${pj.count} contrato(s) PJ`);
+      if ((vagas.count || 0) > 0) usos.push(`${vagas.count} vaga(s)`);
+      if ((convites.count || 0) > 0) usos.push(`${convites.count} convite(s)`);
+
+      if (usos.length > 0) {
+        setDeleteError(`Este cargo está vinculado a: ${usos.join(", ")}. Não é possível excluir. Desative-o se não quiser que apareça em novos cadastros.`);
+        setDeleting(false);
+        return;
+      }
+
+      const { error } = await supabase.from("cargos").delete().eq("id", deleteTarget.id);
+      if (error) throw error;
+
+      toast.success(`Cargo "${deleteTarget.nome}" excluído com sucesso.`);
+      setDeleteTarget(null);
+      window.location.reload();
+    } catch (err: any) {
+      toast.error("Erro ao excluir: " + err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const [selected, setSelected] = useState<Cargo | null>(null);
 
   const departamentos = useMemo(() => {
@@ -332,10 +382,27 @@ export default function Cargos() {
                       {cargo.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); navigate(`/cargos/${cargo.id}`); }}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => navigate(`/cargos/${cargo.id}`)} className="gap-2">
+                          <Pencil className="h-4 w-4" /> Editar
+                        </DropdownMenuItem>
+                        {(isSuperAdmin || isAdminRH) && (
+                          <DropdownMenuItem
+                            onClick={() => { setDeleteTarget(cargo); setDeleteError(null); }}
+                            className="gap-2 text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" /> Excluir
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))
@@ -349,6 +416,29 @@ export default function Cargos() {
       </p>
 
       {selected && <CargoDrawer cargo={selected} onClose={() => setSelected(null)} />}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) { setDeleteTarget(null); setDeleteError(null); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir cargo: {deleteTarget?.nome}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteError ? (
+                <span className="text-destructive">{deleteError}</span>
+              ) : (
+                "Tem certeza que deseja excluir este cargo? Esta ação não pode ser desfeita."
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            {!deleteError && (
+              <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive hover:bg-destructive/90">
+                {deleting ? "Excluindo..." : "Excluir"}
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
