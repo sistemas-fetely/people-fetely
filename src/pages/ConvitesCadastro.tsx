@@ -591,19 +591,12 @@ export default function ConvitesCadastro() {
               <p className="text-xl font-bold" style={{ color: phase.color }}>
                 {funnelCounts[phase.key] || 0}
               </p>
-              {phase.key === "email_enviado" && (atrasadosCount > 0 || expiradosCount > 0) && (
+              {phase.key === "email_enviado" && atrasadosCount > 0 && (
                 <div className="mt-1 flex flex-wrap items-center gap-1">
-                  {atrasadosCount > 0 && (
-                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 cursor-pointer hover:bg-yellow-200"
-                      onClick={(e) => { e.stopPropagation(); setFiltroAtrasados(!filtroAtrasados); setFunnelFilter("email_enviado"); }}>
-                      ⏰ {atrasadosCount}
-                    </span>
-                  )}
-                  {expiradosCount > 0 && (
-                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">
-                      ❌ {expiradosCount}
-                    </span>
-                  )}
+                  <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 cursor-pointer hover:bg-yellow-200"
+                    onClick={(e) => { e.stopPropagation(); setFiltroAtrasados(!filtroAtrasados); setFunnelFilter("email_enviado"); }}>
+                    ⏰ {atrasadosCount}
+                  </span>
                 </div>
               )}
             </div>
