@@ -187,6 +187,7 @@ export default function ConvitesCadastro() {
   const { data: tiposContrato } = useParametros("tipo_contrato");
   const { data: jornadas } = useParametros("jornada");
   const { data: locaisTrabalho } = useParametros("local_trabalho");
+  const { data: horariosTrabalho } = useParametros("horario_trabalho");
   const { data: cargosRaw } = useCargos();
   const cargos = (cargosRaw || []).map((c) => ({ id: c.id, valor: c.nome, label: c.nome, is_clevel: c.is_clevel }));
   const { isCargoClevel } = useCLevelCargos();
