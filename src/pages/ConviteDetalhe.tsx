@@ -37,6 +37,12 @@ interface Convite {
   dados_preenchidos: Record<string, any> | null;
   colaborador_id: string | null;
   contrato_pj_id: string | null;
+  salario_previsto: number | null;
+  lider_direto_id: string | null;
+  data_inicio_prevista: string | null;
+  grupo_acesso_id: string | null;
+  observacoes_colaborador: string | null;
+  origem: string | null;
 }
 
 function ConviteAnexos({ documentos }: { documentos?: { key: string; name: string; url: string }[] }) {
@@ -189,10 +195,13 @@ export default function ConviteDetalhe() {
             data_nascimento: rest.data_nascimento || "",
             cargo: rest.cargo || convite.cargo || "",
             departamento: rest.departamento || convite.departamento || "",
-            data_admissao: rest.data_admissao || new Date().toISOString().split("T")[0],
-            salario_base: rest.salario_base || 0,
+            data_admissao: rest.data_admissao || convite.data_inicio_prevista || new Date().toISOString().split("T")[0],
+            salario_base: rest.salario_base || convite.salario_previsto || 0,
             tipo_contrato: rest.tipo_contrato || "indeterminado",
-            jornada_semanal: rest.jornada_semanal || 44,
+            jornada_semanal: rest.jornada_semanal || (rest.jornada ? Number(rest.jornada) : 44),
+            horario_trabalho: rest.horario_trabalho || rest.jornada || "",
+            local_trabalho: rest.local_trabalho || "",
+            lider_direto_id: rest.lider_direto_id || convite.lider_direto_id || "",
             dependentes: dependentes || [],
             documentos_upload: documentos_upload || [],
             upload_folder: convite.token,
@@ -211,11 +220,12 @@ export default function ConviteDetalhe() {
             razao_social: rest.razao_social || "",
             tipo_servico: rest.tipo_servico || convite.cargo || "",
             departamento: rest.departamento || convite.departamento || "",
-            valor_mensal: rest.valor_mensal || 0,
+            valor_mensal: rest.valor_mensal || convite.salario_previsto || 0,
             forma_pagamento: rest.forma_pagamento || "transferencia",
             dia_vencimento: rest.dia_vencimento || 10,
-            data_inicio: rest.data_inicio || new Date().toISOString().split("T")[0],
+            data_inicio: rest.data_inicio || convite.data_inicio_prevista || new Date().toISOString().split("T")[0],
             status: rest.status || "ativo",
+            lider_direto_id: rest.lider_direto_id || convite.lider_direto_id || "",
             documentos_upload: documentos_upload || [],
             upload_folder: convite.token,
           },
