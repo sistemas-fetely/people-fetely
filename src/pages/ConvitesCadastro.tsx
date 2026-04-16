@@ -53,11 +53,9 @@ const STATUS_CONFIG: Record<string, { label: string; badge: string; icon: typeof
   email_enviado: { label: "Enviado", badge: "bg-sky-100 text-sky-700 border-0", icon: Send },
   atrasado: { label: "Atrasado", badge: "bg-yellow-100 text-yellow-700 border-0", icon: AlertTriangle },
   preenchido: { label: "Preenchido", badge: "bg-emerald-100 text-emerald-700 border-0", icon: CheckCircle2 },
-  
   devolvido: { label: "Devolvido", badge: "bg-orange-100 text-orange-700 border-0", icon: Undo2 },
   aprovado: { label: "Aprovado", badge: "bg-blue-100 text-blue-700 border-0", icon: CheckCircle2 },
   cadastrado: { label: "Cadastrado", badge: "bg-muted text-muted-foreground border-0", icon: UserCheck },
-  expirado: { label: "Expirado", badge: "bg-red-100 text-red-700 border-0", icon: XCircle },
   cancelado: { label: "Cancelado", badge: "bg-muted text-muted-foreground border-0", icon: XCircle },
 };
 
@@ -101,12 +99,6 @@ interface LiderOption {
   tipo: "clt" | "pj";
 }
 
-const PRAZO_OPTIONS = [
-  { value: "3", label: "3 dias" },
-  { value: "7", label: "7 dias" },
-  { value: "15", label: "15 dias" },
-  { value: "30", label: "30 dias" },
-];
 
 const initialForm = {
   nome: "",
@@ -118,19 +110,16 @@ const initialForm = {
   lider_direto_id: "",
   salario_previsto: "",
   data_inicio_prevista: undefined as Date | undefined,
-  prazo_dias: "7",
   observacoes_colaborador: "",
 };
 
 // ─── Helper: compute display status ─────────────────────────────────
 function getDisplayStatus(c: Convite): string {
-  const now = new Date();
   if (c.status === "cancelado") return "cancelado";
   if (c.status === "cadastrado") return "cadastrado";
   if (c.status === "aprovado") return "aprovado";
   if (c.status === "devolvido") return "devolvido";
   if (c.status === "preenchido") return "preenchido";
-  if ((c.status === "pendente" || c.status === "email_enviado") && new Date(c.expira_em) <= now) return "expirado";
   if (c.status === "email_enviado" || c.status === "pendente") return "email_enviado";
   return c.status;
 }
@@ -138,7 +127,6 @@ function getDisplayStatus(c: Convite): string {
 // ─── Helper: row bg class based on status ────────────────────────────
 function getRowClass(displayStatus: string): string {
   if (displayStatus === "atrasado") return "bg-yellow-50/50 dark:bg-yellow-950/10";
-  if (displayStatus === "expirado") return "bg-red-50/50 dark:bg-red-950/10";
   return "";
 }
 
@@ -171,7 +159,7 @@ export default function ConvitesCadastro() {
         lider_direto_id: prefill.lider_direto_id || "",
         salario_previsto: prefill.salario_previsto || "",
         data_inicio_prevista: prefill.data_inicio_prevista ? new Date(prefill.data_inicio_prevista) : undefined,
-        prazo_dias: "7",
+        
         observacoes_colaborador: "",
       });
       setFormOpen(true);
@@ -261,7 +249,7 @@ export default function ConvitesCadastro() {
     }
   }, [form.tipo, form.grupo_acesso_id, gruposAcesso]);
 
-  const expirationDate = useMemo(() => addDays(new Date(), parseInt(form.prazo_dias)), [form.prazo_dias]);
+  
   const canSubmit = form.nome.trim() && form.email.trim() && form.tipo && form.cargo && form.grupo_acesso_id;
 
   const fetchConvites = async () => {
@@ -281,9 +269,6 @@ export default function ConvitesCadastro() {
     if (!canSubmit) { toast.error("Preencha todos os campos obrigatórios"); return; }
     setSaving(true);
     try {
-      const prazoDias = parseInt(form.prazo_dias);
-      const expiraEm = addDays(new Date(), prazoDias).toISOString();
-
       const insertData: any = {
         nome: form.nome.trim(),
         email: form.email.trim(),
@@ -294,9 +279,9 @@ export default function ConvitesCadastro() {
         grupo_acesso_id: form.grupo_acesso_id || null,
         lider_direto_id: form.lider_direto_id && form.lider_direto_id !== "none" ? form.lider_direto_id : null,
         data_inicio_prevista: form.data_inicio_prevista ? format(form.data_inicio_prevista, "yyyy-MM-dd") : null,
-        prazo_dias: prazoDias,
+        prazo_dias: 9999,
         observacoes_colaborador: form.observacoes_colaborador.trim() || null,
-        expira_em: expiraEm,
+        expira_em: '2099-12-31T23:59:59.000Z',
       };
 
       if (canSeeSensitive && form.salario_previsto) {
@@ -540,12 +525,6 @@ export default function ConvitesCadastro() {
     }).length;
   }, [convitesWithStatus]);
 
-  const expiradosCount = useMemo(() => {
-    const now = new Date();
-    return convitesWithStatus.filter(c =>
-      (c.status === "pendente" || c.status === "email_enviado") && new Date(c.expira_em) <= now
-    ).length;
-  }, [convitesWithStatus]);
 
   // Filtered list
   const filtered = useMemo(() => {
@@ -612,19 +591,12 @@ export default function ConvitesCadastro() {
               <p className="text-xl font-bold" style={{ color: phase.color }}>
                 {funnelCounts[phase.key] || 0}
               </p>
-              {phase.key === "email_enviado" && (atrasadosCount > 0 || expiradosCount > 0) && (
+              {phase.key === "email_enviado" && atrasadosCount > 0 && (
                 <div className="mt-1 flex flex-wrap items-center gap-1">
-                  {atrasadosCount > 0 && (
-                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 cursor-pointer hover:bg-yellow-200"
-                      onClick={(e) => { e.stopPropagation(); setFiltroAtrasados(!filtroAtrasados); setFunnelFilter("email_enviado"); }}>
-                      ⏰ {atrasadosCount}
-                    </span>
-                  )}
-                  {expiradosCount > 0 && (
-                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">
-                      ❌ {expiradosCount}
-                    </span>
-                  )}
+                  <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 cursor-pointer hover:bg-yellow-200"
+                    onClick={(e) => { e.stopPropagation(); setFiltroAtrasados(!filtroAtrasados); setFunnelFilter("email_enviado"); }}>
+                    ⏰ {atrasadosCount}
+                  </span>
                 </div>
               )}
             </div>
@@ -666,7 +638,7 @@ export default function ConvitesCadastro() {
                     <TableHead className="hidden lg:table-cell">Depto</TableHead>
                     {!isGestorDireto && <TableHead className="hidden xl:table-cell">Líder</TableHead>}
                     {!isGestorDireto && <TableHead className="hidden xl:table-cell">Grupo</TableHead>}
-                    {canSeeSensitive && <TableHead className="hidden xl:table-cell">Salário</TableHead>}
+                    
                     <TableHead>Status</TableHead>
                     <TableHead className="hidden md:table-cell">Início</TableHead>
                     <TableHead className="hidden md:table-cell">Tempo</TableHead>
@@ -695,19 +667,15 @@ export default function ConvitesCadastro() {
                         <TableCell className="text-sm hidden lg:table-cell">{c.departamento || "—"}</TableCell>
                         {!isGestorDireto && <TableCell className="text-sm hidden xl:table-cell">{c.lider_direto_id ? (liderMap.get(c.lider_direto_id) || "—") : "—"}</TableCell>}
                         {!isGestorDireto && <TableCell className="text-sm hidden xl:table-cell">{c.grupo_acesso_id ? (grupoMap.get(c.grupo_acesso_id) || "—") : "—"}</TableCell>}
-                        {canSeeSensitive && (
-                          <TableCell className="text-sm hidden xl:table-cell">
-                            {c.salario_previsto
-                              ? canSeeSalary(isCargoClevel(c.cargo))
-                                ? `R$ ${Number(c.salario_previsto).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`
-                                : "🔒"
-                              : "—"}
-                          </TableCell>
-                        )}
                         <TableCell>
                           <Badge variant="outline" className={statusCfg.badge}>
                             {statusCfg.label}
                           </Badge>
+                          {c.displayStatus === "email_enviado" && daysSince >= 3 && (
+                            <p className="text-[10px] mt-0.5 font-medium" style={{ color: daysSince >= 14 ? "#DC2626" : "#D97706" }}>
+                              {daysSince >= 14 ? "3 lembretes enviados" : daysSince >= 7 ? "2 lembretes enviados" : "1 lembrete enviado"} · {daysSince} dias
+                            </p>
+                          )}
                         </TableCell>
                         <TableCell className="text-sm hidden md:table-cell">
                           {c.data_inicio_prevista ? format(parseISO(c.data_inicio_prevista), "dd/MM/yy") : "—"}
@@ -756,12 +724,6 @@ export default function ConvitesCadastro() {
                               )}
                               {c.displayStatus === "cadastrado" && (
                                 <DropdownMenuItem onClick={() => navigate(`/convites-cadastro/${c.id}`)} className="gap-2"><Eye className="h-4 w-4" /> Ver Detalhes</DropdownMenuItem>
-                              )}
-                              {c.displayStatus === "expirado" && (
-                                <>
-                                  <DropdownMenuItem onClick={() => sendEmail(c)} className="gap-2"><Mail className="h-4 w-4" /> Reenviar Convite</DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setDeleteTarget(c)} className="gap-2 text-destructive"><Trash2 className="h-4 w-4" /> Excluir</DropdownMenuItem>
-                                </>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -1050,14 +1012,6 @@ export default function ConvitesCadastro() {
                         <Calendar mode="single" selected={form.data_inicio_prevista} onSelect={(d) => setForm({ ...form, data_inicio_prevista: d })} locale={ptBR} disabled={(date) => date < new Date()} />
                       </PopoverContent>
                     </Popover>
-                  </div>
-                  <div>
-                    <Label>Prazo do Convite</Label>
-                    <Select value={form.prazo_dias} onValueChange={(v) => setForm({ ...form, prazo_dias: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{PRAZO_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">Expira em: {format(expirationDate, "dd/MM/yyyy 'às' HH:mm")}</p>
                   </div>
                 </div>
                 <div>
