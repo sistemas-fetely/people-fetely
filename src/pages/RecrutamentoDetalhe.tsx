@@ -331,7 +331,7 @@ export default function RecrutamentoDetalhe() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("vagas")
-        .select("*")
+        .select("*, cargos(*)")
         .eq("id", id!)
         .single();
       if (error) throw error;
@@ -3555,6 +3555,11 @@ function ModuloOferta({
   const { user } = useAuth();
   const [salvando, setSalvando] = useState(false);
   const [enviando, setEnviando] = useState(false);
+
+  const faixaTipo = vaga?.tipo_contrato === "pj" ? "pj" : "clt";
+  const faixaMinEfetiva = vaga?.faixa_min ?? (vaga as any)?.cargos?.[`faixa_${faixaTipo}_f1_min`] ?? null;
+  const faixaMaxEfetiva = vaga?.faixa_max ?? (vaga as any)?.cargos?.[`faixa_${faixaTipo}_f1_max`] ?? null;
+  const faixaF5Max = (vaga as any)?.cargos?.[`faixa_${faixaTipo}_f5_max`] ?? null;
 
   const [form, setForm] = useState({
     tipo_contrato: "clt",
