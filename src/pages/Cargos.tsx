@@ -382,10 +382,27 @@ export default function Cargos() {
                       {cargo.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); navigate(`/cargos/${cargo.id}`); }}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => navigate(`/cargos/${cargo.id}`)} className="gap-2">
+                          <Pencil className="h-4 w-4" /> Editar
+                        </DropdownMenuItem>
+                        {(isSuperAdmin || isAdminRH) && (
+                          <DropdownMenuItem
+                            onClick={() => { setDeleteTarget(cargo); setDeleteError(null); }}
+                            className="gap-2 text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" /> Excluir
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))
