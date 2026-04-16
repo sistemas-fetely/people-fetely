@@ -206,7 +206,7 @@ export function CadastroColaboradorCLT() {
           const dataAdmissao = data.data_admissao ? new Date(data.data_admissao + "T12:00:00") : new Date();
 
           let gestorUserId: string | null = null;
-          const gestorId = data.lider_direto_id || (initialData as any)?.lider_direto_id;
+          const gestorId = (data as any).lider_direto_id || (initialData as any)?.lider_direto_id;
           if (gestorId) {
             const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", gestorId).single();
             gestorUserId = gp?.user_id || null;
