@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { publicUrl } from "@/lib/urls";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -146,6 +146,7 @@ function getRowClass(displayStatus: string): string {
 
 export default function ConvitesCadastro() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, hasAnyRole, roles } = useAuth();
   const [convites, setConvites] = useState<Convite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -156,6 +157,29 @@ export default function ConvitesCadastro() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(initialForm);
   const [liderSearch, setLiderSearch] = useState("");
+
+  // Prefill from Recrutamento
+  useEffect(() => {
+    const prefill = (location.state as any)?.prefill;
+    if (prefill) {
+      setForm({
+        nome: prefill.nome || "",
+        email: prefill.email || "",
+        tipo: prefill.tipo || "clt",
+        cargo: prefill.cargo || "",
+        departamento: prefill.departamento || "",
+        grupo_acesso_id: "",
+        lider_direto_id: prefill.lider_direto_id || "",
+        salario_previsto: prefill.salario_previsto || "",
+        data_inicio_prevista: prefill.data_inicio_prevista ? new Date(prefill.data_inicio_prevista) : undefined,
+        prazo_dias: "7",
+        observacoes_colaborador: "",
+      });
+      setFormOpen(true);
+      // Limpar o state para não reabrir ao navegar de volta
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Review drawer state
   const [reviewTarget, setReviewTarget] = useState<Convite | null>(null);
