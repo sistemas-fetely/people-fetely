@@ -3599,13 +3599,8 @@ function ModuloOferta({
 
   async function salvarOferta() {
     setSalvando(true);
-    if (form.salario_proposto && vaga?.faixa_min && Number(form.salario_proposto) < Number(vaga.faixa_min)) {
-      toast.error("Salário proposto está abaixo da faixa mínima da vaga.");
-      setSalvando(false);
-      return;
-    }
-    if (form.salario_proposto && vaga?.faixa_max && Number(form.salario_proposto) > Number(vaga.faixa_max)) {
-      toast.error("Salário proposto está acima da faixa máxima da vaga.");
+    if (form.salario_proposto && faixaF5Max && Number(form.salario_proposto) > Number(faixaF5Max)) {
+      toast.error("Salário proposto está acima do topo da faixa salarial do cargo (F5). Não é permitido.");
       setSalvando(false);
       return;
     }
@@ -3640,13 +3635,8 @@ function ModuloOferta({
       return;
     }
     setEnviando(true);
-    if (form.salario_proposto && vaga?.faixa_min && Number(form.salario_proposto) < Number(vaga.faixa_min)) {
-      toast.error("Salário proposto está abaixo da faixa mínima da vaga.");
-      setEnviando(false);
-      return;
-    }
-    if (form.salario_proposto && vaga?.faixa_max && Number(form.salario_proposto) > Number(vaga.faixa_max)) {
-      toast.error("Salário proposto está acima da faixa máxima da vaga.");
+    if (form.salario_proposto && faixaF5Max && Number(form.salario_proposto) > Number(faixaF5Max)) {
+      toast.error("Salário proposto está acima do topo da faixa salarial do cargo (F5). Não é permitido.");
       setEnviando(false);
       return;
     }
