@@ -380,6 +380,18 @@ export default function TIAtivoForm({ open, onOpenChange, ativoId, onSaved }: TI
                 <p className="text-xs text-destructive">Ao salvar, o status será alterado para "Descartado" automaticamente.</p>
               )}
             </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={form.status || "disponivel"} onValueChange={(v) => setForm({ ...form, status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="disponivel">Disponível</SelectItem>
+                  <SelectItem value="atribuido">Atribuído</SelectItem>
+                  <SelectItem value="manutencao">Em Manutenção</SelectItem>
+                  <SelectItem value="descartado">Descartado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="space-y-2">
               <Label>Data de compra</Label>
