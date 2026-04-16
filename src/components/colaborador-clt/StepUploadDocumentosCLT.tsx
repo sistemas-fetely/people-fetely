@@ -27,11 +27,13 @@ interface StepUploadDocumentosProps {
 }
 
 const CLT_DOCUMENTS: DocumentSlot[] = [
+  { key: "foto_rosto", label: "Foto Social", required: true },
   { key: "rg_cnh_frente", label: "RG ou CNH (Frente)" },
   { key: "rg_cnh_verso", label: "RG ou CNH (Verso)" },
 ];
 
 const PJ_DOCUMENTS: DocumentSlot[] = [
+  { key: "foto_rosto", label: "Foto Social", required: true },
   { key: "rg_cnh_frente", label: "RG ou CNH (Frente)" },
   { key: "rg_cnh_verso", label: "RG ou CNH (Verso)" },
   { key: "contrato_social", label: "Contrato Social da Empresa" },
@@ -134,7 +136,7 @@ export function StepUploadDocumentos({ tipo, folderKey, uploadedFiles, onFilesCh
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {uploaded && uploaded.url && !uploaded.name.toLowerCase().endsWith(".pdf") && (
+                    {uploaded && uploaded.url && doc.key === "foto_rosto" && (
                       <Button
                         type="button"
                         variant={currentFotoUrl === uploaded.url ? "secondary" : "outline"}
