@@ -62,7 +62,7 @@ export function CadastroColaboradorCLT() {
     defaultValues: {
       nacionalidade: "Brasileira",
       tipo_contrato: "indeterminado",
-      jornada_semanal: 44,
+      jornada_semanal: "44",
       tipo_conta: "corrente",
       departamento: "",
       dependentes: [],
