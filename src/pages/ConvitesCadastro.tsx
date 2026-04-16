@@ -540,6 +540,13 @@ export default function ConvitesCadastro() {
     }).length;
   }, [convitesWithStatus]);
 
+  const expiradosCount = useMemo(() => {
+    const now = new Date();
+    return convitesWithStatus.filter(c =>
+      (c.status === "pendente" || c.status === "email_enviado") && new Date(c.expira_em) <= now
+    ).length;
+  }, [convitesWithStatus]);
+
   // Filtered list
   const filtered = useMemo(() => {
     let result = convitesWithStatus.filter(c => {
@@ -605,14 +612,19 @@ export default function ConvitesCadastro() {
               <p className="text-xl font-bold" style={{ color: phase.color }}>
                 {funnelCounts[phase.key] || 0}
               </p>
-              {phase.key === "email_enviado" && atrasadosCount > 0 && (
-                <div className="mt-1 flex items-center gap-1">
-                  <span
-                    className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 cursor-pointer hover:bg-red-200"
-                    onClick={(e) => { e.stopPropagation(); setFiltroAtrasados(!filtroAtrasados); setFunnelFilter("email_enviado"); }}
-                  >
-                    ⏰ {atrasadosCount} atrasado{atrasadosCount > 1 ? "s" : ""}
-                  </span>
+              {phase.key === "email_enviado" && (atrasadosCount > 0 || expiradosCount > 0) && (
+                <div className="mt-1 flex flex-wrap items-center gap-1">
+                  {atrasadosCount > 0 && (
+                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-700 cursor-pointer hover:bg-yellow-200"
+                      onClick={(e) => { e.stopPropagation(); setFiltroAtrasados(!filtroAtrasados); setFunnelFilter("email_enviado"); }}>
+                      ⏰ {atrasadosCount}
+                    </span>
+                  )}
+                  {expiradosCount > 0 && (
+                    <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">
+                      ❌ {expiradosCount}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
