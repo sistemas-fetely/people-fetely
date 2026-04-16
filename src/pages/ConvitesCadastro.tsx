@@ -840,7 +840,7 @@ export default function ConvitesCadastro() {
                   </Button>
                   <Button className="flex-1 gap-2" onClick={() => handleApprove(reviewTarget)} disabled={actionLoading}>
                     {actionLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    <CheckCircle2 className="h-4 w-4" /> Aprovar e Ativar
+                    <CheckCircle2 className="h-4 w-4" /> Aprovar Cadastro
                   </Button>
                 </div>
               )}
