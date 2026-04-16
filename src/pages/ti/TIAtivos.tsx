@@ -46,10 +46,10 @@ const condicaoVariant: Record<string, { label: string; className: string }> = {
 };
 
 const statusVariant: Record<string, { label: string; className: string }> = {
-  disponivel: { label: "Disponível", className: "bg-green-100 text-green-800 hover:bg-green-100" },
-  atribuido: { label: "Atribuído", className: "bg-blue-100 text-blue-800 hover:bg-blue-100" },
-  manutencao: { label: "Manutenção", className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" },
-  descartado: { label: "Descartado", className: "bg-gray-100 text-gray-700 hover:bg-gray-100" },
+  disponivel: { label: "Disponível", className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" },
+  atribuido: { label: "Atribuído", className: "bg-blue-100 text-blue-700 hover:bg-blue-100" },
+  manutencao: { label: "Em Manutenção", className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100" },
+  descartado: { label: "Descartado", className: "bg-gray-100 text-gray-500 hover:bg-gray-100" },
 };
 
 export default function TIAtivos() {
