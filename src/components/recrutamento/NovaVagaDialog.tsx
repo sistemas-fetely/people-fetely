@@ -58,6 +58,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
   const [numVagas, setNumVagas] = useState(1);
   const [errosDuplicata, setErrosDuplicata] = useState<string[]>([]);
   const [verificandoDuplicata, setVerificandoDuplicata] = useState(false);
+  const [cargoId, setCargoId] = useState<string | null>(null);
 
   // Step 2
   const [missao, setMissao] = useState("");
@@ -158,6 +159,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
         ferramentas_ids: ferramentasSelecionadas.length > 0 ? ferramentasSelecionadas : null,
         gestor_id: gestorId || null,
         criado_por: user?.id || null,
+        cargo_id: cargoId || null,
         num_vagas: numVagas,
         vagas_preenchidas: 0,
       };
@@ -184,6 +186,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
     setSkillsObrigatorias([]); setSkillsDesejadas([]);
     setFerramentasSelecionadas([]); setNovaFerramenta("");
     setFaixaMin(""); setFaixaMax("");
+    setCargoId(null);
     setNovaSkillObrig(""); setNovaSkillDesej("");
     setNumVagas(1);
     setErrosDuplicata([]);
@@ -248,6 +251,7 @@ export function NovaVagaDialog({ open, onOpenChange }: Props) {
               <Select value={titulo} onValueChange={(v) => {
                 setTitulo(v); setErrosDuplicata([]);
                 const cargoMatch = cargosData.find((c) => c.nome === v);
+                if (cargoMatch) setCargoId(cargoMatch.id);
                 if (cargoMatch) {
                   const autoNivel = cargoMatch.nivel;
                   setNivel(autoNivel);
