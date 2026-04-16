@@ -159,7 +159,7 @@ export default function ConvitesCadastro() {
         lider_direto_id: prefill.lider_direto_id || "",
         salario_previsto: prefill.salario_previsto || "",
         data_inicio_prevista: prefill.data_inicio_prevista ? new Date(prefill.data_inicio_prevista) : undefined,
-        prazo_dias: "7",
+        
         observacoes_colaborador: "",
       });
       setFormOpen(true);
@@ -249,7 +249,7 @@ export default function ConvitesCadastro() {
     }
   }, [form.tipo, form.grupo_acesso_id, gruposAcesso]);
 
-  const expirationDate = useMemo(() => addDays(new Date(), parseInt(form.prazo_dias)), [form.prazo_dias]);
+  
   const canSubmit = form.nome.trim() && form.email.trim() && form.tipo && form.cargo && form.grupo_acesso_id;
 
   const fetchConvites = async () => {
@@ -269,9 +269,6 @@ export default function ConvitesCadastro() {
     if (!canSubmit) { toast.error("Preencha todos os campos obrigatórios"); return; }
     setSaving(true);
     try {
-      const prazoDias = parseInt(form.prazo_dias);
-      const expiraEm = addDays(new Date(), prazoDias).toISOString();
-
       const insertData: any = {
         nome: form.nome.trim(),
         email: form.email.trim(),
@@ -282,9 +279,9 @@ export default function ConvitesCadastro() {
         grupo_acesso_id: form.grupo_acesso_id || null,
         lider_direto_id: form.lider_direto_id && form.lider_direto_id !== "none" ? form.lider_direto_id : null,
         data_inicio_prevista: form.data_inicio_prevista ? format(form.data_inicio_prevista, "yyyy-MM-dd") : null,
-        prazo_dias: prazoDias,
+        prazo_dias: 9999,
         observacoes_colaborador: form.observacoes_colaborador.trim() || null,
-        expira_em: expiraEm,
+        expira_em: '2099-12-31T23:59:59.000Z',
       };
 
       if (canSeeSensitive && form.salario_previsto) {
@@ -528,12 +525,6 @@ export default function ConvitesCadastro() {
     }).length;
   }, [convitesWithStatus]);
 
-  const expiradosCount = useMemo(() => {
-    const now = new Date();
-    return convitesWithStatus.filter(c =>
-      (c.status === "pendente" || c.status === "email_enviado") && new Date(c.expira_em) <= now
-    ).length;
-  }, [convitesWithStatus]);
 
   // Filtered list
   const filtered = useMemo(() => {
@@ -1038,14 +1029,6 @@ export default function ConvitesCadastro() {
                         <Calendar mode="single" selected={form.data_inicio_prevista} onSelect={(d) => setForm({ ...form, data_inicio_prevista: d })} locale={ptBR} disabled={(date) => date < new Date()} />
                       </PopoverContent>
                     </Popover>
-                  </div>
-                  <div>
-                    <Label>Prazo do Convite</Label>
-                    <Select value={form.prazo_dias} onValueChange={(v) => setForm({ ...form, prazo_dias: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{PRAZO_OPTIONS.map((o) => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">Expira em: {format(expirationDate, "dd/MM/yyyy 'às' HH:mm")}</p>
                   </div>
                 </div>
                 <div>
