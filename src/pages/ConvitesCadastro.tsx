@@ -187,6 +187,7 @@ export default function ConvitesCadastro() {
   const { data: tiposContrato } = useParametros("tipo_contrato");
   const { data: jornadas } = useParametros("jornada");
   const { data: locaisTrabalho } = useParametros("local_trabalho");
+  const { data: horariosTrabalho } = useParametros("horario_trabalho");
   const { data: cargosRaw } = useCargos();
   const cargos = (cargosRaw || []).map((c) => ({ id: c.id, valor: c.nome, label: c.nome, is_clevel: c.is_clevel }));
   const { isCargoClevel } = useCLevelCargos();
@@ -1032,7 +1033,23 @@ export default function ConvitesCadastro() {
                     </div>
                     <div>
                       <Label>Horário de Trabalho</Label>
-                      <Input value={form.horario_trabalho} onChange={(e) => setForm({ ...form, horario_trabalho: e.target.value })} placeholder="08:00 - 17:00" />
+                      {horariosTrabalho && horariosTrabalho.length > 0 ? (
+                        <Select value={form.horario_trabalho} onValueChange={(v) => setForm({ ...form, horario_trabalho: v })}>
+                          <SelectTrigger><SelectValue placeholder="Selecione o horário" /></SelectTrigger>
+                          <SelectContent>
+                            {horariosTrabalho.map((h) => (
+                              <SelectItem key={h.id} value={h.valor}>
+                                <div>
+                                  <span>{h.label}</span>
+                                  {h.descricao && <span className="text-muted-foreground ml-2 text-xs">— {h.descricao}</span>}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input value={form.horario_trabalho} onChange={(e) => setForm({ ...form, horario_trabalho: e.target.value })} placeholder="08:00 - 17:00" />
+                      )}
                     </div>
                   </div>
                 )}
