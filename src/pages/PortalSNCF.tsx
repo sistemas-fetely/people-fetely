@@ -3,10 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import * as LucideIcons from "lucide-react";
-import { LogOut, LayoutGrid, Lock, ExternalLink, ClipboardList } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LayoutGrid, Lock, ExternalLink, ClipboardList } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import logoFetely from "@/assets/logo_fetely.jpg";
 import { cn } from "@/lib/utils";
 
 interface Sistema {
@@ -38,7 +36,7 @@ function getIcon(name: string) {
 
 export default function PortalSNCF() {
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user } = useAuth();
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [userSystems, setUserSystems] = useState<UserSystem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,17 +65,15 @@ export default function PortalSNCF() {
   const hasAccess = (sistemaId: string) =>
     userSystems.some((us) => us.sistema_id === sistemaId && us.ativo);
 
-  const initials = profile?.full_name
-    ? profile.full_name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-    : user?.email?.slice(0, 2).toUpperCase() || "??";
-
-  const displayName = profile?.full_name || user?.email || "Usuário";
-
   const handleEnter = (sistema: Sistema) => {
     if (!hasAccess(sistema.id)) return;
     if (sistema.rota_base.startsWith("http")) {
       window.open(sistema.rota_base, "_blank");
     } else {
+      // Rastreia último sistema visitado para o botão "Voltar" do SNCFSidebar
+      if (sistema.slug === "people" || sistema.slug === "ti") {
+        sessionStorage.setItem("sncf_last_system", sistema.slug);
+      }
       navigate(sistema.rota_base);
     }
   };
@@ -85,45 +81,13 @@ export default function PortalSNCF() {
   const isExternal = (sistema: Sistema) => sistema.rota_base.startsWith("http");
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logoFetely} alt="Fetély" className="h-10 w-10 rounded-xl object-contain" />
-            <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight" style={{ color: "#1A4A3A" }}>
-                Fetély.
-              </span>
-              <span className="text-xs text-muted-foreground">Sistema Nervoso Central</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2">
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-primary-foreground shadow-sm"
-                style={{ backgroundColor: "#1A4A3A" }}
-              >
-                {initials}
-              </div>
-              <span className="text-sm font-medium">{displayName}</span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={signOut} className="gap-2">
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Bem-vindo ao SNCF</h1>
-          <p className="text-muted-foreground">
-            Selecione um sistema para entrar. Você só pode acessar os sistemas em que tem permissão.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Bem-vindo ao SNCF</h1>
+        <p className="text-muted-foreground">
+          Selecione um sistema para entrar. Você só pode acessar os sistemas em que tem permissão.
+        </p>
+      </div>
 
         {/* Centro de Trabalho — destaque */}
         <button
