@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { NovaTarefaDialog } from "./NovaTarefaDialog";
+import InsightsIA from "./InsightsIA";
 import { toast } from "sonner";
 
 type AlertaPrioridade = "alta" | "media" | "baixa";
