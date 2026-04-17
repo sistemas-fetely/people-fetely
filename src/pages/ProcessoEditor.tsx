@@ -40,6 +40,7 @@ interface TarefaBase {
   prioridade: string | null;
   bloqueante: boolean | null;
   motivo_bloqueio?: string | null;
+  somente_clt?: boolean | null;
 }
 
 interface Personalizacao {
@@ -222,7 +223,7 @@ export default function ProcessoEditor() {
       toast.error("Preencha o título");
       return;
     }
-    const payload = {
+    const payload: any = {
       template_id: templateBaseId,
       ordem: editingTarefa.ordem ?? tarefasPadrao.length + 1,
       titulo: editingTarefa.titulo,
@@ -233,6 +234,8 @@ export default function ProcessoEditor() {
       prazo_dias: editingTarefa.prazo_dias ?? 0,
       prioridade: editingTarefa.prioridade ?? "normal",
       bloqueante: editingTarefa.bloqueante ?? false,
+      motivo_bloqueio: editingTarefa.motivo_bloqueio ?? null,
+      somente_clt: editingTarefa.somente_clt ?? false,
     };
     const { error } = editingTarefa.id
       ? await supabase.from("sncf_templates_tarefas").update(payload).eq("id", editingTarefa.id)
