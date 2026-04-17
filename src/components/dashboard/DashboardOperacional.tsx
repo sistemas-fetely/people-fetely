@@ -170,6 +170,7 @@ export function DashboardOperacional() {
         const [
           convitesRes,
           tarefasRes,
+          tarefasManuaisRes,
           vagasRes,
           candidatosRes,
           contratosVencRes,
@@ -185,6 +186,11 @@ export function DashboardOperacional() {
             .select("id, titulo, status, prazo_data, processo_id")
             .eq("tipo_processo", "onboarding")
             .in("status", ["pendente", "atrasada"]),
+          supabase
+            .from("sncf_tarefas")
+            .select("id, titulo, descricao, status, prazo_data, prioridade, area_destino, link_acao, colaborador_nome, created_at")
+            .eq("tipo_processo", "manual")
+            .in("status", ["pendente", "em_andamento", "atrasada"]),
           supabase
             .from("vagas" as any)
             .select("id, titulo, status, created_at")
@@ -218,6 +224,7 @@ export function DashboardOperacional() {
 
         const convites = convitesRes.data || [];
         const tarefasOnb = tarefasRes.data || [];
+        const tarefasManuais = (tarefasManuaisRes.data || []) as any[];
         const vagas = (vagasRes.data || []) as any[];
         const candidatos = candidatosRes.data || [];
         const contratosVenc = contratosVencRes.data || [];
@@ -227,6 +234,28 @@ export function DashboardOperacional() {
 
         // ─── Construir tarefas priorizadas ───
         const novasTarefas: TarefaItem[] = [];
+
+        // Tarefas manuais
+        const prioMap: Record<string, Prioridade> = { urgente: "urgente", normal: "normal", baixa: "normal" };
+        tarefasManuais.forEach((t) => {
+          const prio = prioMap[t.prioridade as string] || "normal";
+          const atrasada = t.prazo_data && t.prazo_data < hojeStr;
+          const ordem = t.prazo_data
+            ? Math.floor((Date.now() - new Date(t.prazo_data).getTime()) / 86400000)
+            : diasDesde(t.created_at);
+          novasTarefas.push({
+            id: `manual-${t.id}`,
+            sncfId: t.id,
+            manual: true,
+            prioridade: atrasada ? "urgente" : prio,
+            icone: Pin,
+            titulo: t.titulo,
+            detalhe: [t.area_destino, t.colaborador_nome, t.descricao].filter(Boolean).join(" · ") || "Tarefa manual",
+            acao: t.link_acao ? "Abrir" : "Concluir",
+            rota: t.link_acao || "",
+            ordem,
+          });
+        });
 
         // Convites preenchidos aguardando aprovação
         const aguardandoAprov = convites.filter((c) => c.status === "preenchido");
