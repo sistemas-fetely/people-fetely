@@ -1,6 +1,7 @@
 import {
-  Settings2, ClipboardList, UsersRound, UserCog, LayoutTemplate, ChevronDown,
+  Settings2, ClipboardList, UsersRound, UserCog, LayoutTemplate, ChevronDown, Sparkles,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -38,6 +39,18 @@ export function SNCFQuickAccess() {
       </PopoverTrigger>
       <PopoverContent className="w-60 p-1" side="right" align="start">
         <div className="space-y-0.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 text-sm"
+            onClick={() => navigate("/fala-fetely")}
+          >
+            <Sparkles className="h-4 w-4" style={{ color: "#E91E63" }} />
+            <span className="flex-1 text-left">Fala Fetely</span>
+            <Badge className="text-[9px] px-1.5 py-0 h-4 border-0" style={{ backgroundColor: "#E91E63", color: "white" }}>
+              Novo
+            </Badge>
+          </Button>
           <Button
             variant="ghost"
             size="sm"

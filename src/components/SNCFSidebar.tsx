@@ -1,6 +1,6 @@
 import {
   LayoutGrid, ClipboardList, UsersRound, UserCog, Workflow,
-  LogOut, ArrowLeft, Network,
+  LogOut, ArrowLeft, Network, Sparkles,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
@@ -22,12 +22,14 @@ interface MenuItem {
   icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   end?: boolean;
   requireRole?: "gestor_or_rh" | "admin_rh_or_super";
+  badge?: string;
 }
 
 const principalItems: MenuItem[] = [
   { title: "Portal", url: "/sncf", icon: LayoutGrid, end: true },
   { title: "Minhas Tarefas", url: "/tarefas", icon: ClipboardList, end: true },
   { title: "Tarefas do Time", url: "/tarefas/time", icon: UsersRound, requireRole: "gestor_or_rh" },
+  { title: "Fala Fetely", url: "/fala-fetely", icon: Sparkles, end: true, badge: "Novo" },
 ];
 
 const adminItems: MenuItem[] = [
@@ -97,7 +99,16 @@ export function SNCFSidebar() {
                       style={active ? { borderLeftColor: SNCF_COLOR, color: SNCF_COLOR } : undefined}
                     >
                       <item.icon className="h-[18px] w-[18px] shrink-0" style={active ? { color: SNCF_COLOR } : undefined} />
-                      {!collapsed && <span>{item.title}</span>}
+                      {!collapsed && (
+                        <span className="flex-1 flex items-center justify-between gap-2">
+                          <span>{item.title}</span>
+                          {item.badge && (
+                            <Badge className="text-[9px] px-1.5 py-0 h-4 border-0" style={{ backgroundColor: "#E91E63", color: "white" }}>
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
