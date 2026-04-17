@@ -158,7 +158,7 @@ export default function Pessoas() {
         </DropdownMenu>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-4">
+      <div className={`grid gap-4 grid-cols-1 ${totalSemAcesso > 0 ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
         <Card className="card-shadow">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -203,6 +203,19 @@ export default function Pessoas() {
             </div>
           </CardContent>
         </Card>
+        {totalSemAcesso > 0 && (
+          <Card className="card-shadow border-warning/30">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10 text-warning">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-warning">{totalSemAcesso}</p>
+                <p className="text-xs text-muted-foreground">Sem acesso</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       <Card className="card-shadow">
