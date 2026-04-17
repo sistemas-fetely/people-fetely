@@ -18,7 +18,7 @@ const SNCF_COLOR = "#1A4A3A";
 interface MenuItem {
   title: string;
   url: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   end?: boolean;
   requireRole?: "gestor_or_rh" | "admin_rh_or_super";
 }
