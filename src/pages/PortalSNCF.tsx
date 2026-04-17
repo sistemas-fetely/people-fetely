@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import * as LucideIcons from "lucide-react";
-import { LogOut, LayoutGrid, Lock, ExternalLink } from "lucide-react";
+import { LogOut, LayoutGrid, Lock, ExternalLink, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import logoFetely from "@/assets/logo_fetely.jpg";
@@ -42,16 +42,23 @@ export default function PortalSNCF() {
   const [sistemas, setSistemas] = useState<Sistema[]>([]);
   const [userSystems, setUserSystems] = useState<UserSystem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalPendentes, setTotalPendentes] = useState(0);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [sistemasRes, userSystemsRes] = await Promise.all([
+      const [sistemasRes, userSystemsRes, tarefasRes] = await Promise.all([
         supabase.from("sncf_sistemas").select("*").eq("ativo", true).order("ordem"),
         supabase.from("sncf_user_systems").select("sistema_id, ativo").eq("user_id", user.id),
+        supabase
+          .from("sncf_tarefas")
+          .select("id", { count: "exact", head: true })
+          .eq("responsavel_user_id", user.id)
+          .in("status", ["pendente", "atrasada", "em_andamento"]),
       ]);
       if (sistemasRes.data) setSistemas(sistemasRes.data as Sistema[]);
       if (userSystemsRes.data) setUserSystems(userSystemsRes.data as UserSystem[]);
+      setTotalPendentes(tarefasRes.count ?? 0);
       setLoading(false);
     };
     void load();
