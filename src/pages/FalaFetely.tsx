@@ -72,6 +72,7 @@ export default function FalaFetely() {
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [input, setInput] = useState("");
   const [pensando, setPensando] = useState(false);
+  const [estadoPensando, setEstadoPensando] = useState(FRASES_PENSANDO[0]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fraseMotivacional = useMemo(
