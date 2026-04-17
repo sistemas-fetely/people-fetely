@@ -2,8 +2,10 @@ import { useMemo } from "react";
 import {
   Users, Briefcase, Calendar, AlertTriangle, FileText, CreditCard, Gift,
   TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, Minus,
-  Building2,
+  Building2, ClipboardList, BarChart3,
 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { DashboardOperacional } from "@/components/dashboard/DashboardOperacional";
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
