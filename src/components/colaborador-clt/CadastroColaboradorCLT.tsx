@@ -16,32 +16,30 @@ import { StepDocumentos } from "./StepDocumentos";
 import { StepDadosProfissionais } from "./StepDadosProfissionais";
 import { StepDadosBancarios } from "./StepDadosBancarios";
 import { StepDependentes } from "./StepDependentes";
-import { StepDadosEmpresa } from "./StepDadosEmpresa";
 import {
   dadosPessoaisSchema,
   documentosSchema,
   dadosProfissionaisSchema,
   dadosBancariosSchema,
-  dadosEmpresaSchema,
   dependentesSchema,
   type DadosPessoaisForm,
   type DocumentosForm,
   type DadosProfissionaisForm,
   type DadosBancariosForm,
-  type DadosEmpresaForm,
   type DependentesForm,
 } from "@/lib/validations/colaborador-clt";
+
+const TOTAL_STEPS = 6;
 
 const stepSchemas = [
   dadosPessoaisSchema,
   documentosSchema,
   dadosProfissionaisSchema,
   dadosBancariosSchema,
-  dadosEmpresaSchema,
   dependentesSchema,
 ];
 
-type AllFormData = DadosPessoaisForm & DocumentosForm & DadosProfissionaisForm & DadosBancariosForm & DadosEmpresaForm & DependentesForm;
+type AllFormData = DadosPessoaisForm & DocumentosForm & DadosProfissionaisForm & DadosBancariosForm & DependentesForm;
 
 export function CadastroColaboradorCLT() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -67,8 +65,6 @@ export function CadastroColaboradorCLT() {
       tipo_conta: "corrente",
       departamento: "",
       dependentes: [],
-      acessos_sistemas: [],
-      equipamentos: [],
       ...(initialData || {}),
     },
   });
@@ -94,7 +90,7 @@ export function CadastroColaboradorCLT() {
   const goNext = async () => {
     const valid = await validateCurrentStep();
     if (!valid) return;
-    setCurrentStep((s) => Math.min(s + 1, 7));
+    setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS));
   };
 
   const goBack = () => setCurrentStep((s) => Math.max(s - 1, 1));
@@ -102,7 +98,7 @@ export function CadastroColaboradorCLT() {
   const onSubmit = async (data: AllFormData) => {
     setSaving(true);
     try {
-      const { dependentes, acessos_sistemas, equipamentos, salario_base, jornada_semanal, documentos_upload, upload_folder, celular_corporativo, ...colaboradorData } = data as any;
+      const { dependentes, salario_base, jornada_semanal, documentos_upload, upload_folder, celular_corporativo, ...colaboradorData } = data as any;
 
       const cleaned = Object.fromEntries(
         Object.entries(colaboradorData).map(([k, v]) => [k, v === "" ? null : v])
@@ -120,41 +116,6 @@ export function CadastroColaboradorCLT() {
         .single();
 
       if (error) throw error;
-
-      // Insert system access records
-      if (acessos_sistemas && acessos_sistemas.length > 0) {
-        const acessosToInsert = acessos_sistemas
-          .filter((a) => a.tem_acesso)
-          .map((a) => ({
-            colaborador_id: inserted.id,
-            sistema: a.sistema,
-            tem_acesso: true,
-            usuario: a.usuario || null,
-            observacoes: a.observacoes || null,
-            data_concessao: new Date().toISOString().split("T")[0],
-          }));
-        if (acessosToInsert.length > 0) {
-          const { error: aErr } = await supabase.from("colaborador_acessos_sistemas").insert(acessosToInsert);
-          if (aErr) throw aErr;
-        }
-      }
-
-      // Insert equipment records
-      if (equipamentos && equipamentos.length > 0) {
-        const equipToInsert = equipamentos.map((e) => ({
-          colaborador_id: inserted.id,
-          tipo: e.tipo,
-          marca: e.marca || null,
-          modelo: e.modelo || null,
-          numero_patrimonio: e.numero_patrimonio || null,
-          numero_serie: e.numero_serie || null,
-          data_entrega: e.data_entrega || null,
-          estado: e.estado || "novo",
-          observacoes: e.observacoes || null,
-        }));
-        const { error: eErr } = await supabase.from("colaborador_equipamentos").insert(equipToInsert);
-        if (eErr) throw eErr;
-      }
 
       // Insert dependents
       if (dependentes && dependentes.length > 0) {
@@ -273,9 +234,8 @@ export function CadastroColaboradorCLT() {
             {currentStep === 2 && <StepDocumentos />}
             {currentStep === 3 && <StepDadosProfissionais />}
             {currentStep === 4 && <StepDadosBancarios />}
-            {currentStep === 5 && <StepDadosEmpresa />}
-            {currentStep === 6 && <StepDependentes />}
-            {currentStep === 7 && (
+            {currentStep === 5 && <StepDependentes />}
+            {currentStep === 6 && (
               <StepUploadDocumentos
                 tipo="clt"
                 folderKey={uploadFolderRef.current}
@@ -289,7 +249,7 @@ export function CadastroColaboradorCLT() {
               <ArrowLeft className="h-4 w-4" />
               {currentStep === 1 ? "Cancelar" : "Voltar"}
             </Button>
-            {currentStep < 7 ? (
+            {currentStep < TOTAL_STEPS ? (
               <Button type="button" onClick={goNext} className="gap-2">
                 Próximo
                 <ArrowRight className="h-4 w-4" />

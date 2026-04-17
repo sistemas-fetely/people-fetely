@@ -14,24 +14,23 @@ import { StepDadosPessoaisPJ } from "./StepDadosPessoaisPJ";
 import { StepDocumentosPJ } from "./StepDocumentosPJ";
 import { StepDadosProfissionaisPJ } from "./StepDadosProfissionaisPJ";
 import { StepDadosBancarios } from "@/components/colaborador-clt/StepDadosBancarios";
-import { StepDadosEmpresa } from "@/components/colaborador-clt/StepDadosEmpresa";
 import { StepDependentes } from "@/components/colaborador-clt/StepDependentes";
 import {
   dadosPessoaisPJSchema,
   documentosPJSchema,
   dadosProfissionaisPJSchema,
   dadosBancariosPJSchema,
-  dadosEmpresaPJSchema,
   dependentesPJSchema,
   type AllPJFormData,
 } from "@/lib/validations/contrato-pj";
+
+const TOTAL_STEPS = 6;
 
 const stepSchemas = [
   dadosPessoaisPJSchema,
   documentosPJSchema,
   dadosProfissionaisPJSchema,
   dadosBancariosPJSchema,
-  dadosEmpresaPJSchema,
   dependentesPJSchema,
 ];
 
@@ -62,8 +61,6 @@ export function CadastroContratoPJ() {
       nacionalidade: "Brasileira",
       departamento: "",
       dependentes: [],
-      acessos_sistemas: [],
-      equipamentos: [],
       ...(initialData || {}),
     },
   });
@@ -89,7 +86,7 @@ export function CadastroContratoPJ() {
   const goNext = async () => {
     const valid = await validateCurrentStep();
     if (!valid) return;
-    setCurrentStep((s) => Math.min(s + 1, 7));
+    setCurrentStep((s) => Math.min(s + 1, TOTAL_STEPS));
   };
 
   const goBack = () => setCurrentStep((s) => Math.max(s - 1, 1));
@@ -99,8 +96,6 @@ export function CadastroContratoPJ() {
     try {
       const {
         dependentes,
-        acessos_sistemas,
-        equipamentos,
         email_corporativo,
         ramal,
         data_integracao,
@@ -113,7 +108,7 @@ export function CadastroContratoPJ() {
         certificado_reservista,
         valor_mensal,
         ...contratoData
-      } = data;
+      } = data as any;
 
       const { data: inserted, error } = await supabase
         .from("contratos_pj")
@@ -172,41 +167,6 @@ export function CadastroContratoPJ() {
 
       if (error) throw error;
 
-      // Insert system access records
-      if (acessos_sistemas && acessos_sistemas.length > 0) {
-        const acessosToInsert = acessos_sistemas
-          .filter((a) => a.tem_acesso)
-          .map((a) => ({
-            contrato_pj_id: inserted.id,
-            sistema: a.sistema,
-            tem_acesso: true,
-            usuario: a.usuario || null,
-            observacoes: a.observacoes || null,
-            data_concessao: new Date().toISOString().split("T")[0],
-          }));
-        if (acessosToInsert.length > 0) {
-          const { error: aErr } = await supabase.from("contrato_pj_acessos_sistemas").insert(acessosToInsert);
-          if (aErr) throw aErr;
-        }
-      }
-
-      // Insert equipment records
-      if (equipamentos && equipamentos.length > 0) {
-        const equipToInsert = equipamentos.map((e) => ({
-          contrato_pj_id: inserted.id,
-          tipo: e.tipo,
-          marca: e.marca || null,
-          modelo: e.modelo || null,
-          numero_patrimonio: e.numero_patrimonio || null,
-          numero_serie: e.numero_serie || null,
-          data_entrega: e.data_entrega || null,
-          estado: e.estado || "novo",
-          observacoes: e.observacoes || null,
-        }));
-        const { error: eErr } = await supabase.from("contrato_pj_equipamentos").insert(equipToInsert);
-        if (eErr) throw eErr;
-      }
-
       // Update convite status if created from invitation
       if (conviteId) {
         await supabase
@@ -251,9 +211,8 @@ export function CadastroContratoPJ() {
             {currentStep === 2 && <StepDocumentosPJ />}
             {currentStep === 3 && <StepDadosProfissionaisPJ />}
             {currentStep === 4 && <StepDadosBancarios />}
-            {currentStep === 5 && <StepDadosEmpresa />}
-            {currentStep === 6 && <StepDependentes />}
-            {currentStep === 7 && (
+            {currentStep === 5 && <StepDependentes />}
+            {currentStep === 6 && (
               <StepUploadDocumentos
                 tipo="pj"
                 folderKey={uploadFolderRef.current}
@@ -267,7 +226,7 @@ export function CadastroContratoPJ() {
               <ArrowLeft className="h-4 w-4" />
               {currentStep === 1 ? "Cancelar" : "Voltar"}
             </Button>
-            {currentStep < 7 ? (
+            {currentStep < TOTAL_STEPS ? (
               <Button type="button" onClick={goNext} className="gap-2">
                 Próximo
                 <ArrowRight className="h-4 w-4" />
