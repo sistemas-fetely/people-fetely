@@ -2,10 +2,12 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import {
   ClipboardList, CheckCircle2, AlertTriangle, Clock, Eye, Inbox, Plus,
   Play, Pencil, X, MoreVertical, Users, ExternalLink, Filter,
+  Flame, CheckSquare, UserPlus, Mail,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,11 +54,26 @@ interface Tarefa {
 type StatusFilter = "ativas" | "pendente" | "atrasada" | "em_andamento" | "concluida" | "todas";
 type AgrupamentoTipo = "prioridade" | "area" | "prazo" | "processo" | "nenhum";
 
+interface PrioridadeDia {
+  id: string;
+  titulo: string;
+  subtitulo: string;
+  icone: typeof CheckSquare;
+  prioridade: "urgente" | "atencao";
+  botaoTexto: string;
+  link: string;
+}
+
 const PRIORIDADE_ORDER: Record<string, number> = { urgente: 0, alta: 1, normal: 2, baixa: 3 };
+
+function diasDesdeISO(dateStr: string): number {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
 
 export default function MinhasTarefas() {
   const navigate = useNavigate();
   const { user, roles } = useAuth();
+  const { userRoles, isSuperAdmin, isAdminRH } = usePermissions();
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"minhas" | "acompanhamento">("minhas");
@@ -64,6 +81,7 @@ export default function MinhasTarefas() {
   const [tipoFilter, setTipoFilter] = useState<string>("todos");
   const [sistemaFilter, setSistemaFilter] = useState<string>("todos");
   const [agrupamento, setAgrupamento] = useState<AgrupamentoTipo>("prioridade");
+  const [prioridadesDia, setPrioridadesDia] = useState<PrioridadeDia[]>([]);
 
   // Conclusão
   const [concluirTarefa, setConcluirTarefa] = useState<Tarefa | null>(null);
@@ -73,6 +91,12 @@ export default function MinhasTarefas() {
 
   // Cancelar
   const [cancelarTarefa, setCancelarTarefa] = useState<Tarefa | null>(null);
+
+  // Quem vê a seção "Prioridades do Dia"
+  const isGestorRH = (userRoles as string[]).includes("gestor_rh");
+  const isGestorDireto = (userRoles as string[]).includes("gestor_direto");
+  const isColaboradorPuro = !isSuperAdmin && !isAdminRH && !isGestorRH && !isGestorDireto;
+  const showPrioridadesRH = isSuperAdmin || isAdminRH || isGestorRH;
 
   const loadTarefas = useCallback(async () => {
     if (!user) return;
@@ -111,6 +135,136 @@ export default function MinhasTarefas() {
   useEffect(() => {
     void loadTarefas();
   }, [loadTarefas]);
+
+  // Carregar "Prioridades do Dia" — ações operacionais (não-tarefa)
+  const loadPrioridadesDia = useCallback(async () => {
+    if (!user) return;
+    if (isColaboradorPuro) {
+      setPrioridadesDia([]);
+      return;
+    }
+
+    const lista: PrioridadeDia[] = [];
+    const hojeStr = new Date().toISOString().slice(0, 10);
+
+    // Tarefas legais bloqueantes atrasadas — todos os perfis (gestor direto, RH, super)
+    const { data: tarefasLegais } = await supabase
+      .from("sncf_tarefas")
+      .select("id, titulo, prazo_data, processo_id, tipo_processo, colaborador_nome")
+      .eq("bloqueante", true)
+      .in("status", ["pendente", "atrasada"])
+      .lt("prazo_data", hojeStr)
+      .or(`responsavel_user_id.eq.${user.id},accountable_user_id.eq.${user.id}`);
+
+    if (tarefasLegais && tarefasLegais.length > 0) {
+      const primeiro = tarefasLegais[0];
+      const link =
+        primeiro.tipo_processo === "onboarding" && primeiro.processo_id
+          ? `/onboarding/${primeiro.processo_id}`
+          : "/tarefas";
+      lista.push({
+        id: "legais-atrasadas",
+        titulo: `${tarefasLegais.length} tarefa${tarefasLegais.length > 1 ? "s" : ""} LEGAL${tarefasLegais.length > 1 ? "IS" : ""} atrasada${tarefasLegais.length > 1 ? "s" : ""} — risco de multa`,
+        subtitulo: "Prazo legal ultrapassado",
+        icone: AlertTriangle,
+        prioridade: "urgente",
+        botaoTexto: "Resolver",
+        link,
+      });
+    }
+
+    // Demais prioridades só para RH (super_admin, admin_rh, gestor_rh)
+    if (showPrioridadesRH) {
+      // 1. Convites aguardando aprovação
+      const { data: aguardAprov } = await supabase
+        .from("convites_cadastro")
+        .select("id, nome")
+        .eq("status", "preenchido");
+      if (aguardAprov && aguardAprov.length > 0) {
+        const primeiro = aguardAprov[0];
+        lista.push({
+          id: "convites-aprovacao",
+          titulo: `${aguardAprov.length} cadastro${aguardAprov.length > 1 ? "s" : ""} aguardando aprovação`,
+          subtitulo: aguardAprov.slice(0, 3).map((c) => c.nome).join(", ") +
+            (aguardAprov.length > 3 ? "..." : ""),
+          icone: CheckSquare,
+          prioridade: "atencao",
+          botaoTexto: "Aprovar",
+          link: aguardAprov.length === 1 ? `/convites-cadastro/${primeiro.id}` : "/convites-cadastro?filter=preenchido",
+        });
+      }
+
+      // 2. Convites aprovados aguardando criação
+      const { data: aprovados } = await supabase
+        .from("convites_cadastro")
+        .select("id, nome, tipo")
+        .eq("status", "aprovado");
+      if (aprovados && aprovados.length > 0) {
+        const primeiro = aprovados[0];
+        lista.push({
+          id: "colab-criacao",
+          titulo: `${aprovados.length} colaborador${aprovados.length > 1 ? "es" : ""} aprovado${aprovados.length > 1 ? "s" : ""} aguardando criação`,
+          subtitulo: aprovados.slice(0, 3).map((c) => c.nome).join(", ") +
+            (aprovados.length > 3 ? "..." : ""),
+          icone: UserPlus,
+          prioridade: "urgente",
+          botaoTexto: "Criar",
+          link: aprovados.length === 1 ? `/convites-cadastro/${primeiro.id}` : "/convites-cadastro?filter=aprovado",
+        });
+      }
+
+      // 3. Candidatos para triagem
+      const { data: candTriagem } = await supabase
+        .from("candidatos")
+        .select("id, nome, vaga_id")
+        .eq("status", "recebido");
+      if (candTriagem && candTriagem.length > 0) {
+        const primeiro = candTriagem[0];
+        lista.push({
+          id: "cand-triagem",
+          titulo: `${candTriagem.length} candidato${candTriagem.length > 1 ? "s" : ""} para triagem`,
+          subtitulo: candTriagem.slice(0, 3).map((c) => c.nome).join(", ") +
+            (candTriagem.length > 3 ? "..." : ""),
+          icone: Users,
+          prioridade: "atencao",
+          botaoTexto: "Triar",
+          link: candTriagem.length === 1 && primeiro.vaga_id ? `/recrutamento/${primeiro.vaga_id}` : "/recrutamento",
+        });
+      }
+
+      // 4. Convites sem preenchimento há +5 dias
+      const cincoDiasAtras = new Date();
+      cincoDiasAtras.setDate(cincoDiasAtras.getDate() - 5);
+      const { data: enviadosVelhos } = await supabase
+        .from("convites_cadastro")
+        .select("id, nome, created_at")
+        .eq("status", "email_enviado")
+        .lt("created_at", cincoDiasAtras.toISOString());
+      if (enviadosVelhos && enviadosVelhos.length > 0) {
+        lista.push({
+          id: "convites-velhos",
+          titulo: `${enviadosVelhos.length} convite${enviadosVelhos.length > 1 ? "s" : ""} sem preenchimento há +5 dias`,
+          subtitulo: enviadosVelhos.slice(0, 3).map((c) => c.nome).join(", ") +
+            (enviadosVelhos.length > 3 ? "..." : ""),
+          icone: Mail,
+          prioridade: "atencao",
+          botaoTexto: "Ver",
+          link: "/convites-cadastro?filter=email_enviado",
+        });
+      }
+    }
+
+    // Ordenar: urgente primeiro
+    lista.sort((a, b) => {
+      if (a.prioridade === b.prioridade) return 0;
+      return a.prioridade === "urgente" ? -1 : 1;
+    });
+    setPrioridadesDia(lista);
+  }, [user, isColaboradorPuro, showPrioridadesRH]);
+
+  useEffect(() => {
+    void loadPrioridadesDia();
+  }, [loadPrioridadesDia]);
 
   // Separar minhas vs acompanhamento
   const { minhasTarefas, tarefasAcompanhamento } = useMemo(() => {
@@ -521,6 +675,67 @@ export default function MinhasTarefas() {
           <Plus className="h-4 w-4" /> Nova Tarefa
         </Button>
       </div>
+
+      {/* Prioridades do Dia — ações operacionais (não-tarefa) */}
+      {!isColaboradorPuro && prioridadesDia.length > 0 && (
+        <Card className="border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Flame className="h-4 w-4 text-amber-600" /> Prioridades do Dia
+              <Badge variant="outline" className="ml-auto text-[10px]">
+                {prioridadesDia.length} pendência{prioridadesDia.length !== 1 ? "s" : ""}
+              </Badge>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Ações operacionais que precisam da sua atenção hoje
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {prioridadesDia.map((p) => {
+              const Icone = p.icone;
+              return (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between gap-3 p-3 rounded-lg bg-background border hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() => navigate(p.link)}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                        p.prioridade === "urgente" ? "bg-destructive/10" : "bg-amber-100 dark:bg-amber-950/40"
+                      )}
+                    >
+                      <Icone
+                        className={cn(
+                          "h-4 w-4",
+                          p.prioridade === "urgente" ? "text-destructive" : "text-amber-600"
+                        )}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm">{p.titulo}</p>
+                      <p className="text-xs text-muted-foreground truncate">{p.subtitulo}</p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={p.prioridade === "urgente" ? "default" : "outline"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(p.link);
+                    }}
+                    style={p.prioridade === "urgente" ? { backgroundColor: "#1A4A3A" } : undefined}
+                    className={p.prioridade === "urgente" ? "text-white hover:opacity-90" : ""}
+                  >
+                    {p.botaoTexto}
+                  </Button>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
