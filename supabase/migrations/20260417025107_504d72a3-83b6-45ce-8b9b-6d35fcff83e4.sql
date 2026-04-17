@@ -1,0 +1,1 @@
+ALTER VIEW public.onboarding_tarefas_view SET (security_invoker = on);
