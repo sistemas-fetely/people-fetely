@@ -3,7 +3,7 @@ import {
   GraduationCap, GitBranch, BarChart3, Settings, UserCircle, CreditCard,
   Briefcase, LogOut, ArrowUpDown, Send, UserCheck, ClipboardCheck, LayoutGrid,
 } from "lucide-react";
-import logoFetely from "@/assets/logo_fetely.jpg";
+
 import { NavLink } from "@/components/NavLink";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
@@ -161,10 +161,15 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r-0">
       <SidebarHeader className="p-5">
         <div className="flex items-center gap-3">
-          <img src={logoFetely} alt="Fetély" className="h-9 w-9 shrink-0 rounded-xl object-contain shadow-sm" />
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl shadow-sm"
+            style={{ backgroundColor: "#1A4A3A" }}
+          >
+            <Users className="h-5 w-5 text-white" />
+          </div>
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-sidebar-foreground tracking-tight">People Fetély</span>
+              <span className="text-sm font-bold tracking-tight" style={{ color: "#1A4A3A" }}>People Fetely</span>
               <span className="text-[11px] text-sidebar-muted">Gestão de Pessoas</span>
             </div>
           )}
