@@ -96,6 +96,17 @@ export function DashboardOperacional() {
     const list: AlertaItem[] = [];
     const { pj, ferias, nfPendentes, pagPjPendentes, folha, experienciaVencendo, docsVencendo, aniversariosEmpresa, semBeneficio, contratosPendentes } = dashData;
 
+    // Tarefa legal de onboarding atrasada (CRÍTICO)
+    tarefasLegaisAtrasadas.forEach((t, i) => {
+      list.push({
+        id: `legal-onb-${i}`,
+        titulo: `Tarefa legal atrasada no onboarding de ${t.nome}`,
+        detalhe: "Prazo legal ultrapassado — risco de multa",
+        prioridade: "alta",
+        rota: "/onboarding",
+      });
+    });
+
     if (ferias?.periodoVencido > 0) {
       list.push({ id: "ferias-venc", titulo: `${ferias.periodoVencido} período(s) de férias vencido(s)`, detalhe: "Saldo pendente", prioridade: "alta", rota: "/ferias" });
     }
