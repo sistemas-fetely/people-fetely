@@ -261,7 +261,7 @@ export default function Pessoas() {
                   <TableHead className="font-semibold hidden md:table-cell">Cargo / Serviço</TableHead>
                   <TableHead className="font-semibold hidden lg:table-cell">Departamento</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="font-semibold w-16 text-center">Acesso</TableHead>
+                  <TableHead className="font-semibold text-center">Acesso</TableHead>
                   <TableHead className="font-semibold hidden lg:table-cell">Início</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
