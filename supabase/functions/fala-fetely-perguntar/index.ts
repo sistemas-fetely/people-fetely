@@ -83,9 +83,9 @@ Deno.serve(async (req) => {
     });
 
     // 3) Coletar contexto do usuário + conhecimento + histórico (paralelo)
-    const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, historicoRes] = await Promise.all([
+    const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, templatesRes, tarefasTemplateRes, extensoesRes, tarefasExtensoesRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, historicoRes] = await Promise.all([
       supabase.from("profiles").select("full_name, colaborador_tipo").eq("user_id", user.id).maybeSingle(),
-      supabase.from("colaboradores_clt").select("cargo, departamento, nome_completo").eq("user_id", user.id).maybeSingle(),
+      supabase.from("colaboradores_clt").select("id, cargo, departamento, nome_completo").eq("user_id", user.id).maybeSingle(),
       supabase.from("contratos_pj").select("tipo_servico, departamento, contato_nome").eq("user_id", user.id).maybeSingle(),
       supabase
         .from("sncf_tarefas")
@@ -94,7 +94,11 @@ Deno.serve(async (req) => {
         .in("status", ["pendente", "atrasada", "em_andamento"])
         .order("prazo_data", { ascending: true })
         .limit(5),
-      supabase.from("sncf_processos_categorias").select("slug, nome, descricao").eq("ativo", true).limit(30),
+      supabase.from("sncf_processos_categorias").select("id, slug, nome, descricao").eq("ativo", true).limit(30),
+      (supabase as any).from("sncf_templates_processos").select("id, categoria_id"),
+      (supabase as any).from("sncf_templates_tarefas").select("template_id, titulo, descricao, prazo_dias, responsavel_role, somente_clt, ordem").order("ordem"),
+      (supabase as any).from("sncf_template_extensoes").select("id, categoria_id, dimensao, referencia_label, nome, descricao").eq("ativo", true),
+      (supabase as any).from("sncf_template_extensoes_tarefas").select("extensao_id, titulo, descricao, prazo_dias, ordem").order("ordem"),
       supabase.from("parametros").select("label, valor").eq("categoria", "sistema").eq("ativo", true).limit(50),
       supabase.from("parametros").select("label").eq("categoria", "departamento").eq("ativo", true).limit(50),
       supabase.from("cargos").select("nome, departamento, missao, responsabilidades").eq("ativo", true).limit(40),
