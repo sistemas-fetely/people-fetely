@@ -89,10 +89,10 @@ Deno.serve(async (req) => {
       supabase.from("contratos_pj").select("tipo_servico, departamento, contato_nome").eq("user_id", user.id).maybeSingle(),
       supabase
         .from("sncf_tarefas")
-        .select("titulo, prazo, prioridade")
+        .select("titulo, prazo_data, prioridade")
         .eq("responsavel_user_id", user.id)
         .in("status", ["pendente", "atrasada", "em_andamento"])
-        .order("prazo", { ascending: true })
+        .order("prazo_data", { ascending: true })
         .limit(5),
       supabase.from("sncf_processos_categorias").select("slug, nome, descricao").eq("ativo", true).limit(30),
       supabase.from("parametros").select("label, valor").eq("categoria", "sistema").eq("ativo", true).limit(50),
