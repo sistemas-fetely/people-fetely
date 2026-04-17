@@ -439,10 +439,14 @@ export default function FalaFetely() {
                         }`}
                       >
                         {msg.pendente && !msg.conteudo ? (
-                          <div className="flex gap-1 py-1">
-                            <span className="w-2 h-2 bg-[#1A4A3A] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                            <span className="w-2 h-2 bg-[#E91E63] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                            <span className="w-2 h-2 bg-[#1A4A3A] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                          <div className="flex items-center gap-3 min-w-[240px] py-1">
+                            <div className="relative w-2.5 h-2.5">
+                              <span className="absolute inset-0 rounded-full bg-[#1A4A3A] animate-ping opacity-60" />
+                              <span className="absolute inset-0 rounded-full bg-[#1A4A3A]" />
+                            </div>
+                            <p className="text-sm text-muted-foreground transition-opacity duration-300">
+                              {estadoPensando}
+                            </p>
                           </div>
                         ) : (
                           <div className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-headings:my-2">
