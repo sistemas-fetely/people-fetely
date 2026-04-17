@@ -21,6 +21,8 @@ import { ConviteDadosPessoaisPJ } from "@/components/convite-detalhe/ConviteDado
 import { ConviteDadosProfissionaisCLT } from "@/components/convite-detalhe/ConviteDadosProfissionaisCLT";
 import { ConviteDadosEmpresaCLT } from "@/components/convite-detalhe/ConviteDadosEmpresaCLT";
 import { ConviteDadosProfissionaisPJ } from "@/components/convite-detalhe/ConviteDadosProfissionaisPJ";
+import { getTarefasDinamicas } from "@/lib/onboarding-tarefas";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Convite {
   id: string;
@@ -99,6 +101,8 @@ export default function ConviteDetalhe() {
   const [exporting] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [criando, setCriando] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!id) return;
@@ -180,152 +184,270 @@ export default function ConviteDetalhe() {
     }
   };
 
-  const handleExportToCadastro = () => {
+  const handleCriarColaborador = async () => {
     if (!convite || !formData) return;
     const { dependentes, documentos_upload, ...rest } = formData;
 
+    // Validação mínima
     if (convite.tipo === "clt") {
-      navigate("/colaboradores/novo", {
-        state: {
-          conviteId: convite.id,
-          initialData: {
-            // Dados pessoais — vêm do formulário que o colaborador preencheu
-            nome_completo: rest.nome_completo || convite.nome,
-            cpf: rest.cpf || "",
-            rg: rest.rg || "",
-            orgao_emissor: rest.orgao_emissor || "",
-            data_nascimento: rest.data_nascimento || "",
-            genero: rest.genero || "",
-            estado_civil: rest.estado_civil || "",
-            nacionalidade: rest.nacionalidade || "Brasileira",
-            etnia: rest.etnia || "",
-            nome_mae: rest.nome_mae || "",
-            nome_pai: rest.nome_pai || "",
-            telefone: rest.telefone || "",
-            email_pessoal: rest.email_pessoal || convite.email || "",
-            contato_emergencia_nome: rest.contato_emergencia_nome || "",
-            contato_emergencia_telefone: rest.contato_emergencia_telefone || "",
-            // Endereço
-            cep: rest.cep || "",
-            logradouro: rest.logradouro || "",
-            numero: rest.numero || "",
-            complemento: rest.complemento || "",
-            bairro: rest.bairro || "",
-            cidade: rest.cidade || "",
-            uf: rest.uf || "",
-            // Documentos
-            pis_pasep: rest.pis_pasep || "",
-            ctps_numero: rest.ctps_numero || "",
-            ctps_serie: rest.ctps_serie || "",
-            ctps_uf: rest.ctps_uf || "",
-            titulo_eleitor: rest.titulo_eleitor || "",
-            zona_eleitoral: rest.zona_eleitoral || "",
-            secao_eleitoral: rest.secao_eleitoral || "",
-            cnh_numero: rest.cnh_numero || "",
-            cnh_categoria: rest.cnh_categoria || "",
-            cnh_validade: rest.cnh_validade || "",
-            certificado_reservista: rest.certificado_reservista || "",
-            // Dados bancários
-            banco_nome: rest.banco_nome || "",
-            banco_codigo: rest.banco_codigo || "",
-            agencia: rest.agencia || "",
-            conta: rest.conta || "",
-            tipo_conta: rest.tipo_conta || "corrente",
-            chave_pix: rest.chave_pix || "",
-            // Dados profissionais — vêm do CONVITE (fonte primária)
-            cargo: convite.cargo || rest.cargo || "",
-            departamento: convite.departamento || rest.departamento || "",
-            data_admissao: convite.data_inicio_prevista || rest.data_admissao || new Date().toISOString().split("T")[0],
-            salario_base: convite.salario_previsto || rest.salario_base || 0,
-            tipo_contrato: rest.tipo_contrato || (convite as any).dados_contratacao?.tipo_contrato_clt || "indeterminado",
-            jornada_semanal: rest.jornada_semanal || (convite as any).dados_contratacao?.jornada_semanal || "44",
-            horario_trabalho: rest.horario_trabalho || (convite as any).dados_contratacao?.horario_trabalho || "",
-            local_trabalho: rest.local_trabalho || (convite as any).dados_contratacao?.local_trabalho || "",
-            // Provisionamento — do dados_contratacao do convite
-            email_corporativo: (convite as any).dados_contratacao?.email_corporativo_formato || "",
-            data_integracao: (convite as any).data_inicio_prevista || "",
-            acessos_sistemas: ((convite as any).dados_contratacao?.sistemas_ids || []).map((s: string) => ({
-              sistema: s,
-              tem_acesso: true,
-              usuario: "",
-              observacoes: "",
-            })),
-            equipamentos: ((convite as any).dados_contratacao?.equipamentos || []).flatMap((eq: any) =>
-              Array.from({ length: eq.quantidade || 1 }, () => ({
-                tipo: eq.tipo,
-                marca: "",
-                modelo: "",
-                numero_patrimonio: "",
-                numero_serie: "",
-                data_entrega: "",
-                estado: "novo",
-                observacoes: "",
-              }))
-            ),
-            celular_corporativo: (convite as any).dados_contratacao?.celular_corporativo || false,
-            // Dependentes e documentos
-            dependentes: dependentes || [],
-            documentos_upload: documentos_upload || [],
-            upload_folder: convite.token,
-          },
-        },
-      });
+      const nome = rest.nome_completo || convite.nome;
+      if (!nome) { toast.error("Nome do colaborador é obrigatório"); return; }
     } else {
-      navigate("/contratos-pj/novo", {
-        state: {
-          conviteId: convite.id,
-          initialData: {
-            // Dados PJ — do formulário do colaborador
-            contato_nome: rest.contato_nome || convite.nome,
-            contato_email: rest.contato_email || convite.email,
-            contato_telefone: rest.contato_telefone || "",
-            cnpj: rest.cnpj || "",
-            razao_social: rest.razao_social || "",
-            nome_fantasia: rest.nome_fantasia || "",
-            inscricao_municipal: rest.inscricao_municipal || "",
-            inscricao_estadual: rest.inscricao_estadual || "",
-            // Dados bancários
-            banco_nome: rest.banco_nome || "",
-            banco_codigo: rest.banco_codigo || "",
-            agencia: rest.agencia || "",
-            conta: rest.conta || "",
-            tipo_conta: rest.tipo_conta || "corrente",
-            chave_pix: rest.chave_pix || "",
-            // Dados profissionais — do CONVITE
-            tipo_servico: convite.cargo || rest.tipo_servico || "",
-            departamento: convite.departamento || rest.departamento || "",
-            valor_mensal: convite.salario_previsto || rest.valor_mensal || 0,
-            data_inicio: convite.data_inicio_prevista || rest.data_inicio || new Date().toISOString().split("T")[0],
-            forma_pagamento: rest.forma_pagamento || "transferencia",
-            dia_vencimento: rest.dia_vencimento || 10,
-            status: "ativo",
-            // Documentos
-            documentos_upload: documentos_upload || [],
-            upload_folder: convite.token,
-            // Provisionamento
-            email_corporativo: (convite as any).dados_contratacao?.email_corporativo_formato || "",
-            acessos_sistemas: ((convite as any).dados_contratacao?.sistemas_ids || []).map((s: string) => ({
-              sistema: s,
-              tem_acesso: true,
-              usuario: "",
-              observacoes: "",
-            })),
-            equipamentos: ((convite as any).dados_contratacao?.equipamentos || []).flatMap((eq: any) =>
-              Array.from({ length: eq.quantidade || 1 }, () => ({
-                tipo: eq.tipo,
-                marca: "",
-                modelo: "",
-                numero_patrimonio: "",
-                numero_serie: "",
-                data_entrega: "",
-                estado: "novo",
-                observacoes: "",
-              }))
-            ),
-            celular_corporativo: (convite as any).dados_contratacao?.celular_corporativo || false,
-          },
-        },
-      });
+      const nome = rest.contato_nome || convite.nome;
+      const cnpj = rest.cnpj;
+      const razao = rest.razao_social;
+      if (!nome) { toast.error("Nome do contato é obrigatório"); return; }
+      if (!cnpj) { toast.error("CNPJ é obrigatório"); return; }
+      if (!razao) { toast.error("Razão social é obrigatória"); return; }
+    }
+
+    setCriando(true);
+    try {
+      const dc = (convite as any).dados_contratacao || {};
+
+      if (convite.tipo === "clt") {
+        // ── CRIAR COLABORADOR CLT ──
+        const colaboradorPayload: Record<string, any> = {
+          nome_completo: rest.nome_completo || convite.nome,
+          cpf: rest.cpf || null,
+          rg: rest.rg || null,
+          orgao_emissor: rest.orgao_emissor || null,
+          data_nascimento: rest.data_nascimento || null,
+          genero: rest.genero || null,
+          estado_civil: rest.estado_civil || null,
+          nacionalidade: rest.nacionalidade || "Brasileira",
+          etnia: rest.etnia || null,
+          nome_mae: rest.nome_mae || null,
+          nome_pai: rest.nome_pai || null,
+          telefone: rest.telefone || null,
+          email_pessoal: rest.email_pessoal || convite.email || null,
+          contato_emergencia_nome: rest.contato_emergencia_nome || null,
+          contato_emergencia_telefone: rest.contato_emergencia_telefone || null,
+          cep: rest.cep || null,
+          logradouro: rest.logradouro || null,
+          numero: rest.numero || null,
+          complemento: rest.complemento || null,
+          bairro: rest.bairro || null,
+          cidade: rest.cidade || null,
+          uf: rest.uf || null,
+          pis_pasep: rest.pis_pasep || null,
+          ctps_numero: rest.ctps_numero || null,
+          ctps_serie: rest.ctps_serie || null,
+          ctps_uf: rest.ctps_uf || null,
+          titulo_eleitor: rest.titulo_eleitor || null,
+          zona_eleitoral: rest.zona_eleitoral || null,
+          secao_eleitoral: rest.secao_eleitoral || null,
+          cnh_numero: rest.cnh_numero || null,
+          cnh_categoria: rest.cnh_categoria || null,
+          cnh_validade: rest.cnh_validade || null,
+          certificado_reservista: rest.certificado_reservista || null,
+          banco_nome: rest.banco_nome || null,
+          banco_codigo: rest.banco_codigo || null,
+          agencia: rest.agencia || null,
+          conta: rest.conta || null,
+          tipo_conta: rest.tipo_conta || "corrente",
+          chave_pix: rest.chave_pix || null,
+          cargo: convite.cargo || rest.cargo || null,
+          departamento: convite.departamento || rest.departamento || null,
+          data_admissao: (convite as any).data_inicio_prevista || rest.data_admissao || new Date().toISOString().split("T")[0],
+          salario_base: Number((convite as any).salario_previsto || rest.salario_base || 0),
+          tipo_contrato: dc.tipo_contrato_clt || rest.tipo_contrato || "indeterminado",
+          jornada_semanal: Number(dc.jornada_semanal || rest.jornada_semanal || 44),
+          horario_trabalho: dc.horario_trabalho || rest.horario_trabalho || null,
+          local_trabalho: dc.local_trabalho || rest.local_trabalho || null,
+          email_corporativo: dc.email_corporativo_formato || rest.email_corporativo || null,
+          foto_url: rest.foto_url || null,
+          created_by: user?.id || null,
+        };
+
+        const cleaned = Object.fromEntries(
+          Object.entries(colaboradorPayload).map(([k, v]) => [k, v === "" ? null : v])
+        );
+
+        const { data: inserted, error } = await supabase
+          .from("colaboradores_clt")
+          .insert(cleaned as any)
+          .select("id")
+          .single();
+
+        if (error) throw error;
+
+        if (dependentes && Array.isArray(dependentes) && dependentes.length > 0) {
+          const depsToInsert = dependentes.map((d: any) => ({
+            colaborador_id: inserted.id,
+            nome_completo: d.nome_completo,
+            cpf: d.cpf || null,
+            data_nascimento: d.data_nascimento,
+            parentesco: d.parentesco,
+            incluir_irrf: d.incluir_irrf || false,
+            incluir_plano_saude: d.incluir_plano_saude || false,
+          }));
+          await supabase.from("dependentes").insert(depsToInsert);
+        }
+
+        if (dc.sistemas_ids && dc.sistemas_ids.length > 0) {
+          const acessosToInsert = dc.sistemas_ids.map((s: string) => ({
+            colaborador_id: inserted.id,
+            sistema: s,
+            tem_acesso: true,
+            data_concessao: new Date().toISOString().split("T")[0],
+          }));
+          await supabase.from("colaborador_acessos_sistemas").insert(acessosToInsert);
+        }
+
+        await supabase
+          .from("convites_cadastro")
+          .update({ colaborador_id: inserted.id, status: "cadastrado" })
+          .eq("id", convite.id);
+
+        try {
+          const { data: newChecklist } = await supabase
+            .from("onboarding_checklists")
+            .insert({ colaborador_id: inserted.id, colaborador_tipo: "clt", convite_id: convite.id } as any)
+            .select("id")
+            .single();
+
+          if (newChecklist) {
+            const dataAdmissao = colaboradorPayload.data_admissao ? new Date(colaboradorPayload.data_admissao + "T12:00:00") : new Date();
+            let gestorUserId: string | null = null;
+            if ((convite as any).lider_direto_id) {
+              const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", (convite as any).lider_direto_id).single();
+              gestorUserId = (gp as any)?.user_id || null;
+            }
+            const tarefas = getTarefasDinamicas("clt", dc).map((t) => {
+              const prazoDate = new Date(dataAdmissao);
+              prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
+              return {
+                checklist_id: newChecklist.id,
+                titulo: t.titulo,
+                descricao: t.descricao || null,
+                responsavel_role: t.responsavel_role,
+                responsavel_user_id: t.responsavel_role === "gestor_direto" && gestorUserId ? gestorUserId : null,
+                prazo_dias: t.prazo_dias,
+                prazo_data: prazoDate.toISOString().slice(0, 10),
+              };
+            });
+            if (tarefas.length > 0) {
+              await supabase.from("onboarding_tarefas").insert(tarefas as any);
+            }
+          }
+        } catch (onbErr) {
+          console.error("Erro ao criar onboarding:", onbErr);
+        }
+
+        toast.success("Colaborador CLT criado com sucesso!");
+        navigate(`/colaboradores/${inserted.id}`);
+
+      } else {
+        // ── CRIAR CONTRATO PJ ──
+        const contratoPayload: Record<string, any> = {
+          contato_nome: rest.contato_nome || convite.nome,
+          contato_email: rest.contato_email || convite.email || null,
+          contato_telefone: rest.contato_telefone || null,
+          cnpj: rest.cnpj,
+          razao_social: rest.razao_social,
+          nome_fantasia: rest.nome_fantasia || null,
+          inscricao_municipal: rest.inscricao_municipal || null,
+          inscricao_estadual: rest.inscricao_estadual || null,
+          cpf: rest.cpf || null,
+          rg: rest.rg || null,
+          orgao_emissor: rest.orgao_emissor || null,
+          data_nascimento: rest.data_nascimento || null,
+          genero: rest.genero || null,
+          estado_civil: rest.estado_civil || null,
+          nacionalidade: rest.nacionalidade || "Brasileira",
+          etnia: rest.etnia || null,
+          nome_mae: rest.nome_mae || null,
+          nome_pai: rest.nome_pai || null,
+          telefone: rest.telefone || null,
+          email_pessoal: rest.email_pessoal || null,
+          contato_emergencia_nome: rest.contato_emergencia_nome || null,
+          contato_emergencia_telefone: rest.contato_emergencia_telefone || null,
+          cep: rest.cep || null,
+          logradouro: rest.logradouro || null,
+          numero: rest.numero || null,
+          complemento: rest.complemento || null,
+          bairro: rest.bairro || null,
+          cidade: rest.cidade || null,
+          uf: rest.uf || null,
+          banco_nome: rest.banco_nome || null,
+          banco_codigo: rest.banco_codigo || null,
+          agencia: rest.agencia || null,
+          conta: rest.conta || null,
+          tipo_conta: rest.tipo_conta || "corrente",
+          chave_pix: rest.chave_pix || null,
+          tipo_servico: convite.cargo || rest.tipo_servico || null,
+          departamento: convite.departamento || rest.departamento || null,
+          valor_mensal: Number((convite as any).salario_previsto || rest.valor_mensal || 0),
+          data_inicio: (convite as any).data_inicio_prevista || rest.data_inicio || new Date().toISOString().split("T")[0],
+          forma_pagamento: rest.forma_pagamento || "transferencia",
+          dia_vencimento: rest.dia_vencimento || 10,
+          status: "ativo",
+          gestor_direto_id: (convite as any).lider_direto_id || null,
+          foto_url: rest.foto_url || null,
+          created_by: user?.id || null,
+        };
+
+        const cleaned = Object.fromEntries(
+          Object.entries(contratoPayload).map(([k, v]) => [k, v === "" ? null : v])
+        );
+
+        const { data: inserted, error } = await supabase
+          .from("contratos_pj")
+          .insert(cleaned as any)
+          .select("id")
+          .single();
+
+        if (error) throw error;
+
+        await supabase
+          .from("convites_cadastro")
+          .update({ contrato_pj_id: inserted.id, status: "cadastrado" })
+          .eq("id", convite.id);
+
+        try {
+          const { data: newChecklist } = await supabase
+            .from("onboarding_checklists")
+            .insert({ colaborador_id: inserted.id, colaborador_tipo: "pj", convite_id: convite.id } as any)
+            .select("id")
+            .single();
+
+          if (newChecklist) {
+            const dataInicio = contratoPayload.data_inicio ? new Date(contratoPayload.data_inicio + "T12:00:00") : new Date();
+            let gestorUserId: string | null = null;
+            if ((convite as any).lider_direto_id) {
+              const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", (convite as any).lider_direto_id).single();
+              gestorUserId = (gp as any)?.user_id || null;
+            }
+            const tarefas = getTarefasDinamicas("pj", dc).map((t) => {
+              const prazoDate = new Date(dataInicio);
+              prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
+              return {
+                checklist_id: newChecklist.id,
+                titulo: t.titulo,
+                descricao: t.descricao || null,
+                responsavel_role: t.responsavel_role,
+                responsavel_user_id: t.responsavel_role === "gestor_direto" && gestorUserId ? gestorUserId : null,
+                prazo_dias: t.prazo_dias,
+                prazo_data: prazoDate.toISOString().slice(0, 10),
+              };
+            });
+            if (tarefas.length > 0) {
+              await supabase.from("onboarding_tarefas").insert(tarefas as any);
+            }
+          }
+        } catch (onbErr) {
+          console.error("Erro ao criar onboarding:", onbErr);
+        }
+
+        toast.success("Contrato PJ criado com sucesso!");
+        navigate(`/contratos-pj/${inserted.id}`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Erro ao criar: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setCriando(false);
     }
   };
 
@@ -406,8 +528,8 @@ export default function ConviteDetalhe() {
                 </Button>
               )}
               {canExport && convite.status !== "aprovado" && (
-                <Button onClick={handleExportToCadastro}>
-                  <UserPlus className="h-4 w-4 mr-2" />
+                <Button onClick={handleCriarColaborador} disabled={criando}>
+                  {criando ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserPlus className="h-4 w-4 mr-2" />}
                   {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
                 </Button>
               )}
@@ -441,10 +563,11 @@ export default function ConviteDetalhe() {
             size="lg"
             className="gap-2 whitespace-nowrap text-white hover:opacity-90"
             style={{ backgroundColor: "#1A4A3A" }}
-            onClick={handleExportToCadastro}
+            onClick={handleCriarColaborador}
+            disabled={criando}
           >
-            <UserPlus className="h-5 w-5" />
-            {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
+            {criando ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
+            {criando ? "Criando..." : isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
           </Button>
         </div>
       )}
