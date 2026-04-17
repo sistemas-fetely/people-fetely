@@ -416,6 +416,39 @@ export default function ConviteDetalhe() {
         </div>
       </div>
 
+      {isAprovado && !alreadyLinked && hasDados && (
+        <div
+          className="rounded-xl border-2 p-5 flex items-center justify-between gap-4"
+          style={{ borderColor: "#1A4A3A", backgroundColor: "#F0F7F4" }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: "#1A4A3A" }}
+            >
+              <CheckCircle2 className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="font-semibold" style={{ color: "#1A4A3A" }}>
+                Cadastro aprovado — pronto para criar o {isClt ? "colaborador" : "contrato"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Revise os dados abaixo e clique no botão para finalizar a admissão.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="lg"
+            className="gap-2 whitespace-nowrap text-white hover:opacity-90"
+            style={{ backgroundColor: "#1A4A3A" }}
+            onClick={handleExportToCadastro}
+          >
+            <UserPlus className="h-5 w-5" />
+            {isClt ? "Criar Colaborador CLT" : "Criar Contrato PJ"}
+          </Button>
+        </div>
+      )}
+
       {/* Content */}
       {!hasDados ? (
         <Card>
