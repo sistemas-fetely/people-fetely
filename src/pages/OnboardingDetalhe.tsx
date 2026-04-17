@@ -41,6 +41,13 @@ type Tarefa = {
   motivo_bloqueio: string | null;
   evidencia_texto: string | null;
   evidencia_url: string | null;
+  origem_extensao_id: string | null;
+};
+
+type ExtensaoMeta = {
+  id: string;
+  dimensao: "cargo" | "departamento" | "sistema";
+  referencia_label: string;
 };
 
 type Checklist = {
@@ -81,6 +88,7 @@ export default function OnboardingDetalhe() {
   const { userRoles: roles } = usePermissions();
   const [loading, setLoading] = useState(true);
   const [checklist, setChecklist] = useState<Checklist | null>(null);
+  const [extensoesMap, setExtensoesMap] = useState<Record<string, ExtensaoMeta>>({});
   const [updatingTask, setUpdatingTask] = useState<string | null>(null);
 
   // Dialog conclusão
@@ -122,6 +130,24 @@ export default function OnboardingDetalhe() {
       .order("prazo_dias", { ascending: true });
 
     const tarefas = (tarefasData || []) as any as Tarefa[];
+
+    // Buscar metadados das extensões referenciadas
+    const extensaoIds = Array.from(
+      new Set(tarefas.map((t) => t.origem_extensao_id).filter((x): x is string => !!x))
+    );
+    if (extensaoIds.length > 0) {
+      const { data: exts } = await (supabase as any)
+        .from("sncf_template_extensoes")
+        .select("id, dimensao, referencia_label")
+        .in("id", extensaoIds);
+      const map: Record<string, ExtensaoMeta> = {};
+      (exts || []).forEach((e: any) => {
+        map[e.id] = { id: e.id, dimensao: e.dimensao, referencia_label: e.referencia_label };
+      });
+      setExtensoesMap(map);
+    } else {
+      setExtensoesMap({});
+    }
 
     // Marcar atrasadas
     const hojeStr = new Date().toISOString().split("T")[0];
@@ -460,6 +486,17 @@ export default function OnboardingDetalhe() {
                             >
                               {atrasoLegal && <ShieldAlert className="h-3 w-3" />}
                               {atrasoLegal ? "LEGAL — " : ""}Atrasada há {dias} dia{dias !== 1 ? "s" : ""}
+                            </Badge>
+                          )}
+                          {t.origem_extensao_id && extensoesMap[t.origem_extensao_id] && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] border-0 gap-0.5 bg-success/15 text-success"
+                            >
+                              {extensoesMap[t.origem_extensao_id].dimensao === "cargo" && "Cargo: "}
+                              {extensoesMap[t.origem_extensao_id].dimensao === "departamento" && "Depto: "}
+                              {extensoesMap[t.origem_extensao_id].dimensao === "sistema" && "Sistema: "}
+                              {extensoesMap[t.origem_extensao_id].referencia_label}
                             </Badge>
                           )}
                         </div>
