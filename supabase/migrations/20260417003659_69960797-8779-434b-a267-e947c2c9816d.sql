@@ -1,0 +1,1 @@
+UPDATE public.sncf_sistemas SET cor = '#2D6A5A' WHERE slug = 'ti';
