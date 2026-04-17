@@ -41,6 +41,13 @@ type Tarefa = {
   motivo_bloqueio: string | null;
   evidencia_texto: string | null;
   evidencia_url: string | null;
+  origem_extensao_id: string | null;
+};
+
+type ExtensaoMeta = {
+  id: string;
+  dimensao: "cargo" | "departamento" | "sistema";
+  referencia_label: string;
 };
 
 type Checklist = {
