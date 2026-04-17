@@ -27,14 +27,14 @@ interface StepUploadDocumentosProps {
 }
 
 const CLT_DOCUMENTS: DocumentSlot[] = [
-  { key: "foto_rosto", label: "Foto Social", required: true },
+  { key: "foto_rosto", label: "Foto Social" },
   { key: "rg_cnh_frente", label: "RG ou CNH (Frente)" },
   { key: "rg_cnh_verso", label: "RG ou CNH (Verso)" },
   { key: "comprovante_residencia", label: "Comprovante de Residência" },
 ];
 
 const PJ_DOCUMENTS: DocumentSlot[] = [
-  { key: "foto_rosto", label: "Foto Social", required: true },
+  { key: "foto_rosto", label: "Foto Social" },
   { key: "rg_cnh_frente", label: "RG ou CNH (Frente)" },
   { key: "rg_cnh_verso", label: "RG ou CNH (Verso)" },
   { key: "contrato_social", label: "Contrato Social da Empresa" },
@@ -108,7 +108,10 @@ export function StepUploadDocumentos({ tipo, folderKey, uploadedFiles, onFilesCh
       <div>
         <h3 className="text-lg font-semibold mb-2">Upload de Documentos</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Envie cópia dos documentos solicitados abaixo. Formatos aceitos: JPG, PNG, WebP ou PDF (máx. 10MB cada).
+          Envie os documentos disponíveis. Todos os campos são opcionais — documentos faltantes podem ser adicionados depois no detalhe do colaborador.
+        </p>
+        <p className="text-xs text-muted-foreground mb-4">
+          Formatos aceitos: JPG, PNG, WebP ou PDF (máx. 10MB cada).
         </p>
       </div>
 
