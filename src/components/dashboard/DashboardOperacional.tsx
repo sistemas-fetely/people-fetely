@@ -86,6 +86,8 @@ export function DashboardOperacional() {
   const [tarefas, setTarefas] = useState<TarefaItem[]>([]);
   const [kpis, setKpis] = useState<KpiItem[]>([]);
   const [velocidade, setVelocidade] = useState<VelocidadeItem[]>([]);
+  const [novaOpen, setNovaOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const dashData = useDashboardData();
 
