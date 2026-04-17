@@ -2685,6 +2685,7 @@ export type Database = {
       sncf_tarefas: {
         Row: {
           area_destino: string | null
+          bloqueante: boolean | null
           colaborador_id: string | null
           colaborador_nome: string | null
           colaborador_tipo: string | null
@@ -2693,8 +2694,11 @@ export type Database = {
           created_at: string
           criado_por: string | null
           descricao: string | null
+          evidencia_texto: string | null
+          evidencia_url: string | null
           id: string
           link_acao: string | null
+          motivo_bloqueio: string | null
           prazo_data: string | null
           prazo_dias: number | null
           prioridade: string
@@ -2710,6 +2714,7 @@ export type Database = {
         }
         Insert: {
           area_destino?: string | null
+          bloqueante?: boolean | null
           colaborador_id?: string | null
           colaborador_nome?: string | null
           colaborador_tipo?: string | null
@@ -2718,8 +2723,11 @@ export type Database = {
           created_at?: string
           criado_por?: string | null
           descricao?: string | null
+          evidencia_texto?: string | null
+          evidencia_url?: string | null
           id?: string
           link_acao?: string | null
+          motivo_bloqueio?: string | null
           prazo_data?: string | null
           prazo_dias?: number | null
           prioridade?: string
@@ -2735,6 +2743,7 @@ export type Database = {
         }
         Update: {
           area_destino?: string | null
+          bloqueante?: boolean | null
           colaborador_id?: string | null
           colaborador_nome?: string | null
           colaborador_tipo?: string | null
@@ -2743,8 +2752,11 @@ export type Database = {
           created_at?: string
           criado_por?: string | null
           descricao?: string | null
+          evidencia_texto?: string | null
+          evidencia_url?: string | null
           id?: string
           link_acao?: string | null
+          motivo_bloqueio?: string | null
           prazo_data?: string | null
           prazo_dias?: number | null
           prioridade?: string

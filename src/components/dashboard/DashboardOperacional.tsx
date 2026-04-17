@@ -88,12 +88,24 @@ export function DashboardOperacional() {
   const [velocidade, setVelocidade] = useState<VelocidadeItem[]>([]);
   const [novaOpen, setNovaOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [tarefasLegaisAtrasadas, setTarefasLegaisAtrasadas] = useState<{ nome: string }[]>([]);
 
   const dashData = useDashboardData();
 
   const alertas = useMemo<AlertaItem[]>(() => {
     const list: AlertaItem[] = [];
     const { pj, ferias, nfPendentes, pagPjPendentes, folha, experienciaVencendo, docsVencendo, aniversariosEmpresa, semBeneficio, contratosPendentes } = dashData;
+
+    // Tarefa legal de onboarding atrasada (CRÍTICO)
+    tarefasLegaisAtrasadas.forEach((t, i) => {
+      list.push({
+        id: `legal-onb-${i}`,
+        titulo: `Tarefa legal atrasada no onboarding de ${t.nome}`,
+        detalhe: "Prazo legal ultrapassado — risco de multa",
+        prioridade: "alta",
+        rota: "/onboarding",
+      });
+    });
 
     if (ferias?.periodoVencido > 0) {
       list.push({ id: "ferias-venc", titulo: `${ferias.periodoVencido} período(s) de férias vencido(s)`, detalhe: "Saldo pendente", prioridade: "alta", rota: "/ferias" });
@@ -153,7 +165,7 @@ export function DashboardOperacional() {
     const order = { alta: 0, media: 1, baixa: 2 };
     list.sort((a, b) => order[a.prioridade] - order[b.prioridade]);
     return list;
-  }, [dashData]);
+  }, [dashData, tarefasLegaisAtrasadas]);
 
   useEffect(() => {
     let cancelled = false;
@@ -183,7 +195,7 @@ export function DashboardOperacional() {
             .select("id, nome, status, tipo, created_at, preenchido_em, updated_at"),
           supabase
             .from("sncf_tarefas")
-            .select("id, titulo, status, prazo_data, processo_id")
+            .select("id, titulo, status, prazo_data, processo_id, bloqueante")
             .eq("tipo_processo", "onboarding")
             .in("status", ["pendente", "atrasada"]),
           supabase
@@ -338,18 +350,58 @@ export function DashboardOperacional() {
           });
         }
 
-        // Onboarding tarefas atrasadas
-        const tarefasAtrasadas = tarefasOnb.filter((t) => {
+        // Onboarding tarefas atrasadas — separar bloqueantes (legais) das normais
+        const tarefasAtrasadas = tarefasOnb.filter((t: any) => {
           if (t.status === "atrasada") return true;
           if (t.prazo_data && t.prazo_data < hojeStr) return true;
           return false;
         });
-        if (tarefasAtrasadas.length > 0) {
+        const atrasadasBloqueantes = tarefasAtrasadas.filter((t: any) => t.bloqueante);
+        const atrasadasNormais = tarefasAtrasadas.filter((t: any) => !t.bloqueante);
+
+        // Buscar nomes dos colaboradores das tarefas legais atrasadas para alertas críticos
+        if (atrasadasBloqueantes.length > 0) {
+          const checklistIds = [...new Set(atrasadasBloqueantes.map((t: any) => t.processo_id).filter(Boolean))];
+          if (checklistIds.length > 0) {
+            const { data: cls } = await supabase
+              .from("onboarding_checklists")
+              .select("id, colaborador_id, colaborador_tipo")
+              .in("id", checklistIds);
+            const cltIds = (cls || []).filter((c: any) => c.colaborador_tipo === "clt" && c.colaborador_id).map((c: any) => c.colaborador_id);
+            const pjIds = (cls || []).filter((c: any) => c.colaborador_tipo === "pj" && c.colaborador_id).map((c: any) => c.colaborador_id);
+            const nomes: { nome: string }[] = [];
+            if (cltIds.length > 0) {
+              const { data } = await supabase.from("colaboradores_clt").select("id, nome_completo").in("id", cltIds);
+              (data || []).forEach((c: any) => nomes.push({ nome: c.nome_completo }));
+            }
+            if (pjIds.length > 0) {
+              const { data } = await supabase.from("contratos_pj").select("id, contato_nome").in("id", pjIds);
+              (data || []).forEach((c: any) => nomes.push({ nome: c.contato_nome }));
+            }
+            if (!cancelled) setTarefasLegaisAtrasadas(nomes);
+          }
+        } else if (!cancelled) {
+          setTarefasLegaisAtrasadas([]);
+        }
+
+        if (atrasadasBloqueantes.length > 0) {
+          novasTarefas.push({
+            id: "onb-legal-atraso",
+            prioridade: "urgente",
+            icone: AlertCircle,
+            titulo: `${atrasadasBloqueantes.length} tarefa${atrasadasBloqueantes.length > 1 ? "s" : ""} LEGAIS de onboarding atrasada${atrasadasBloqueantes.length > 1 ? "s" : ""} — risco de multa`,
+            detalhe: "Prazo legal ultrapassado — resolver imediatamente",
+            acao: "Resolver",
+            rota: "/onboarding",
+            ordem: 9999,
+          });
+        }
+        if (atrasadasNormais.length > 0) {
           novasTarefas.push({
             id: "onb-atraso",
             prioridade: "urgente",
             icone: ClipboardCheck,
-            titulo: `${tarefasAtrasadas.length} tarefa${tarefasAtrasadas.length > 1 ? "s" : ""} de onboarding atrasada${tarefasAtrasadas.length > 1 ? "s" : ""}`,
+            titulo: `${atrasadasNormais.length} tarefa${atrasadasNormais.length > 1 ? "s" : ""} de onboarding atrasada${atrasadasNormais.length > 1 ? "s" : ""}`,
             detalhe: "Resolva antes que afete a integração",
             acao: "Resolver",
             rota: "/onboarding",

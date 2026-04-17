@@ -338,6 +338,8 @@ export default function ConviteDetalhe() {
                 responsavel_user_id: t.responsavel_role === "gestor_direto" && gestorUserId ? gestorUserId : null,
                 prazo_dias: t.prazo_dias,
                 prazo_data: prazoDate.toISOString().slice(0, 10),
+                bloqueante: t.bloqueante || false,
+                motivo_bloqueio: t.motivo_bloqueio || null,
               };
             });
             if (tarefas.length > 0) {
@@ -468,6 +470,8 @@ export default function ConviteDetalhe() {
                 responsavel_user_id: t.responsavel_role === "gestor_direto" && gestorUserId ? gestorUserId : null,
                 prazo_dias: t.prazo_dias,
                 prazo_data: prazoDate.toISOString().slice(0, 10),
+                bloqueante: t.bloqueante || false,
+                motivo_bloqueio: t.motivo_bloqueio || null,
               };
             });
             if (tarefas.length > 0) {
