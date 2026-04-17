@@ -73,6 +73,7 @@ function diasDesdeISO(dateStr: string): number {
 export default function MinhasTarefas() {
   const navigate = useNavigate();
   const { user, roles } = useAuth();
+  const { userRoles, isSuperAdmin, isAdminRH } = usePermissions();
   const [tarefas, setTarefas] = useState<Tarefa[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"minhas" | "acompanhamento">("minhas");
@@ -80,6 +81,7 @@ export default function MinhasTarefas() {
   const [tipoFilter, setTipoFilter] = useState<string>("todos");
   const [sistemaFilter, setSistemaFilter] = useState<string>("todos");
   const [agrupamento, setAgrupamento] = useState<AgrupamentoTipo>("prioridade");
+  const [prioridadesDia, setPrioridadesDia] = useState<PrioridadeDia[]>([]);
 
   // Conclusão
   const [concluirTarefa, setConcluirTarefa] = useState<Tarefa | null>(null);
@@ -89,6 +91,12 @@ export default function MinhasTarefas() {
 
   // Cancelar
   const [cancelarTarefa, setCancelarTarefa] = useState<Tarefa | null>(null);
+
+  // Quem vê a seção "Prioridades do Dia"
+  const isGestorRH = (userRoles as string[]).includes("gestor_rh");
+  const isGestorDireto = (userRoles as string[]).includes("gestor_direto");
+  const isColaboradorPuro = !isSuperAdmin && !isAdminRH && !isGestorRH && !isGestorDireto;
+  const showPrioridadesRH = isSuperAdmin || isAdminRH || isGestorRH;
 
   const loadTarefas = useCallback(async () => {
     if (!user) return;
