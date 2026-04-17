@@ -40,6 +40,7 @@ interface TarefaBase {
   prioridade: string | null;
   bloqueante: boolean | null;
   motivo_bloqueio?: string | null;
+  somente_clt?: boolean | null;
 }
 
 interface Personalizacao {
@@ -222,7 +223,7 @@ export default function ProcessoEditor() {
       toast.error("Preencha o título");
       return;
     }
-    const payload = {
+    const payload: any = {
       template_id: templateBaseId,
       ordem: editingTarefa.ordem ?? tarefasPadrao.length + 1,
       titulo: editingTarefa.titulo,
@@ -233,6 +234,8 @@ export default function ProcessoEditor() {
       prazo_dias: editingTarefa.prazo_dias ?? 0,
       prioridade: editingTarefa.prioridade ?? "normal",
       bloqueante: editingTarefa.bloqueante ?? false,
+      motivo_bloqueio: editingTarefa.motivo_bloqueio ?? null,
+      somente_clt: editingTarefa.somente_clt ?? false,
     };
     const { error } = editingTarefa.id
       ? await supabase.from("sncf_templates_tarefas").update(payload).eq("id", editingTarefa.id)
@@ -687,6 +690,15 @@ function ListaTarefas({
               {t.bloqueante && <Badge variant="destructive" className="text-[10px]">⚠ Legal</Badge>}
               {t.prioridade === "urgente" && <Badge variant="destructive" className="text-[10px]">Urgente</Badge>}
               {t.area_destino && <Badge variant="outline" className="text-[10px]">{t.area_destino}</Badge>}
+              {t.somente_clt && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] bg-primary/10 text-primary border-primary/30"
+                  title="Esta tarefa é gerada apenas para colaboradores CLT"
+                >
+                  CLT
+                </Badge>
+              )}
             </div>
             {t.descricao && <p className="text-xs text-muted-foreground mt-1">{t.descricao}</p>}
             <div className="flex gap-3 text-xs text-muted-foreground mt-1.5 flex-wrap">
@@ -833,6 +845,15 @@ function TarefaDialog({
               />
             </div>
           )}
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={tarefa?.somente_clt ?? false}
+              onCheckedChange={(v) => setTarefa({ ...tarefa, somente_clt: v })}
+            />
+            <Label className="cursor-pointer" title="Quando ativada, esta tarefa será gerada apenas para colaboradores CLT (não para PJ)">
+              Apenas para colaboradores CLT
+            </Label>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
