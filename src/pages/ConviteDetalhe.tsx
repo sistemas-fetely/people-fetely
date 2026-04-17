@@ -341,6 +341,25 @@ export default function ConviteDetalhe() {
                 bloqueante: t.bloqueante || false,
                 motivo_bloqueio: t.motivo_bloqueio || null,
               };
+            });
+            if (tarefas.length > 0) {
+              await supabase.from("sncf_tarefas").insert(tarefas as any);
+
+              // Notificar responsáveis das tarefas
+              const responsaveisUnicos = [...new Set(tarefas.filter((t) => t.responsavel_user_id).map((t) => t.responsavel_user_id as string))];
+              for (const userId of responsaveisUnicos) {
+                await supabase.from("notificacoes_rh").insert({
+                  tipo: "onboarding_tarefa_atribuida",
+                  titulo: `Novas tarefas de onboarding atribuídas`,
+                  mensagem: `Você tem tarefas pendentes no onboarding de ${convite.nome}. Acesse o módulo de Onboarding para verificar.`,
+                  link: "/onboarding",
+                  user_id: userId,
+                });
+              }
+            }
+          }
+        } catch (onbErr) {
+          console.error("Erro ao criar onboarding:", onbErr);
         }
 
         toast.success("Colaborador CLT criado com sucesso!");
