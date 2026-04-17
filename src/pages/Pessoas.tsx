@@ -112,6 +112,7 @@ export default function Pessoas() {
   const totalCLT = pessoas.filter((p) => p.tipo === "CLT").length;
   const totalPJ = pessoas.filter((p) => p.tipo === "PJ").length;
   const totalAtivos = pessoas.filter((p) => p.status === "ativo").length;
+  const totalSemAcesso = pessoas.filter((p) => !p.user_id && p.status !== "desligado" && p.status !== "encerrado").length;
 
   const filtered = pessoas.filter((p) => {
     const matchSearch =
