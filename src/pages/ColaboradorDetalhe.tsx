@@ -79,7 +79,7 @@ export default function ColaboradorDetalhe() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { canSeeSalary } = usePermissions();
   const { isCargoClevel } = useCLevelCargos();
   const { data: sistemasParametros } = useParametros("sistema");
@@ -245,6 +245,8 @@ export default function ColaboradorDetalhe() {
               .insert({
                 colaborador_id: id,
                 colaborador_tipo: "clt",
+                coordenador_user_id: user?.id || null,
+                coordenador_nome: profile?.full_name || null,
               } as any)
               .select("id")
               .single();
