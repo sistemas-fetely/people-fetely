@@ -676,6 +676,67 @@ export default function MinhasTarefas() {
         </Button>
       </div>
 
+      {/* Prioridades do Dia — ações operacionais (não-tarefa) */}
+      {!isColaboradorPuro && prioridadesDia.length > 0 && (
+        <Card className="border-l-4 border-l-amber-500 bg-amber-50/30 dark:bg-amber-950/10">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Flame className="h-4 w-4 text-amber-600" /> Prioridades do Dia
+              <Badge variant="outline" className="ml-auto text-[10px]">
+                {prioridadesDia.length} pendência{prioridadesDia.length !== 1 ? "s" : ""}
+              </Badge>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Ações operacionais que precisam da sua atenção hoje
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {prioridadesDia.map((p) => {
+              const Icone = p.icone;
+              return (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between gap-3 p-3 rounded-lg bg-background border hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() => navigate(p.link)}
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div
+                      className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+                        p.prioridade === "urgente" ? "bg-destructive/10" : "bg-amber-100 dark:bg-amber-950/40"
+                      )}
+                    >
+                      <Icone
+                        className={cn(
+                          "h-4 w-4",
+                          p.prioridade === "urgente" ? "text-destructive" : "text-amber-600"
+                        )}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm">{p.titulo}</p>
+                      <p className="text-xs text-muted-foreground truncate">{p.subtitulo}</p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={p.prioridade === "urgente" ? "default" : "outline"}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(p.link);
+                    }}
+                    style={p.prioridade === "urgente" ? { backgroundColor: "#1A4A3A" } : undefined}
+                    className={p.prioridade === "urgente" ? "text-white hover:opacity-90" : ""}
+                  >
+                    {p.botaoTexto}
+                  </Button>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
+
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card>
