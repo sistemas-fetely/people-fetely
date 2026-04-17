@@ -85,7 +85,7 @@ function FinancialKpiCard({
 
 const tooltipStyle = { borderRadius: 8, border: "1px solid hsl(var(--border))", background: "hsl(var(--card))", fontSize: 12 };
 
-export default function Dashboard() {
+function DashboardGestao() {
   const {
     clt, pj, headcount, ferias, aniversariantes,
     statusClt, turnover, folha, nfPendentes, pagPjPendentes,
