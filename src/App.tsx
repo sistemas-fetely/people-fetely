@@ -259,11 +259,6 @@ const App = () => (
                   <PlaceholderPage title="Configurações" description="Parâmetros do sistema e permissões" />
                 </ProtectedRoute>
               } />
-              <Route path="/gerenciar-usuarios" element={
-                <ProtectedRoute permModule="usuarios">
-                  <GerenciarUsuarios />
-                </ProtectedRoute>
-              } />
               <Route path="/configurar-perfis" element={
                 <ProtectedRoute permModule="usuarios">
                   <ConfigurarPerfis />
