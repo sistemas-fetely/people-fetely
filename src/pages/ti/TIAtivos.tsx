@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, MoreHorizontal, Search, Pencil, UserPlus, UserMinus, Wrench, Trash2, Package } from "lucide-react";
+import { Plus, MoreHorizontal, Search, Pencil, UserPlus, UserMinus, Trash2, Package } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import TIAtivoForm from "./TIAtivoForm";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +31,7 @@ interface Ativo {
   status: string;
   estado: string;
   condicao: string | null;
+  em_manutencao: boolean | null;
   colaborador_id: string | null;
   colaborador_tipo: string | null;
   colaborador_nome: string | null;
@@ -46,10 +47,9 @@ const condicaoVariant: Record<string, { label: string; className: string }> = {
 };
 
 const statusVariant: Record<string, { label: string; className: string }> = {
-  disponivel: { label: "Disponível", className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100" },
-  atribuido: { label: "Atribuído", className: "bg-blue-100 text-blue-700 hover:bg-blue-100" },
-  manutencao: { label: "Em Manutenção", className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100" },
-  descartado: { label: "Descartado", className: "bg-gray-100 text-gray-500 hover:bg-gray-100" },
+  disponivel: { label: "Disponível", className: "bg-emerald-100 text-emerald-700 border-0" },
+  atribuido: { label: "Atribuído", className: "bg-blue-100 text-blue-700 border-0" },
+  descartado: { label: "Descartado", className: "bg-gray-100 text-gray-500 border-0" },
 };
 
 export default function TIAtivos() {
@@ -73,7 +73,7 @@ export default function TIAtivos() {
     if (error) {
       toast({ title: "Erro ao carregar ativos", description: error.message, variant: "destructive" });
     } else if (data) {
-      setAtivos(data as Ativo[]);
+      setAtivos(data as unknown as Ativo[]);
       const tipos = Array.from(new Set(data.map((a) => a.tipo).filter(Boolean)));
       setTiposDisponiveis(tipos);
     }
@@ -127,16 +127,7 @@ export default function TIAtivos() {
     void load();
   };
 
-  const handleManutencao = async (ativo: Ativo) => {
-    const { error } = await supabase.from("ti_ativos").update({ status: "manutencao" }).eq("id", ativo.id);
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
-      return;
-    }
-    await registrarHistorico(ativo.id, "manutencao");
-    toast({ title: "Ativo enviado para manutenção" });
-    void load();
-  };
+  // Manutenção é registrada via ManutencoesSection (dentro do form do ativo)
 
   const handleDescartar = async () => {
     if (!deleteId) return;
@@ -207,7 +198,6 @@ export default function TIAtivos() {
                 <SelectItem value="todos">Todos os status</SelectItem>
                 <SelectItem value="disponivel">Disponível</SelectItem>
                 <SelectItem value="atribuido">Atribuído</SelectItem>
-                <SelectItem value="manutencao">Manutenção</SelectItem>
                 <SelectItem value="descartado">Descartado</SelectItem>
               </SelectContent>
             </Select>
@@ -252,7 +242,14 @@ export default function TIAtivos() {
                       <TableCell className="font-mono text-xs">{a.numero_serie || "—"}</TableCell>
                       <TableCell className="font-mono text-xs">{a.numero_patrimonio || "—"}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className={v.className}>{v.label}</Badge>
+                        <div className="flex flex-wrap items-center gap-1">
+                          <Badge variant="outline" className={v.className}>{v.label}</Badge>
+                          {a.em_manutencao && (
+                            <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-0 text-[10px]">
+                              🔧 Manutenção
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={c.className}>{c.label}</Badge>
@@ -280,11 +277,7 @@ export default function TIAtivos() {
                                 <UserMinus className="h-4 w-4 mr-2" /> Devolver
                               </DropdownMenuItem>
                             )}
-                            {a.status !== "manutencao" && a.status !== "descartado" && (
-                              <DropdownMenuItem onClick={() => handleManutencao(a)}>
-                                <Wrench className="h-4 w-4 mr-2" /> Enviar para manutenção
-                              </DropdownMenuItem>
-                            )}
+                            {/* Manutenção é gerenciada na ficha do ativo (seção Manutenções) */}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setDeleteId(a.id)} className="text-destructive">
                               <Trash2 className="h-4 w-4 mr-2" /> Descartar
