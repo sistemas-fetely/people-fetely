@@ -83,9 +83,9 @@ Deno.serve(async (req) => {
     });
 
     // 3) Coletar contexto do usuário + conhecimento + histórico (paralelo)
-    const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, historicoRes] = await Promise.all([
+    const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, templatesRes, tarefasTemplateRes, extensoesRes, tarefasExtensoesRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, historicoRes] = await Promise.all([
       supabase.from("profiles").select("full_name, colaborador_tipo").eq("user_id", user.id).maybeSingle(),
-      supabase.from("colaboradores_clt").select("cargo, departamento, nome_completo").eq("user_id", user.id).maybeSingle(),
+      supabase.from("colaboradores_clt").select("id, cargo, departamento, nome_completo").eq("user_id", user.id).maybeSingle(),
       supabase.from("contratos_pj").select("tipo_servico, departamento, contato_nome").eq("user_id", user.id).maybeSingle(),
       supabase
         .from("sncf_tarefas")
@@ -94,7 +94,11 @@ Deno.serve(async (req) => {
         .in("status", ["pendente", "atrasada", "em_andamento"])
         .order("prazo_data", { ascending: true })
         .limit(5),
-      supabase.from("sncf_processos_categorias").select("slug, nome, descricao").eq("ativo", true).limit(30),
+      supabase.from("sncf_processos_categorias").select("id, slug, nome, descricao").eq("ativo", true).limit(30),
+      (supabase as any).from("sncf_templates_processos").select("id, categoria_id"),
+      (supabase as any).from("sncf_templates_tarefas").select("template_id, titulo, descricao, prazo_dias, responsavel_role, somente_clt, ordem").order("ordem"),
+      (supabase as any).from("sncf_template_extensoes").select("id, categoria_id, dimensao, referencia_label, nome, descricao").eq("ativo", true),
+      (supabase as any).from("sncf_template_extensoes_tarefas").select("extensao_id, titulo, descricao, prazo_dias, ordem").order("ordem"),
       supabase.from("parametros").select("label, valor").eq("categoria", "sistema").eq("ativo", true).limit(50),
       supabase.from("parametros").select("label").eq("categoria", "departamento").eq("ativo", true).limit(50),
       supabase.from("cargos").select("nome, departamento, missao, responsabilidades").eq("ativo", true).limit(40),
@@ -129,9 +133,66 @@ Deno.serve(async (req) => {
     const tituloTarefas = tarefasPendentes.slice(0, 3).map((t: any) => `"${t.titulo}"`).join(", ") || "nenhuma";
 
     // Montar blocos de conhecimento
-    const blocoProcessos = (processosRes.data || [])
-      .map((p: any) => `- ${p.nome}${p.descricao ? `: ${clipText(p.descricao, 150)}` : ""}`)
-      .join("\n") || "(nenhum cadastrado)";
+    // Indexar templates/tarefas/extensões por categoria
+    const templatesArr = (templatesRes as any).data || [];
+    const tarefasTemplateArr = (tarefasTemplateRes as any).data || [];
+    const extensoesArr = (extensoesRes as any).data || [];
+    const tarefasExtensoesArr = (tarefasExtensoesRes as any).data || [];
+
+    const templatePorCategoria = new Map<string, string>();
+    templatesArr.forEach((t: any) => {
+      if (!templatePorCategoria.has(t.categoria_id)) templatePorCategoria.set(t.categoria_id, t.id);
+    });
+
+    const processosArr = (processosRes.data || []) as any[];
+
+    // Cap total de tarefas em 80 — se exceder, manter apenas títulos das extras
+    const totalTarefasEstimado = tarefasTemplateArr.length + tarefasExtensoesArr.length;
+    const truncar = totalTarefasEstimado > 80;
+
+    const blocoProcessos = processosArr.map((p: any) => {
+      const linhas: string[] = [`### ${p.nome}${p.descricao ? ` — ${clipText(p.descricao, 200)}` : ""}`];
+
+      // Tarefas padrão
+      const templateId = templatePorCategoria.get(p.id);
+      if (templateId) {
+        const tarefas = tarefasTemplateArr.filter((t: any) => t.template_id === templateId);
+        if (tarefas.length) {
+          linhas.push("Tarefas padrão:");
+          tarefas.forEach((t: any) => {
+            if (truncar) {
+              linhas.push(`- ${t.titulo}`);
+            } else {
+              const meta = [
+                t.prazo_dias != null ? `${t.prazo_dias}d` : null,
+                t.responsavel_role || null,
+                t.somente_clt ? "CLT only" : null,
+              ].filter(Boolean).join(" · ");
+              linhas.push(`- ${t.titulo}${meta ? ` [${meta}]` : ""}${t.descricao ? `: ${clipText(t.descricao, 120)}` : ""}`);
+            }
+          });
+        }
+      }
+
+      // Personalizações
+      const exts = extensoesArr.filter((e: any) => e.categoria_id === p.id);
+      if (exts.length) {
+        linhas.push("Personalizações:");
+        exts.forEach((e: any) => {
+          linhas.push(`- ${e.nome} (${e.dimensao}: ${e.referencia_label})${e.descricao ? ` — ${clipText(e.descricao, 100)}` : ""}`);
+          const tExt = tarefasExtensoesArr.filter((te: any) => te.extensao_id === e.id);
+          tExt.forEach((te: any) => {
+            if (truncar) {
+              linhas.push(`  · ${te.titulo}`);
+            } else {
+              linhas.push(`  · ${te.titulo}${te.prazo_dias != null ? ` [${te.prazo_dias}d]` : ""}${te.descricao ? `: ${clipText(te.descricao, 100)}` : ""}`);
+            }
+          });
+        });
+      }
+
+      return linhas.join("\n");
+    }).join("\n\n") || "(nenhum cadastrado)";
 
     const blocoSistemas = (sistemasRes.data || [])
       .map((s: any) => `- ${s.label}${s.valor ? ` (${clipText(s.valor, 100)})` : ""}`)
@@ -160,11 +221,39 @@ Deno.serve(async (req) => {
 
 A FETELY é uma marca de alegria com intenção — papelaria, utilidades e decoração com espírito comemorativo. DNA: "Celebre o que importa", "Gesto não se delega pro ChatGPT", autogestão com maturidade, tudo via sistema ou e-mail automático.
 
-SEU PAPEL:
-- Responder dúvidas dos colaboradores sobre processos, sistemas, benefícios, contratação, qualquer coisa relacionada ao trabalho na Fetely
-- Usar APENAS as informações fornecidas no contexto abaixo
-- NUNCA invente informações. NUNCA dê conselhos jurídicos, financeiros ou médicos definitivos
-- Sempre que usar informação específica, mencione brevemente a fonte (ex: "Segundo o processo de Onboarding cadastrado...")
+ESCOPO DE RESPOSTAS:
+
+VOCÊ RESPONDE SOBRE:
+1. Qualquer coisa relacionada à Fetely: processos, sistemas, benefícios, cargos, departamentos, colaboradores, documentação, políticas. Esse é seu foco principal.
+2. Perguntas PRÁTICAS DO DIA A DIA DE TRABALHO, mesmo que não sejam sobre a Fetely:
+   - Cálculos simples (porcentagens, conversões, datas, matemática básica)
+   - Ajuda com redação profissional (revisar texto de e-mail, sugerir como melhorar uma mensagem para colega)
+   - Tradução rápida de palavras ou frases curtas entre idiomas
+   - Formatação (como fazer tabela em markdown, resumir texto longo que o usuário colou)
+   - Explicações rápidas de conceitos de trabalho (ex: o que é uma CNH categoria D, o que significa eSocial)
+
+VOCÊ NÃO RESPONDE SOBRE:
+1. Trivia / conhecimento geral sem propósito prático: capitais de países, curiosidades históricas, esportes, cultura pop, quiz
+2. Conselhos pessoais: relacionamentos, decisões de vida, temas íntimos
+3. Opinião política, religiosa, ou sobre temas controversos
+4. Conselhos médicos, jurídicos ou financeiros específicos (pode explicar conceitos gerais, mas sempre sugerir profissional qualificado para decisão)
+5. Gerar código de programação, criar imagens, compor músicas, escrever ficção longa
+6. Qualquer tarefa que substitua o raciocínio do colaborador em decisão importante de trabalho
+
+QUANDO RECUSAR:
+- Seja curto, caloroso e direto. Ex: "Essa pergunta foge do meu foco aqui. Meu escopo é te apoiar com temas da Fetely e tarefas práticas do trabalho. Posso te ajudar com algo assim?"
+- NÃO seja robótico ("Não posso responder isso")
+- SUGIRA um caminho alternativo quando fizer sentido
+
+QUANDO A PERGUNTA É AMBÍGUA (pode ser prática ou trivia):
+- Exemplo: "Quanto é 37 vezes 89?" → É cálculo prático, responder
+- Exemplo: "Qual a fórmula do Bhaskara?" → Conceito educacional, se for do contexto escolar pode responder curto; se for trivia, recusar
+- Em dúvida, prefira ajudar se a resposta é rápida e útil
+
+REGRAS DE FONTES:
+- Use APENAS as informações fornecidas no contexto abaixo para temas da Fetely
+- NUNCA invente informações sobre a Fetely. NUNCA dê conselhos jurídicos, financeiros ou médicos definitivos
+- Sempre que usar informação específica da Fetely, mencione brevemente a fonte (ex: "Segundo o processo de Onboarding cadastrado...")
 
 CONTEXTO DO USUÁRIO:
 Nome: ${nome}
