@@ -1,5 +1,5 @@
 import {
-  LayoutGrid, ClipboardList, UsersRound, UserCog, LayoutTemplate, ChevronDown,
+  Settings2, ClipboardList, UsersRound, UserCog, LayoutTemplate, ChevronDown,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -27,10 +27,10 @@ export function SNCFQuickAccess() {
           size="sm"
           className="w-full justify-start gap-3 px-4 py-2.5 h-auto rounded-xl text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
         >
-          <LayoutGrid className="h-[18px] w-[18px] shrink-0" />
+          <Settings2 className="h-[18px] w-[18px] shrink-0" />
           {!collapsed && (
             <>
-              <span>SNCF</span>
+              <span>Administração</span>
               <ChevronDown className="h-3 w-3 ml-auto opacity-60" />
             </>
           )}
@@ -38,14 +38,6 @@ export function SNCFQuickAccess() {
       </PopoverTrigger>
       <PopoverContent className="w-60 p-1" side="right" align="start">
         <div className="space-y-0.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 text-sm"
-            onClick={() => navigate("/sncf")}
-          >
-            <LayoutGrid className="h-4 w-4" /> Portal SNCF
-          </Button>
           <Button
             variant="ghost"
             size="sm"
