@@ -96,6 +96,18 @@ export default function FalaFetely() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensagens]);
 
+  // Rotaciona frases de "pensando" enquanto aguarda primeiro token
+  useEffect(() => {
+    if (!pensando) return;
+    setEstadoPensando(FRASES_PENSANDO[0]);
+    let idx = 0;
+    const interval = setInterval(() => {
+      idx = (idx + 1) % FRASES_PENSANDO.length;
+      setEstadoPensando(FRASES_PENSANDO[idx]);
+    }, 1200);
+    return () => clearInterval(interval);
+  }, [pensando]);
+
   async function carregarConversas() {
     const { data } = await supabase
       .from("fala_fetely_conversas")
