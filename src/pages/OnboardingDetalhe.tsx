@@ -488,6 +488,17 @@ export default function OnboardingDetalhe() {
                               {atrasoLegal ? "LEGAL — " : ""}Atrasada há {dias} dia{dias !== 1 ? "s" : ""}
                             </Badge>
                           )}
+                          {t.origem_extensao_id && extensoesMap[t.origem_extensao_id] && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] border-0 gap-0.5 bg-success/15 text-success"
+                            >
+                              {extensoesMap[t.origem_extensao_id].dimensao === "cargo" && "Cargo: "}
+                              {extensoesMap[t.origem_extensao_id].dimensao === "departamento" && "Depto: "}
+                              {extensoesMap[t.origem_extensao_id].dimensao === "sistema" && "Sistema: "}
+                              {extensoesMap[t.origem_extensao_id].referencia_label}
+                            </Badge>
+                          )}
                         </div>
 
                         {t.descricao && (
