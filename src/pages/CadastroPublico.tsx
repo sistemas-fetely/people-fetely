@@ -588,7 +588,8 @@ export default function CadastroPublico() {
     try {
       const formData = methods.getValues();
       const dataWithDocs = { ...formData, documentos_upload: uploadedFiles, lgpd_aceito: lgpdAceito };
-      await supabase.rpc("submit_convite_cadastro", {
+      // Auto-save: salva dados parciais sem mudar status e sem disparar e-mail
+      await supabase.rpc("autosave_convite_cadastro", {
         _token: convite.token,
         _dados: dataWithDocs as any,
       });
