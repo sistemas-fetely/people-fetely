@@ -131,6 +131,24 @@ export default function OnboardingDetalhe() {
 
     const tarefas = (tarefasData || []) as any as Tarefa[];
 
+    // Buscar metadados das extensões referenciadas
+    const extensaoIds = Array.from(
+      new Set(tarefas.map((t) => t.origem_extensao_id).filter((x): x is string => !!x))
+    );
+    if (extensaoIds.length > 0) {
+      const { data: exts } = await (supabase as any)
+        .from("sncf_template_extensoes")
+        .select("id, dimensao, referencia_label")
+        .in("id", extensaoIds);
+      const map: Record<string, ExtensaoMeta> = {};
+      (exts || []).forEach((e: any) => {
+        map[e.id] = { id: e.id, dimensao: e.dimensao, referencia_label: e.referencia_label };
+      });
+      setExtensoesMap(map);
+    } else {
+      setExtensoesMap({});
+    }
+
     // Marcar atrasadas
     const hojeStr = new Date().toISOString().split("T")[0];
     const atrasadasIds = tarefas
