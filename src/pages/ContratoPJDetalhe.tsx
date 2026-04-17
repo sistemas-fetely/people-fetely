@@ -180,7 +180,7 @@ export default function ContratoPJDetalhe() {
                   const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", contrato.gestor_direto_id).single();
                   gestorUserId = gp?.user_id || null;
                 }
-                const tarefas = getTarefasParaTipo("pj").map((t) => {
+                const tarefas = (await getTarefasParaTipo("pj", supabase)).map((t) => {
                   const prazoDate = new Date(dataInicioPj);
                   prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
                   return {

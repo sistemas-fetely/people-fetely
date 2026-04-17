@@ -397,7 +397,7 @@ export default function ConviteDetalhe() {
               const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", (convite as any).lider_direto_id).single();
               gestorUserId = (gp as any)?.user_id || null;
             }
-            const tarefas = getTarefasDinamicas("clt", dc).map((t) => {
+            const tarefas = (await getTarefasDinamicas("clt", dc, supabase)).map((t) => {
               const prazoDate = new Date(dataAdmissao);
               prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
               return {
@@ -591,7 +591,7 @@ export default function ConviteDetalhe() {
               const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", (convite as any).lider_direto_id).single();
               gestorUserId = (gp as any)?.user_id || null;
             }
-            const tarefas = getTarefasDinamicas("pj", dc).map((t) => {
+            const tarefas = (await getTarefasDinamicas("pj", dc, supabase)).map((t) => {
               const prazoDate = new Date(dataInicio);
               prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
               return {

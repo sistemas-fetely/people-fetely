@@ -259,7 +259,7 @@ export default function ColaboradorDetalhe() {
                 const { data: gp } = await supabase.from("profiles").select("user_id").eq("id", colaborador.gestor_direto_id).single();
                 gestorUserId = gp?.user_id || null;
               }
-              const tarefas = getTarefasParaTipo("clt").map((t) => {
+              const tarefas = (await getTarefasParaTipo("clt", supabase)).map((t) => {
                 const prazoDate = new Date(dataInicioCl);
                 prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
                 return {

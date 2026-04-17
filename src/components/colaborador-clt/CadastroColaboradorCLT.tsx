@@ -175,7 +175,7 @@ export function CadastroColaboradorCLT() {
             gestorUserId = gp?.user_id || null;
           }
 
-          const tarefaTemplates = getTarefasDinamicas("clt", provisionamento);
+          const tarefaTemplates = await getTarefasDinamicas("clt", provisionamento, supabase);
           const tarefas = tarefaTemplates.map((t) => {
             const prazoDate = new Date(dataAdmissao);
             prazoDate.setDate(prazoDate.getDate() + t.prazo_dias);
