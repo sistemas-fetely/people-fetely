@@ -7,9 +7,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   CheckCircle2, AlertCircle, AlertTriangle, Clock, Users, FileText,
   Briefcase, UserPlus, ClipboardCheck, Mail, FileSignature, Receipt,
-  TrendingUp, Calendar, Gauge,
+  TrendingUp, Calendar, Gauge, ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDashboardData } from "@/hooks/useDashboardData";
+
+type AlertaPrioridade = "alta" | "media" | "baixa";
+interface AlertaItem {
+  id: string;
+  titulo: string;
+  detalhe: string;
+  prioridade: AlertaPrioridade;
+  rota?: string;
+}
 
 type Prioridade = "urgente" | "atencao" | "normal";
 
