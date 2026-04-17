@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users, Search, MoreHorizontal, Eye, Edit,
-  UserCheck, Briefcase, Building2, Plus, ChevronDown, CircleSlash, CheckCircle2,
+  UserCheck, Briefcase, Building2, Plus, ChevronDown, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card, CardContent } from "@/components/ui/card";
