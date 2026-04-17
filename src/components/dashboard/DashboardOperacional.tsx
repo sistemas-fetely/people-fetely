@@ -20,6 +20,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { NovaTarefaDialog } from "./NovaTarefaDialog";
+import InsightsIA from "./InsightsIA";
 import { toast } from "sonner";
 
 type AlertaPrioridade = "alta" | "media" | "baixa";
@@ -89,6 +90,16 @@ export function DashboardOperacional() {
   const [novaOpen, setNovaOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [tarefasLegaisAtrasadas, setTarefasLegaisAtrasadas] = useState<{ nome: string }[]>([]);
+  // Métricas brutas para o card de Insights IA
+  const [insightsData, setInsightsData] = useState({
+    convitesPendentes: 0,
+    onboardingsAtrasados: 0,
+    vagasAbertas: 0,
+    candidatosTriagem: 0,
+    contratosVencendo: 0,
+    tarefasBloqueantes: 0,
+    tempoMedioContratacao: 0,
+  });
 
   const dashData = useDashboardData();
 
@@ -557,6 +568,27 @@ export function DashboardOperacional() {
         // Buscar tudo de onboarding seria query extra; manter simples por ora.
 
         setVelocidade(novasVelocidades);
+
+        // ─── Métricas para card Insights IA ───
+        const tempoMedioContratacao =
+          convitesPreenchidosComData.length >= 1
+            ? Math.round(
+                convitesPreenchidosComData.reduce((acc, c) => {
+                  const ms = new Date(c.preenchido_em!).getTime() - new Date(c.created_at).getTime();
+                  return acc + ms / (1000 * 60 * 60 * 24);
+                }, 0) / convitesPreenchidosComData.length,
+              )
+            : 0;
+
+        setInsightsData({
+          convitesPendentes: convitesPend,
+          onboardingsAtrasados: tarefasAtrasadas.length,
+          vagasAbertas,
+          candidatosTriagem: candidatosNovos.length,
+          contratosVencendo: contratosVenc.length,
+          tarefasBloqueantes: atrasadasBloqueantes.length,
+          tempoMedioContratacao,
+        });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -788,6 +820,9 @@ export function DashboardOperacional() {
           </div>
         </div>
       )}
+
+      {/* Seção: Insights IA — análise contextual + notícias do setor */}
+      <InsightsIA {...insightsData} />
 
       {/* Seção 3: Velocidade */}
       {velocidade.length > 0 && (
