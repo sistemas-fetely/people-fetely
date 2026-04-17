@@ -87,7 +87,7 @@ export default function ContratoPJDetalhe() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { hasPermission, canSeeSalary } = usePermissions();
   const { isCargoClevel } = useCLevelCargos();
   const canEditContract = hasPermission("contratos_pj", "edit");
@@ -166,6 +166,8 @@ export default function ContratoPJDetalhe() {
                 .insert({
                   colaborador_id: id,
                   colaborador_tipo: "pj",
+                  coordenador_user_id: user?.id || null,
+                  coordenador_nome: profile?.full_name || null,
                 } as any)
                 .select("id")
                 .single();

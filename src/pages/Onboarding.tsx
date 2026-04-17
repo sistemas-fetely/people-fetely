@@ -6,10 +6,9 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CheckCircle2, Clock, AlertTriangle, Loader2, ChevronRight, User } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle2, Clock, AlertTriangle, Loader2, TrendingUp } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -27,6 +26,8 @@ type Checklist = {
   status: string;
   created_at: string;
   concluido_em: string | null;
+  coordenador_user_id?: string | null;
+  coordenador_nome?: string | null;
   nome?: string;
   cargo?: string;
   departamento?: string;
@@ -45,12 +46,13 @@ type Tarefa = {
   status: string;
   concluida_em: string | null;
   concluida_por: string | null;
+  area_destino?: string | null;
 };
 
 const statusFilter = [
   { value: "todos", label: "Todos" },
   { value: "em_andamento", label: "Em Andamento" },
-  { value: "atrasado", label: "Atrasado" },
+  { value: "atrasado", label: "Com atrasos" },
   { value: "concluido", label: "Concluído" },
 ];
 
@@ -107,7 +109,6 @@ export default function Onboarding() {
         .order("prazo_dias", { ascending: true });
 
       (tarefas || []).forEach((t: any) => {
-        // Compat: expor checklist_id no objeto pra UI existente
         const item = { ...t, checklist_id: t.processo_id };
         if (!tarefasMap[t.processo_id]) tarefasMap[t.processo_id] = [];
         tarefasMap[t.processo_id].push(item);
@@ -153,8 +154,16 @@ export default function Onboarding() {
     return Math.round((t.filter((x) => x.status === "concluida").length / t.length) * 100);
   }
 
+  function isTarefaAtrasada(t: Tarefa) {
+    return t.status === "atrasada" || (t.status === "pendente" && t.prazo_data && new Date(t.prazo_data) < new Date());
+  }
+
   function hasOverdue(cl: Checklist) {
-    return (cl.tarefas || []).some((t) => t.status === "atrasada" || (t.status === "pendente" && t.prazo_data && new Date(t.prazo_data) < new Date()));
+    return (cl.tarefas || []).some(isTarefaAtrasada);
+  }
+
+  function countOverdue(cl: Checklist) {
+    return (cl.tarefas || []).filter(isTarefaAtrasada).length;
   }
 
   const filtered = checklists.filter((cl) => {
@@ -163,6 +172,22 @@ export default function Onboarding() {
     if (filter === "atrasado") return cl.status === "em_andamento" && hasOverdue(cl);
     return cl.status === "em_andamento" && !hasOverdue(cl);
   });
+
+  // KPIs
+  const totalAtivos = checklists.filter((c) => c.status === "em_andamento").length;
+  const totalAtrasadas = checklists.reduce((acc, cl) => acc + countOverdue(cl), 0);
+  const inicioMes = new Date();
+  inicioMes.setDate(1);
+  inicioMes.setHours(0, 0, 0, 0);
+  const concluidosMes = checklists.filter(
+    (c) => c.status === "concluido" && c.concluido_em && new Date(c.concluido_em) >= inicioMes
+  ).length;
+  const totalConcluidasGeral = checklists.reduce(
+    (acc, cl) => acc + (cl.tarefas || []).filter((t) => t.status === "concluida").length,
+    0
+  );
+  const totalTarefasGeral = checklists.reduce((acc, cl) => acc + (cl.tarefas || []).length, 0);
+  const percConclusaoGeral = totalTarefasGeral > 0 ? Math.round((totalConcluidasGeral / totalTarefasGeral) * 100) : 0;
 
   async function toggleTarefa(tarefa: Tarefa) {
     if (!user) return;
@@ -177,20 +202,17 @@ export default function Onboarding() {
     if (error) {
       toast.error("Erro ao atualizar tarefa");
     } else {
-      // Refresh
       if (selectedChecklist) {
         const updated = { ...selectedChecklist };
         updated.tarefas = (updated.tarefas || []).map((t) =>
           t.id === tarefa.id ? { ...t, ...updateData } : t
         );
-        // Check if all done
         const allDone = (updated.tarefas || []).every((t) => t.status === "concluida");
         if (allDone && updated.status !== "concluido") {
           await supabase.from("onboarding_checklists").update({ status: "concluido", concluido_em: new Date().toISOString() } as any).eq("id", updated.id);
           updated.status = "concluido";
           updated.concluido_em = new Date().toISOString();
 
-          // Notify HR
           await supabase.from("notificacoes_rh").insert({
             tipo: "onboarding_concluido",
             titulo: `Onboarding concluído: ${updated.nome}`,
@@ -240,7 +262,7 @@ export default function Onboarding() {
             </div>
             <div className="space-y-3">
               {myTarefas.map((t) => (
-                <Card key={t.id} className={t.status === "atrasada" ? "border-warning" : ""}>
+                <Card key={t.id} className={isTarefaAtrasada(t) ? "border-warning" : ""}>
                   <CardContent className="p-4 flex items-start gap-3">
                     <Checkbox
                       checked={t.status === "concluida"}
@@ -259,7 +281,7 @@ export default function Onboarding() {
                         </p>
                       )}
                     </div>
-                    {t.status === "atrasada" && <Badge variant="outline" className="bg-warning/10 text-warning border-0 text-xs">Atrasada</Badge>}
+                    {isTarefaAtrasada(t) && <Badge variant="outline" className="bg-warning/10 text-warning border-0 text-xs">Atrasada</Badge>}
                     {t.status === "concluida" && <CheckCircle2 className="h-4 w-4 text-success shrink-0" />}
                   </CardContent>
                 </Card>
@@ -289,13 +311,22 @@ export default function Onboarding() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 flex items-center gap-3">
             <Clock className="h-8 w-8 text-primary" />
             <div>
-              <p className="text-2xl font-bold">{checklists.filter((c) => c.status === "em_andamento").length}</p>
+              <p className="text-2xl font-bold">{totalAtivos}</p>
               <p className="text-xs text-muted-foreground">Em andamento</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4 flex items-center gap-3">
+            <TrendingUp className="h-8 w-8 text-info" />
+            <div>
+              <p className="text-2xl font-bold">{percConclusaoGeral}%</p>
+              <p className="text-xs text-muted-foreground">Conclusão geral</p>
             </div>
           </CardContent>
         </Card>
@@ -303,8 +334,8 @@ export default function Onboarding() {
           <CardContent className="p-4 flex items-center gap-3">
             <AlertTriangle className="h-8 w-8 text-warning" />
             <div>
-              <p className="text-2xl font-bold">{checklists.filter((c) => c.status === "em_andamento" && hasOverdue(c)).length}</p>
-              <p className="text-xs text-muted-foreground">Com atraso</p>
+              <p className="text-2xl font-bold">{totalAtrasadas}</p>
+              <p className="text-xs text-muted-foreground">Tarefas atrasadas</p>
             </div>
           </CardContent>
         </Card>
@@ -312,8 +343,8 @@ export default function Onboarding() {
           <CardContent className="p-4 flex items-center gap-3">
             <CheckCircle2 className="h-8 w-8 text-success" />
             <div>
-              <p className="text-2xl font-bold">{checklists.filter((c) => c.status === "concluido").length}</p>
-              <p className="text-xs text-muted-foreground">Concluídos</p>
+              <p className="text-2xl font-bold">{concluidosMes}</p>
+              <p className="text-xs text-muted-foreground">Concluídos este mês</p>
             </div>
           </CardContent>
         </Card>
@@ -328,36 +359,72 @@ export default function Onboarding() {
           {filtered.map((cl) => {
             const progress = getProgress(cl);
             const overdue = hasOverdue(cl);
+            const totalT = (cl.tarefas || []).length;
+            const concluidasT = (cl.tarefas || []).filter((t) => t.status === "concluida").length;
+            const atrasadasT = countOverdue(cl);
+            const porArea = (cl.tarefas || []).reduce((acc: Record<string, { total: number; done: number }>, t) => {
+              const area = t.area_destino || "Geral";
+              if (!acc[area]) acc[area] = { total: 0, done: 0 };
+              acc[area].total++;
+              if (t.status === "concluida") acc[area].done++;
+              return acc;
+            }, {});
+
             return (
               <Card
                 key={cl.id}
-                className={`cursor-pointer hover:shadow-md transition-shadow ${overdue ? "border-warning" : ""}`}
+                className="cursor-pointer hover:shadow-md transition-all"
                 onClick={() => openChecklist(cl)}
               >
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 shrink-0">
-                    <User className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium">{cl.nome}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {cl.colaborador_tipo.toUpperCase()}
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-semibold truncate">{cl.nome}</p>
+                      <p className="text-sm text-muted-foreground truncate">{cl.cargo} · {cl.departamento}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="outline" className="text-xs">{cl.colaborador_tipo?.toUpperCase()}</Badge>
+                      <Badge
+                        variant="outline"
+                        className={
+                          cl.status === "concluido"
+                            ? "bg-success/10 text-success border-0"
+                            : overdue
+                            ? "bg-destructive/10 text-destructive border-0"
+                            : "bg-info/10 text-info border-0"
+                        }
+                      >
+                        {cl.status === "concluido" ? "Concluído" : overdue ? "Com atrasos" : "Em andamento"}
                       </Badge>
-                      {cl.status === "concluido" && (
-                        <Badge variant="outline" className="bg-success/10 text-success border-0 text-xs">Concluído</Badge>
-                      )}
-                      {overdue && cl.status !== "concluido" && (
-                        <Badge variant="outline" className="bg-warning/10 text-warning border-0 text-xs">Atrasado</Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">{cl.cargo} • {cl.departamento}</p>
-                    <div className="mt-2 flex items-center gap-3">
-                      <Progress value={progress} className="h-2 flex-1" />
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">{progress}%</span>
                     </div>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+
+                  <Progress value={progress} className="h-2" />
+
+                  <div className="flex items-center justify-between text-xs text-muted-foreground gap-2 flex-wrap">
+                    <span>
+                      {concluidasT} de {totalT} tarefas concluídas
+                      {atrasadasT > 0 && (
+                        <span className="text-destructive font-medium"> · {atrasadasT} atrasada{atrasadasT > 1 ? "s" : ""}</span>
+                      )}
+                    </span>
+                    {cl.coordenador_nome && <span>Coordenado por: {cl.coordenador_nome}</span>}
+                  </div>
+
+                  {/* Resumo por área */}
+                  {Object.keys(porArea).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {Object.entries(porArea).map(([area, counts]) => (
+                        <Badge
+                          key={area}
+                          variant="outline"
+                          className={`text-[10px] ${counts.done === counts.total ? "bg-success/10 text-success border-0" : "bg-muted text-muted-foreground border-0"}`}
+                        >
+                          {area} {counts.done}/{counts.total}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -375,6 +442,11 @@ export default function Onboarding() {
                 <SheetDescription>
                   {selectedChecklist.cargo} • {selectedChecklist.departamento} • {selectedChecklist.colaborador_tipo.toUpperCase()}
                 </SheetDescription>
+                {selectedChecklist.coordenador_nome && (
+                  <p className="text-xs text-muted-foreground pt-1">
+                    Coordenado por: <span className="font-medium text-foreground">{selectedChecklist.coordenador_nome}</span>
+                  </p>
+                )}
               </SheetHeader>
               <div className="mt-6 space-y-2">
                 <div className="flex justify-between text-sm">
@@ -383,36 +455,61 @@ export default function Onboarding() {
                 </div>
                 <Progress value={getProgress(selectedChecklist)} className="h-3" />
               </div>
-              <div className="mt-6 space-y-3">
-                {(selectedChecklist.tarefas || []).map((t) => (
-                  <div key={t.id} className={`flex items-start gap-3 p-3 rounded-lg border ${t.status === "atrasada" ? "border-warning bg-warning/5" : "border-border"}`}>
-                    <Checkbox
-                      checked={t.status === "concluida"}
-                      disabled={updatingTask === t.id || (!isHR && t.responsavel_user_id !== user?.id)}
-                      onCheckedChange={() => toggleTarefa(t)}
-                      className="mt-0.5"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${t.status === "concluida" ? "line-through text-muted-foreground" : ""}`}>
-                        {t.titulo}
-                      </p>
-                      {t.descricao && <p className="text-xs text-muted-foreground mt-1">{t.descricao}</p>}
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        <Badge variant="outline" className="text-xs">{roleLabels[t.responsavel_role] || t.responsavel_role}</Badge>
-                        {t.prazo_data && (
-                          <span className="text-xs text-muted-foreground">
-                            Prazo: {format(new Date(t.prazo_data), "dd/MM/yyyy")}
-                          </span>
-                        )}
-                        {t.status === "concluida" && t.concluida_em && (
-                          <span className="text-xs text-success">
-                            ✓ {format(new Date(t.concluida_em), "dd/MM HH:mm")}
-                          </span>
-                        )}
-                      </div>
+
+              {/* Tarefas agrupadas por área */}
+              <div className="mt-6 space-y-6">
+                {Object.entries(
+                  (selectedChecklist.tarefas || []).reduce((acc: Record<string, Tarefa[]>, t) => {
+                    const area = t.area_destino || "Geral";
+                    if (!acc[area]) acc[area] = [];
+                    acc[area].push(t);
+                    return acc;
+                  }, {})
+                ).map(([area, tarefas]) => (
+                  <div key={area} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{area}</h4>
+                      <span className="text-xs text-muted-foreground">
+                        {tarefas.filter((t) => t.status === "concluida").length}/{tarefas.length}
+                      </span>
                     </div>
-                    {t.status === "atrasada" && <AlertTriangle className="h-4 w-4 text-warning shrink-0" />}
-                    {t.status === "concluida" && <CheckCircle2 className="h-4 w-4 text-success shrink-0" />}
+                    {tarefas.map((t) => {
+                      const atrasada = isTarefaAtrasada(t);
+                      return (
+                        <div
+                          key={t.id}
+                          className={`flex items-start gap-3 p-3 rounded-lg border ${atrasada ? "border-warning bg-warning/5" : "border-border"}`}
+                        >
+                          <Checkbox
+                            checked={t.status === "concluida"}
+                            disabled={updatingTask === t.id || (!isHR && t.responsavel_user_id !== user?.id)}
+                            onCheckedChange={() => toggleTarefa(t)}
+                            className="mt-0.5"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-medium ${t.status === "concluida" ? "line-through text-muted-foreground" : ""}`}>
+                              {t.titulo}
+                            </p>
+                            {t.descricao && <p className="text-xs text-muted-foreground mt-1">{t.descricao}</p>}
+                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                              <Badge variant="outline" className="text-xs">{roleLabels[t.responsavel_role] || t.responsavel_role}</Badge>
+                              {t.prazo_data && (
+                                <span className="text-xs text-muted-foreground">
+                                  Prazo: {format(new Date(t.prazo_data), "dd/MM/yyyy")}
+                                </span>
+                              )}
+                              {t.status === "concluida" && t.concluida_em && (
+                                <span className="text-xs text-success">
+                                  ✓ {format(new Date(t.concluida_em), "dd/MM HH:mm")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {atrasada && <AlertTriangle className="h-4 w-4 text-warning shrink-0" />}
+                          {t.status === "concluida" && <CheckCircle2 className="h-4 w-4 text-success shrink-0" />}
+                        </div>
+                      );
+                    })}
                   </div>
                 ))}
               </div>
