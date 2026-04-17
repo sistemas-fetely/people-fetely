@@ -1,0 +1,452 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  ArrowLeft, Plus, Send, Sparkles, MessageCircle, ThumbsUp, ThumbsDown, Copy,
+  Globe, Gift, Workflow, Users,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+
+interface Conversa {
+  id: string;
+  titulo: string | null;
+  updated_at: string;
+}
+
+interface Mensagem {
+  id: string;
+  papel: "user" | "assistant";
+  conteudo: string;
+  created_at: string;
+  pendente?: boolean;
+}
+
+const FRASES_MOTIVACIONAIS = [
+  "Celebre a curiosidade ✨",
+  "Pergunte sem medo, dúvida aqui é presente 🌷",
+  "Cada pergunta é um gesto de cuidado 💚",
+  "Que tal celebrar uma conquista hoje? 🎉",
+  "Saber é o primeiro passo pra celebrar 🌿",
+  "Aqui dúvida vira clareza — bora? ✨",
+  "A gente celebra quem busca aprender 💚",
+  "Bora descobrir algo novo? 🌸",
+];
+
+const SUGESTOES = [
+  { categoria: "Sistemas", icone: Globe, cor: "#3A7D6B", texto: "Como peço acesso a um sistema corporativo?" },
+  { categoria: "Benefícios", icone: Gift, cor: "#E91E63", texto: "Quais são os meus benefícios?" },
+  { categoria: "Processos", icone: Workflow, cor: "#1A4A3A", texto: "Como funciona o onboarding na Fetely?" },
+  { categoria: "Pessoas", icone: Users, cor: "#FF9800", texto: "Quem é meu gestor direto?" },
+];
+
+function formatRelativo(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const diff = (now.getTime() - d.getTime()) / 1000;
+  if (diff < 60) return "agora";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+  return d.toLocaleDateString("pt-BR");
+}
+
+export default function FalaFetely() {
+  const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const [conversas, setConversas] = useState<Conversa[]>([]);
+  const [conversaAtiva, setConversaAtiva] = useState<Conversa | null>(null);
+  const [mensagens, setMensagens] = useState<Mensagem[]>([]);
+  const [input, setInput] = useState("");
+  const [pensando, setPensando] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const fraseMotivacional = useMemo(
+    () => FRASES_MOTIVACIONAIS[Math.floor(Math.random() * FRASES_MOTIVACIONAIS.length)],
+    []
+  );
+
+  const userInitials = useMemo(() => {
+    const name = profile?.full_name || user?.email || "??";
+    return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+  }, [profile, user]);
+
+  // Carrega conversas
+  useEffect(() => {
+    if (!user) return;
+    void carregarConversas();
+  }, [user]);
+
+  // Auto-scroll
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [mensagens]);
+
+  async function carregarConversas() {
+    const { data } = await supabase
+      .from("fala_fetely_conversas")
+      .select("id, titulo, updated_at")
+      .eq("arquivada", false)
+      .order("updated_at", { ascending: false })
+      .limit(50);
+    setConversas(data || []);
+  }
+
+  async function abrirConversa(c: Conversa) {
+    setConversaAtiva(c);
+    const { data } = await supabase
+      .from("fala_fetely_mensagens")
+      .select("id, papel, conteudo, created_at")
+      .eq("conversa_id", c.id)
+      .order("created_at", { ascending: true });
+    setMensagens((data as Mensagem[]) || []);
+  }
+
+  function novaConversa() {
+    setConversaAtiva(null);
+    setMensagens([]);
+    setInput("");
+  }
+
+  async function enviarPergunta(perguntaTexto: string) {
+    if (!perguntaTexto.trim() || pensando || !user) return;
+
+    const userMsg: Mensagem = {
+      id: `tmp-user-${Date.now()}`,
+      papel: "user",
+      conteudo: perguntaTexto,
+      created_at: new Date().toISOString(),
+    };
+    const assistantMsg: Mensagem = {
+      id: `tmp-assistant-${Date.now()}`,
+      papel: "assistant",
+      conteudo: "",
+      created_at: new Date().toISOString(),
+      pendente: true,
+    };
+
+    setMensagens((prev) => [...prev, userMsg, assistantMsg]);
+    setInput("");
+    setPensando(true);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Sessão expirada");
+
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fala-fetely-perguntar`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          conversa_id: conversaAtiva?.id ?? null,
+          pergunta: perguntaTexto,
+        }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        if (resp.status === 429) {
+          toast({ title: "Devagar aí 🌱", description: "Muitas perguntas em pouco tempo. Tente em instantes.", variant: "destructive" });
+        } else if (resp.status === 402) {
+          toast({ title: "Créditos esgotados", description: "Avise um admin para repor os créditos da IA.", variant: "destructive" });
+        } else {
+          toast({ title: "Ops", description: err.error || "Erro ao falar com a IA", variant: "destructive" });
+        }
+        // remove pendente
+        setMensagens((prev) => prev.filter((m) => m.id !== assistantMsg.id && m.id !== userMsg.id));
+        return;
+      }
+
+      if (!resp.body) throw new Error("Sem corpo de resposta");
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let acumulado = "";
+      let novaConvId: string | null = null;
+      let mensagemFinalId: string | null = null;
+      let currentEvent = "message";
+      let streamDone = false;
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        let nl;
+        while ((nl = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, nl);
+          buffer = buffer.slice(nl + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.trim() === "") continue;
+
+          if (line.startsWith("event: ")) {
+            currentEvent = line.slice(7).trim();
+            continue;
+          }
+
+          if (!line.startsWith("data: ")) continue;
+          const payload = line.slice(6).trim();
+
+          if (currentEvent === "meta") {
+            try {
+              const parsed = JSON.parse(payload);
+              if (parsed.conversa_id) novaConvId = parsed.conversa_id;
+            } catch { /* ignore */ }
+            currentEvent = "message";
+            continue;
+          }
+
+          if (currentEvent === "end") {
+            try {
+              const parsed = JSON.parse(payload);
+              if (parsed.mensagem_id) mensagemFinalId = parsed.mensagem_id;
+            } catch { /* ignore */ }
+            currentEvent = "message";
+            continue;
+          }
+
+          if (payload === "[DONE]") {
+            streamDone = true;
+            break;
+          }
+
+          try {
+            const parsed = JSON.parse(payload);
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              acumulado += delta;
+              setMensagens((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMsg.id ? { ...m, conteudo: acumulado, pendente: false } : m
+                )
+              );
+            }
+          } catch {
+            // partial JSON; rebuffer
+            buffer = line + "\n" + buffer;
+            break;
+          }
+        }
+      }
+
+      // Atualiza ID real da mensagem para feedback
+      if (mensagemFinalId) {
+        setMensagens((prev) =>
+          prev.map((m) => (m.id === assistantMsg.id ? { ...m, id: mensagemFinalId! } : m))
+        );
+      }
+
+      // Se era nova conversa, atualiza o ativo e recarrega lista
+      if (novaConvId && !conversaAtiva) {
+        setConversaAtiva({ id: novaConvId, titulo: perguntaTexto.slice(0, 50), updated_at: new Date().toISOString() });
+      }
+      void carregarConversas();
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Ops", description: e instanceof Error ? e.message : "Erro inesperado", variant: "destructive" });
+      setMensagens((prev) => prev.filter((m) => m.id !== assistantMsg.id));
+    } finally {
+      setPensando(false);
+    }
+  }
+
+  function enviar(e: React.FormEvent) {
+    e.preventDefault();
+    void enviarPergunta(input);
+  }
+
+  async function feedback(mensagemId: string, util: boolean) {
+    if (!user || mensagemId.startsWith("tmp-")) return;
+    const { error } = await supabase
+      .from("fala_fetely_feedback")
+      .upsert({ mensagem_id: mensagemId, user_id: user.id, util }, { onConflict: "mensagem_id,user_id" });
+    if (error) {
+      toast({ title: "Não consegui registrar", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: util ? "Valeu! 💚" : "Obrigado pelo aviso 🌱", description: util ? "Vou seguir nessa linha" : "Vou tentar melhorar" });
+  }
+
+  function copiar(texto: string) {
+    navigator.clipboard.writeText(texto);
+    toast({ title: "Copiado ✨" });
+  }
+
+  return (
+    <div className="h-screen flex" style={{ background: "linear-gradient(135deg, #FFF8F3 0%, #F0F7F4 100%)" }}>
+      {/* Sidebar de conversas */}
+      <aside className="w-72 border-r bg-white/60 backdrop-blur-sm flex flex-col">
+        <div className="p-4 border-b">
+          <Button onClick={novaConversa} className="w-full gap-2 text-white hover:opacity-90" style={{ backgroundColor: "#1A4A3A" }}>
+            <Plus className="h-4 w-4" /> Nova conversa
+          </Button>
+        </div>
+        <div className="flex-1 overflow-auto p-2 space-y-1">
+          {conversas.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center mt-6 px-4">
+              Suas conversas aparecerão aqui
+            </p>
+          ) : (
+            conversas.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => abrirConversa(c)}
+                className={`w-full text-left p-2 rounded-lg text-sm hover:bg-muted transition-all ${
+                  conversaAtiva?.id === c.id ? "bg-muted" : ""
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="h-3 w-3 flex-shrink-0 text-muted-foreground" />
+                  <span className="truncate">{c.titulo || "Conversa"}</span>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-0.5 ml-5">{formatRelativo(c.updated_at)}</p>
+              </button>
+            ))
+          )}
+        </div>
+      </aside>
+
+      {/* Área principal */}
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="flex items-center justify-between p-4 border-b bg-white/40">
+          <Button variant="ghost" onClick={() => navigate("/sncf")} className="gap-1">
+            <ArrowLeft className="h-4 w-4" /> Voltar ao SNCF
+          </Button>
+          <div className="flex items-center gap-2">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white"
+              style={{ background: "linear-gradient(135deg, #1A4A3A, #E91E63)" }}
+            >
+              F
+            </div>
+            <span className="font-semibold">Fala Fetely</span>
+          </div>
+          <div className="w-[140px]" />
+        </header>
+
+        <div className="flex-1 overflow-auto p-6">
+          {!conversaAtiva || mensagens.length === 0 ? (
+            <div className="max-w-2xl mx-auto text-center pt-12">
+              <div
+                className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center text-3xl font-bold text-white"
+                style={{ background: "linear-gradient(135deg, #1A4A3A 0%, #E91E63 100%)" }}
+              >
+                F
+              </div>
+              <h1 className="text-3xl font-bold mb-2" style={{ color: "#1A4A3A" }}>
+                {fraseMotivacional}
+              </h1>
+              <p className="text-muted-foreground mb-8">
+                Pergunte qualquer coisa sobre a Fetely. Estou aqui pra te ajudar a celebrar com clareza ✨
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {SUGESTOES.map((s) => (
+                  <button
+                    key={s.texto}
+                    onClick={() => void enviarPergunta(s.texto)}
+                    disabled={pensando}
+                    className="p-4 rounded-xl border-2 hover:border-[#1A4A3A] hover:shadow-md transition-all bg-white text-left disabled:opacity-50"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <s.icone className="h-4 w-4" style={{ color: s.cor }} />
+                      <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: s.cor }}>
+                        {s.categoria}
+                      </span>
+                    </div>
+                    <p className="text-sm">{s.texto}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-3xl mx-auto space-y-4">
+              {mensagens.map((msg) => (
+                <div key={msg.id} className={`flex gap-3 ${msg.papel === "user" ? "flex-row-reverse" : ""}`}>
+                  <div
+                    className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white text-xs"
+                    style={
+                      msg.papel === "user"
+                        ? { backgroundColor: "#E91E63" }
+                        : { background: "linear-gradient(135deg, #1A4A3A, #E91E63)" }
+                    }
+                  >
+                    {msg.papel === "user" ? userInitials : "F"}
+                  </div>
+                  <div className={`flex-1 max-w-[75%] ${msg.papel === "user" ? "text-right" : ""}`}>
+                    <div
+                      className={`inline-block p-4 rounded-2xl text-left ${
+                        msg.papel === "user"
+                          ? "bg-[#E91E63] text-white rounded-tr-sm"
+                          : "bg-white border-l-4 border-l-[#1A4A3A] rounded-tl-sm shadow-sm"
+                      }`}
+                    >
+                      {msg.pendente && !msg.conteudo ? (
+                        <div className="flex gap-1 py-1">
+                          <span className="w-2 h-2 bg-[#1A4A3A] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-2 h-2 bg-[#E91E63] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-2 h-2 bg-[#1A4A3A] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      ) : (
+                        <div className="prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-headings:my-2">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.conteudo}</ReactMarkdown>
+                        </div>
+                      )}
+                    </div>
+                    {msg.papel === "assistant" && !msg.pendente && msg.conteudo && (
+                      <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                        <button onClick={() => void feedback(msg.id, true)} className="hover:text-emerald-600 transition-colors p-1">
+                          <ThumbsUp className="h-3 w-3" />
+                        </button>
+                        <button onClick={() => void feedback(msg.id, false)} className="hover:text-red-600 transition-colors p-1">
+                          <ThumbsDown className="h-3 w-3" />
+                        </button>
+                        <button onClick={() => copiar(msg.conteudo)} className="hover:text-foreground transition-colors p-1">
+                          <Copy className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
+
+        <div className="border-t bg-white/80 backdrop-blur-sm p-4">
+          <div className="max-w-3xl mx-auto">
+            <form onSubmit={enviar} className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Pergunte alguma coisa..."
+                disabled={pensando}
+                className="flex-1"
+              />
+              <Button
+                type="submit"
+                disabled={!input.trim() || pensando}
+                style={{ backgroundColor: "#1A4A3A" }}
+                className="gap-2 text-white hover:opacity-90"
+              >
+                <Send className="h-4 w-4" /> Enviar
+              </Button>
+            </form>
+            <p className="text-[10px] text-center text-muted-foreground mt-2">
+              ✌️ Sou só uma IA — confirme com seu gestor antes de decisões importantes
+            </p>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
