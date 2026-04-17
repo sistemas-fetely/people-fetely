@@ -61,6 +61,7 @@ import TarefasDoTime from "@/pages/TarefasDoTime";
 import Processos from "@/pages/Processos";
 import ProcessoEditor from "@/pages/ProcessoEditor";
 import DesligamentoDetalhe from "@/pages/DesligamentoDetalhe";
+import FalaFetely from "@/pages/FalaFetely";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ const App = () => (
               <Route path="/processos/:slug" element={<ProcessoEditor />} />
               <Route path="/templates" element={<Navigate to="/processos" replace />} />
               <Route path="/templates/*" element={<Navigate to="/processos" replace />} />
+              <Route path="/fala-fetely" element={<FalaFetely />} />
             </Route>
 
             {/* TI Fetely */}

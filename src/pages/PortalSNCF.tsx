@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import * as LucideIcons from "lucide-react";
-import { LayoutGrid, Lock, ExternalLink, ClipboardList } from "lucide-react";
+import { LayoutGrid, Lock, ExternalLink, ClipboardList, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface Sistema {
@@ -118,6 +120,41 @@ export default function PortalSNCF() {
           Ver tarefas <ExternalLink className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </button>
+
+      {/* Fala Fetely — assistente IA */}
+      <Card
+        className="border-l-4"
+        style={{
+          borderLeftColor: "#E91E63",
+          background: "linear-gradient(135deg, #FFF8F3 0%, #FFFFFF 100%)",
+        }}
+      >
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-white text-xl shadow-sm"
+                style={{ background: "linear-gradient(135deg, #1A4A3A 0%, #E91E63 100%)" }}
+              >
+                F
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Assistente Fetely</p>
+                <p className="text-2xl font-bold">Fala Fetely</p>
+                <p className="text-sm text-muted-foreground">Pergunte qualquer coisa sobre a Fetely 🌷</p>
+              </div>
+            </div>
+            <Button
+              size="lg"
+              className="gap-2 text-white hover:opacity-90"
+              style={{ backgroundColor: "#E91E63" }}
+              onClick={() => navigate("/fala-fetely")}
+            >
+              Conversar <Sparkles className="h-4 w-4" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
