@@ -7,9 +7,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   CheckCircle2, AlertCircle, AlertTriangle, Clock, Users, FileText,
   Briefcase, UserPlus, ClipboardCheck, Mail, FileSignature, Receipt,
-  TrendingUp, Calendar, Gauge,
+  TrendingUp, Calendar, Gauge, ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useDashboardData } from "@/hooks/useDashboardData";
+
+type AlertaPrioridade = "alta" | "media" | "baixa";
+interface AlertaItem {
+  id: string;
+  titulo: string;
+  detalhe: string;
+  prioridade: AlertaPrioridade;
+  rota?: string;
+}
 
 type Prioridade = "urgente" | "atencao" | "normal";
 
@@ -64,6 +74,72 @@ export function DashboardOperacional() {
   const [tarefas, setTarefas] = useState<TarefaItem[]>([]);
   const [kpis, setKpis] = useState<KpiItem[]>([]);
   const [velocidade, setVelocidade] = useState<VelocidadeItem[]>([]);
+
+  const dashData = useDashboardData();
+
+  const alertas = useMemo<AlertaItem[]>(() => {
+    const list: AlertaItem[] = [];
+    const { pj, ferias, nfPendentes, pagPjPendentes, folha, experienciaVencendo, docsVencendo, aniversariosEmpresa, semBeneficio, contratosPendentes } = dashData;
+
+    if (ferias?.periodoVencido > 0) {
+      list.push({ id: "ferias-venc", titulo: `${ferias.periodoVencido} período(s) de férias vencido(s)`, detalhe: "Saldo pendente", prioridade: "alta", rota: "/ferias" });
+    }
+    if (pj?.vencendo > 0) {
+      list.push({ id: "pj-venc", titulo: `${pj.vencendo} contrato(s) PJ vencendo`, detalhe: "Próximos 30 dias", prioridade: "alta", rota: "/contratos-pj" });
+    }
+    (experienciaVencendo || []).forEach((e: any, i: number) => {
+      list.push({
+        id: `exp-${i}`,
+        titulo: `${e.nome} — experiência ${e.marco} dias`,
+        detalhe: e.diasRestantes > 0 ? `${e.diasRestantes} dia(s) restante(s) · ${e.depto}` : `Vence hoje · ${e.depto}`,
+        prioridade: "alta",
+        rota: "/colaboradores",
+      });
+    });
+    (docsVencendo || []).forEach((d: any, i: number) => {
+      list.push({
+        id: `doc-${i}`,
+        titulo: `${d.documento} de ${d.nome} ${d.vencido ? "vencida" : "vencendo"}`,
+        detalhe: `Validade: ${new Date(d.validade + "T00:00:00").toLocaleDateString("pt-BR")} · ${d.depto}`,
+        prioridade: d.vencido ? "alta" : "media",
+        rota: "/colaboradores",
+      });
+    });
+    if (contratosPendentes && contratosPendentes.length > 0) {
+      list.push({
+        id: "contratos-pend",
+        titulo: `${contratosPendentes.length} contrato(s) PJ pendente(s) de assinatura`,
+        detalhe: contratosPendentes.slice(0, 3).map((c: any) => c.nome).join(", ") + (contratosPendentes.length > 3 ? "..." : ""),
+        prioridade: "alta",
+        rota: "/contratos-pj",
+      });
+    }
+    if (semBeneficio && semBeneficio.length > 0) {
+      list.push({
+        id: "sem-benef",
+        titulo: `${semBeneficio.length} colaborador(es) sem benefícios`,
+        detalhe: semBeneficio.slice(0, 3).map((s: any) => s.nome).join(", ") + (semBeneficio.length > 3 ? "..." : ""),
+        prioridade: "media",
+        rota: "/beneficios",
+      });
+    }
+    if (folha?.atual && folha.atual.status === "aberta") {
+      list.push({ id: "folha", titulo: `Folha ${folha.atual.competencia} em aberto`, detalhe: "Fechar folha", prioridade: "media", rota: "/folha-pagamento" });
+    }
+    if (nfPendentes > 0) {
+      list.push({ id: "nf", titulo: `${nfPendentes} nota(s) fiscal(is) pendente(s)`, detalhe: "Aguardando processamento", prioridade: "media", rota: "/notas-fiscais" });
+    }
+    if (pagPjPendentes > 0) {
+      list.push({ id: "pag-pj", titulo: `${pagPjPendentes} pagamento(s) PJ pendente(s)`, detalhe: "Aguardando pagamento", prioridade: "media", rota: "/pagamentos-pj" });
+    }
+    (aniversariosEmpresa || []).forEach((a: any, i: number) => {
+      list.push({ id: `aniv-${i}`, titulo: `${a.nome} completa ${a.anos} ano(s) de empresa`, detalhe: `${a.data} · ${a.depto}`, prioridade: "baixa" });
+    });
+
+    const order = { alta: 0, media: 1, baixa: 2 };
+    list.sort((a, b) => order[a.prioridade] - order[b.prioridade]);
+    return list;
+  }, [dashData]);
 
   useEffect(() => {
     let cancelled = false;
@@ -402,56 +478,105 @@ export function DashboardOperacional() {
 
   return (
     <div className="space-y-6 mt-4">
-      {/* Seção 1: O que fazer agora */}
-      <Card className="card-shadow animate-fade-in">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Gauge className="h-4 w-4" style={{ color: FETELY_GREEN }} />
-            O que fazer agora
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {tarefas.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircle2 className="h-12 w-12 mx-auto mb-3" style={{ color: FETELY_GREEN }} />
-              <p className="text-lg font-semibold" style={{ color: FETELY_GREEN }}>
-                Tudo em dia!
-              </p>
-              <p className="text-sm text-muted-foreground">Nenhuma pendência no momento.</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {tarefas.map((t) => {
-                const PrioIcon = prioridadeIcon[t.prioridade];
-                const ModuloIcon = t.icone;
-                return (
+      {/* Layout lado a lado: Tarefas (60%) + Alertas (40%) */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Coluna esquerda — O que fazer agora */}
+        <div className="lg:col-span-3">
+          <Card className="card-shadow animate-fade-in h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <ClipboardList className="h-4 w-4" style={{ color: FETELY_GREEN }} />
+                O que fazer agora
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {tarefas.length === 0 ? (
+                <div className="text-center py-12">
+                  <CheckCircle2 className="h-12 w-12 mx-auto mb-3" style={{ color: FETELY_GREEN }} />
+                  <p className="text-lg font-semibold" style={{ color: FETELY_GREEN }}>
+                    Tudo em dia!
+                  </p>
+                  <p className="text-sm text-muted-foreground">Nenhuma pendência no momento.</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {tarefas.map((t) => {
+                    const PrioIcon = prioridadeIcon[t.prioridade];
+                    const ModuloIcon = t.icone;
+                    return (
+                      <div
+                        key={t.id}
+                        className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/30 transition-colors"
+                      >
+                        <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg shrink-0", prioridadeColor[t.prioridade])}>
+                          <PrioIcon className="h-4 w-4" />
+                        </div>
+                        <ModuloIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{t.titulo}</p>
+                          <p className="text-xs text-muted-foreground truncate">{t.detalhe}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          onClick={() => navigate(t.rota)}
+                          style={{ backgroundColor: FETELY_GREEN }}
+                          className="shrink-0 text-white hover:opacity-90"
+                        >
+                          {t.acao}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Coluna direita — Alertas */}
+        <div className="lg:col-span-2">
+          <Card className="card-shadow animate-fade-in h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                Alertas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1 max-h-[420px] overflow-y-auto">
+              {alertas.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-emerald-500" />
+                  <p className="text-sm text-muted-foreground">Nenhum alerta no momento</p>
+                </div>
+              ) : (
+                alertas.map((a) => (
                   <div
-                    key={t.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/30 transition-colors"
+                    key={a.id}
+                    className={cn(
+                      "flex items-start gap-3 p-2.5 rounded-lg transition-colors",
+                      a.rota && "hover:bg-muted/50 cursor-pointer"
+                    )}
+                    onClick={a.rota ? () => navigate(a.rota!) : undefined}
                   >
-                    <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg shrink-0", prioridadeColor[t.prioridade])}>
-                      <PrioIcon className="h-4 w-4" />
-                    </div>
-                    <ModuloIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div
+                      className={cn(
+                        "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
+                        a.prioridade === "alta" && "bg-red-500",
+                        a.prioridade === "media" && "bg-yellow-500",
+                        a.prioridade === "baixa" && "bg-emerald-500"
+                      )}
+                    />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{t.titulo}</p>
-                      <p className="text-xs text-muted-foreground truncate">{t.detalhe}</p>
+                      <p className="text-sm font-medium">{a.titulo}</p>
+                      <p className="text-xs text-muted-foreground">{a.detalhe}</p>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => navigate(t.rota)}
-                      style={{ backgroundColor: FETELY_GREEN }}
-                      className="shrink-0 text-white hover:opacity-90"
-                    >
-                      {t.acao}
-                    </Button>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Seção 2: Números do momento */}
       {kpis.length > 0 && (
