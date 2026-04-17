@@ -3137,6 +3137,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      autosave_convite_cadastro: {
+        Args: { _dados: Json; _token: string }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
