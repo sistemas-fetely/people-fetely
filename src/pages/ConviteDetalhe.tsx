@@ -436,6 +436,25 @@ export default function ConviteDetalhe() {
                 });
               }
             }
+
+            // Gerar tarefas de extensões (cargo, departamento, sistemas)
+            try {
+              await gerarTarefasExtensoes({
+                checklistId: newChecklist.id,
+                colaboradorId: inserted.id,
+                colaboradorTipo: "clt",
+                colaboradorNome: convite.nome || colaboradorPayload.nome_completo,
+                cargoId: dc.cargo_id || null,
+                cargoNome: convite.cargo || colaboradorPayload.cargo,
+                departamentoLabel: convite.departamento || colaboradorPayload.departamento,
+                sistemasIds: Array.isArray(dc.sistemas_ids) ? dc.sistemas_ids : [],
+                dataReferencia: dataAdmissao,
+                gestorUserId,
+                userId: user?.id || null,
+              });
+            } catch (extErr) {
+              console.error("Erro ao gerar tarefas de extensões:", extErr);
+            }
           }
         } catch (onbErr) {
           console.error("Erro ao criar onboarding:", onbErr);
@@ -610,6 +629,25 @@ export default function ConviteDetalhe() {
                   user_id: userId,
                 });
               }
+            }
+
+            // Gerar tarefas de extensões (cargo, departamento, sistemas)
+            try {
+              await gerarTarefasExtensoes({
+                checklistId: newChecklist.id,
+                colaboradorId: inserted.id,
+                colaboradorTipo: "pj",
+                colaboradorNome: convite.nome || contratoPayload.contato_nome,
+                cargoId: dc.cargo_id || null,
+                cargoNome: convite.cargo || contratoPayload.tipo_servico,
+                departamentoLabel: convite.departamento || contratoPayload.departamento,
+                sistemasIds: Array.isArray(dc.sistemas_ids) ? dc.sistemas_ids : [],
+                dataReferencia: dataInicio,
+                gestorUserId,
+                userId: user?.id || null,
+              });
+            } catch (extErr) {
+              console.error("Erro ao gerar tarefas de extensões:", extErr);
             }
           }
         } catch (onbErr) {
