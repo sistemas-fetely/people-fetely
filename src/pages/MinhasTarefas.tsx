@@ -54,7 +54,21 @@ interface Tarefa {
 type StatusFilter = "ativas" | "pendente" | "atrasada" | "em_andamento" | "concluida" | "todas";
 type AgrupamentoTipo = "prioridade" | "area" | "prazo" | "processo" | "nenhum";
 
+interface PrioridadeDia {
+  id: string;
+  titulo: string;
+  subtitulo: string;
+  icone: typeof CheckSquare;
+  prioridade: "urgente" | "atencao";
+  botaoTexto: string;
+  link: string;
+}
+
 const PRIORIDADE_ORDER: Record<string, number> = { urgente: 0, alta: 1, normal: 2, baixa: 3 };
+
+function diasDesdeISO(dateStr: string): number {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
 
 export default function MinhasTarefas() {
   const navigate = useNavigate();
