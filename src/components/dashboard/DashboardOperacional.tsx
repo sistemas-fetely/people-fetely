@@ -1,16 +1,26 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   CheckCircle2, AlertCircle, AlertTriangle, Clock, Users, FileText,
   Briefcase, UserPlus, ClipboardCheck, Mail, FileSignature, Receipt,
-  TrendingUp, Calendar, Gauge, ClipboardList,
+  TrendingUp, Calendar, Gauge, ClipboardList, Plus, Pin, MoreVertical,
+  Check, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { NovaTarefaDialog } from "./NovaTarefaDialog";
+import { toast } from "sonner";
 
 type AlertaPrioridade = "alta" | "media" | "baixa";
 interface AlertaItem {
