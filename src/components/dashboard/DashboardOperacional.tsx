@@ -1,16 +1,26 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   CheckCircle2, AlertCircle, AlertTriangle, Clock, Users, FileText,
   Briefcase, UserPlus, ClipboardCheck, Mail, FileSignature, Receipt,
-  TrendingUp, Calendar, Gauge, ClipboardList,
+  TrendingUp, Calendar, Gauge, ClipboardList, Plus, Pin, MoreVertical,
+  Check, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { NovaTarefaDialog } from "./NovaTarefaDialog";
+import { toast } from "sonner";
 
 type AlertaPrioridade = "alta" | "media" | "baixa";
 interface AlertaItem {
@@ -32,6 +42,8 @@ interface TarefaItem {
   acao: string;
   rota: string;
   ordem: number; // antiguidade em dias (maior = mais antigo)
+  manual?: boolean; // se true, vem de sncf_tarefas (tarefa criada manualmente)
+  sncfId?: string; // id em sncf_tarefas, quando manual
 }
 
 interface KpiItem {
@@ -74,6 +86,8 @@ export function DashboardOperacional() {
   const [tarefas, setTarefas] = useState<TarefaItem[]>([]);
   const [kpis, setKpis] = useState<KpiItem[]>([]);
   const [velocidade, setVelocidade] = useState<VelocidadeItem[]>([]);
+  const [novaOpen, setNovaOpen] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const dashData = useDashboardData();
 
@@ -156,6 +170,7 @@ export function DashboardOperacional() {
         const [
           convitesRes,
           tarefasRes,
+          tarefasManuaisRes,
           vagasRes,
           candidatosRes,
           contratosVencRes,
@@ -171,6 +186,11 @@ export function DashboardOperacional() {
             .select("id, titulo, status, prazo_data, processo_id")
             .eq("tipo_processo", "onboarding")
             .in("status", ["pendente", "atrasada"]),
+          supabase
+            .from("sncf_tarefas")
+            .select("id, titulo, descricao, status, prazo_data, prioridade, area_destino, link_acao, colaborador_nome, created_at")
+            .eq("tipo_processo", "manual")
+            .in("status", ["pendente", "em_andamento", "atrasada"]),
           supabase
             .from("vagas" as any)
             .select("id, titulo, status, created_at")
@@ -204,6 +224,7 @@ export function DashboardOperacional() {
 
         const convites = convitesRes.data || [];
         const tarefasOnb = tarefasRes.data || [];
+        const tarefasManuais = (tarefasManuaisRes.data || []) as any[];
         const vagas = (vagasRes.data || []) as any[];
         const candidatos = candidatosRes.data || [];
         const contratosVenc = contratosVencRes.data || [];
@@ -213,6 +234,28 @@ export function DashboardOperacional() {
 
         // ─── Construir tarefas priorizadas ───
         const novasTarefas: TarefaItem[] = [];
+
+        // Tarefas manuais
+        const prioMap: Record<string, Prioridade> = { urgente: "urgente", normal: "normal", baixa: "normal" };
+        tarefasManuais.forEach((t) => {
+          const prio = prioMap[t.prioridade as string] || "normal";
+          const atrasada = t.prazo_data && t.prazo_data < hojeStr;
+          const ordem = t.prazo_data
+            ? Math.floor((Date.now() - new Date(t.prazo_data).getTime()) / 86400000)
+            : diasDesde(t.created_at);
+          novasTarefas.push({
+            id: `manual-${t.id}`,
+            sncfId: t.id,
+            manual: true,
+            prioridade: atrasada ? "urgente" : prio,
+            icone: Pin,
+            titulo: t.titulo,
+            detalhe: [t.area_destino, t.colaborador_nome, t.descricao].filter(Boolean).join(" · ") || "Tarefa manual",
+            acao: t.link_acao ? "Abrir" : "Concluir",
+            rota: t.link_acao || "",
+            ordem,
+          });
+        });
 
         // Convites preenchidos aguardando aprovação
         const aguardandoAprov = convites.filter((c) => c.status === "preenchido");
@@ -462,6 +505,32 @@ export function DashboardOperacional() {
     return () => {
       cancelled = true;
     };
+  }, [reloadKey]);
+
+  const handleConcluirManual = useCallback(async (sncfId: string) => {
+    const { error } = await supabase
+      .from("sncf_tarefas")
+      .update({ status: "concluida", concluida_em: new Date().toISOString() })
+      .eq("id", sncfId);
+    if (error) {
+      toast.error("Erro ao concluir tarefa");
+      return;
+    }
+    toast.success("Tarefa concluída");
+    setReloadKey((k) => k + 1);
+  }, []);
+
+  const handleCancelarManual = useCallback(async (sncfId: string) => {
+    const { error } = await supabase
+      .from("sncf_tarefas")
+      .update({ status: "cancelada" })
+      .eq("id", sncfId);
+    if (error) {
+      toast.error("Erro ao cancelar tarefa");
+      return;
+    }
+    toast.success("Tarefa cancelada");
+    setReloadKey((k) => k + 1);
   }, []);
 
   if (loading) {
@@ -485,10 +554,21 @@ export function DashboardOperacional() {
         <div className="lg:col-span-3">
           <Card className="card-shadow animate-fade-in h-full">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <ClipboardList className="h-4 w-4" style={{ color: FETELY_GREEN }} />
-                O que fazer agora
-              </CardTitle>
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4" style={{ color: FETELY_GREEN }} />
+                  O que fazer agora
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setNovaOpen(true)}
+                  className="gap-1.5"
+                >
+                  <Plus className="h-4 w-4" />
+                  Nova tarefa
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {tarefas.length === 0 ? (
@@ -512,19 +592,63 @@ export function DashboardOperacional() {
                         <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg shrink-0", prioridadeColor[t.prioridade])}>
                           <PrioIcon className="h-4 w-4" />
                         </div>
-                        <ModuloIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <ModuloIcon className={cn("h-4 w-4 shrink-0", t.manual ? "text-primary" : "text-muted-foreground")} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{t.titulo}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-medium truncate">{t.titulo}</p>
+                            {t.manual && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 shrink-0">
+                                Manual
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-xs text-muted-foreground truncate">{t.detalhe}</p>
                         </div>
-                        <Button
-                          size="sm"
-                          onClick={() => navigate(t.rota)}
-                          style={{ backgroundColor: FETELY_GREEN }}
-                          className="shrink-0 text-white hover:opacity-90"
-                        >
-                          {t.acao}
-                        </Button>
+                        {t.manual ? (
+                          <div className="flex items-center gap-1 shrink-0">
+                            {t.rota && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => navigate(t.rota)}
+                              >
+                                Abrir
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              onClick={() => handleConcluirManual(t.sncfId!)}
+                              style={{ backgroundColor: FETELY_GREEN }}
+                              className="text-white hover:opacity-90"
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleConcluirManual(t.sncfId!)}>
+                                  <Check className="h-4 w-4 mr-2" /> Concluir
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleCancelarManual(t.sncfId!)}>
+                                  <X className="h-4 w-4 mr-2" /> Cancelar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => navigate(t.rota)}
+                            style={{ backgroundColor: FETELY_GREEN }}
+                            className="shrink-0 text-white hover:opacity-90"
+                          >
+                            {t.acao}
+                          </Button>
+                        )}
                       </div>
                     );
                   })}
@@ -641,6 +765,12 @@ export function DashboardOperacional() {
           </div>
         </div>
       )}
+
+      <NovaTarefaDialog
+        open={novaOpen}
+        onOpenChange={setNovaOpen}
+        onCreated={() => setReloadKey((k) => k + 1)}
+      />
     </div>
   );
 }
