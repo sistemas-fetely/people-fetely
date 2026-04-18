@@ -92,7 +92,7 @@ export default function ContratoPJDetalhe() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { hasPermission, canSeeSalary } = usePermissions();
+  const { hasPermission, canSeeSalary, isSuperAdmin } = usePermissions();
   const { isCargoClevel } = useCLevelCargos();
   const canEditContract = hasPermission("contratos_pj", "edit");
   const [loading, setLoading] = useState(true);
@@ -553,6 +553,15 @@ export default function ContratoPJDetalhe() {
             </div>
           </CardContent>
         </Card>
+
+        {ehCLevel({ cargo: contrato.tipo_servico, nivel: null }) && !isSuperAdmin && (
+          <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-sm">
+            <Shield className="h-4 w-4 mt-0.5 text-warning" />
+            <p className="text-muted-foreground">
+              Algumas informações são restritas por política de C-Level.
+            </p>
+          </div>
+        )}
 
         <Tabs defaultValue="pessoais">
           <TabsList className="w-full justify-start">
