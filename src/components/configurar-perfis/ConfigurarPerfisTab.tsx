@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
@@ -21,7 +24,7 @@ import {
 import {
   Shield, ShieldCheck, Plus, Save, Trash2, Settings2,
   Eye, FilePlus, Pencil, Trash, Mail, CheckCircle, Lock, FileDown, Send,
-  Users, Building2, RotateCcw, AlertTriangle,
+  RotateCcw, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -56,26 +59,44 @@ interface CustomRole {
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
-  admin_rh: "Admin RH",
-  admin_ti: "Admin TI",
-  gestor_rh: "Gestor RH",
-  gestor_direto: "Gestor Direto",
+  admin_rh: "Admin RH (legado)",
+  rh: "RH",
+  admin_ti: "Admin TI (legado)",
+  ti: "TI",
+  gestor_rh: "Gestor RH (legado)",
+  gestor_direto: "Gestor Direto (legado)",
+  gestao_direta: "Gestão Direta",
   colaborador: "Colaborador",
   financeiro: "Financeiro",
-  fiscal: "Fiscal",
+  administrativo: "Administrativo",
   operacional: "Operacional",
-  recrutador: "Recrutador",
+  fiscal: "Fiscal",
+  recrutador: "Recrutador (legado)",
+  recrutamento: "Recrutamento",
+  estagiario: "Estagiário",
 };
 
-const FUTURE_ROLES = ["admin_ti", "recrutador", "fiscal", "operacional"];
-const FUTURE_ROLE_MODULES: Record<string, string> = {
-  admin_ti: "Módulo TI",
-  recrutador: "Módulo Recrutamento",
-  fiscal: "Integração ERP",
-  operacional: "Unidade Fabril",
+const NIVEIS = [
+  { value: "any", label: "Qualquer nível" },
+  { value: "estagio", label: "Estágio" },
+  { value: "assistente", label: "Assistente" },
+  { value: "analista", label: "Analista" },
+  { value: "coordenador", label: "Coordenador" },
+  { value: "gerente", label: "Gerente" },
+  { value: "diretor", label: "Diretor" },
+];
+
+const NIVEL_SHORT: Record<string, string> = {
+  estagio: "EST", assistente: "ASS", analista: "ANA",
+  coordenador: "COO", gerente: "GER", diretor: "DIR",
 };
 
-const isFutureRole = (name: string) => FUTURE_ROLES.includes(name);
+// Roles que aceitam níveis (não faz sentido para super_admin / colaborador comum)
+const ROLES_COM_NIVEIS = new Set([
+  "rh", "ti", "financeiro", "administrativo", "operacional", "fiscal",
+  "recrutamento", "gestao_direta", "estagiario",
+]);
+
 
 // ─── Matrix Cell ────────────────────────────────────────────
 function PermissionDot({
