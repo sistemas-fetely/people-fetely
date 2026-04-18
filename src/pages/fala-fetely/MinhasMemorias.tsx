@@ -472,6 +472,66 @@ export default function MinhasMemorias() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Regra 5 — Dialog de acesso formal a memórias de outro usuário */}
+      <AcessarMemoriasOutroDialog
+        open={acessarOutroOpen}
+        onOpenChange={setAcessarOutroOpen}
+        onAcessoAprovado={(mems, titular) => {
+          setMemoriasOutro(mems as Memoria[]);
+          setTitularOutro(titular);
+        }}
+      />
+
+      {/* View de memórias de outro usuário (após acesso aprovado) */}
+      {memoriasOutro && titularOutro && (
+        <div className="fixed inset-0 z-50 bg-background overflow-auto p-6">
+          <div className="max-w-4xl mx-auto space-y-4">
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setMemoriasOutro(null);
+                  setTitularOutro(null);
+                }}
+                className="gap-1"
+              >
+                <X className="h-4 w-4" /> Fechar visualização
+              </Button>
+            </div>
+            <Card className="bg-amber-50 border-amber-200">
+              <CardContent className="p-3 text-sm">
+                🔐 Você está visualizando memórias de{" "}
+                <strong>{titularOutro.full_name || titularOutro.user_id}</strong>. Esse acesso foi
+                registrado em log de auditoria e também é visível ao próprio titular.
+              </CardContent>
+            </Card>
+            <h2 className="text-xl font-bold">Memórias ({memoriasOutro.length})</h2>
+            {memoriasOutro.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Esse usuário não tem memórias armazenadas.</p>
+            ) : (
+              <div className="space-y-2">
+                {memoriasOutro.map((m) => (
+                  <Card key={m.id} className={m.ativo ? "" : "opacity-60"}>
+                    <CardContent className="p-4 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className={TIPO_CORES[m.tipo as TipoMemoria]}>
+                          {TIPO_LABELS[m.tipo as TipoMemoria]}
+                        </Badge>
+                        {!m.ativo && <Badge variant="secondary">inativa</Badge>}
+                      </div>
+                      <p className="text-sm font-medium">{m.resumo}</p>
+                      {m.conteudo_completo && (
+                        <p className="text-xs text-muted-foreground whitespace-pre-wrap">{m.conteudo_completo}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
