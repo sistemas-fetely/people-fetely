@@ -822,11 +822,12 @@ export default function ColaboradorDetalhe() {
   );
 }
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
+  const isEmpty = value === null || value === undefined || value === "";
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium">{value || "—"}</p>
+      <p className="text-sm font-medium">{isEmpty ? "—" : value}</p>
     </div>
   );
 }
