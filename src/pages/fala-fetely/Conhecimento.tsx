@@ -23,6 +23,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SugestoesPendentes, type SugestaoPendente } from "@/components/fala-fetely/SugestoesPendentes";
+import { ConfirmacaoDupla } from "@/components/ConfirmacaoDupla";
 
 type Categoria = "politica" | "regra" | "diretriz" | "faq" | "conceito" | "manifesto" | "mercado";
 
@@ -455,7 +456,7 @@ export default function Conhecimento() {
                           <Button variant="ghost" size="sm" onClick={() => abrirEditar(item)} className="gap-1">
                             <Edit2 className="h-3.5 w-3.5" /> Editar
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => void desativar(item)} className="gap-1 text-muted-foreground hover:text-destructive">
+                          <Button variant="ghost" size="sm" onClick={() => setConfirmarDesativar(item)} className="gap-1 text-muted-foreground hover:text-destructive">
                             <EyeOff className="h-3.5 w-3.5" /> Desativar
                           </Button>
                         </div>
