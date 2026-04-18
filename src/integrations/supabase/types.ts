@@ -1644,6 +1644,8 @@ export type Database = {
           created_at: string
           id: string
           mensagem_id: string
+          motivo: string | null
+          resposta_esperada: string | null
           user_id: string
           util: boolean
         }
@@ -1652,6 +1654,8 @@ export type Database = {
           created_at?: string
           id?: string
           mensagem_id: string
+          motivo?: string | null
+          resposta_esperada?: string | null
           user_id: string
           util: boolean
         }
@@ -1660,6 +1664,8 @@ export type Database = {
           created_at?: string
           id?: string
           mensagem_id?: string
+          motivo?: string | null
+          resposta_esperada?: string | null
           user_id?: string
           util?: boolean
         }
@@ -1704,6 +1710,75 @@ export type Database = {
             columns: ["conversa_id"]
             isOneToOne: false
             referencedRelation: "fala_fetely_conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fala_fetely_sugestoes_conhecimento: {
+        Row: {
+          categoria_sugerida: string | null
+          conhecimento_gerado_id: string | null
+          correcao_sugerida: string
+          created_at: string
+          id: string
+          mensagem_id: string | null
+          observacao_revisao: string | null
+          origem: string
+          pergunta_original: string | null
+          resposta_ia: string | null
+          revisado_em: string | null
+          revisado_por: string | null
+          status: string
+          titulo_sugerido: string | null
+          user_id: string
+        }
+        Insert: {
+          categoria_sugerida?: string | null
+          conhecimento_gerado_id?: string | null
+          correcao_sugerida: string
+          created_at?: string
+          id?: string
+          mensagem_id?: string | null
+          observacao_revisao?: string | null
+          origem?: string
+          pergunta_original?: string | null
+          resposta_ia?: string | null
+          revisado_em?: string | null
+          revisado_por?: string | null
+          status?: string
+          titulo_sugerido?: string | null
+          user_id: string
+        }
+        Update: {
+          categoria_sugerida?: string | null
+          conhecimento_gerado_id?: string | null
+          correcao_sugerida?: string
+          created_at?: string
+          id?: string
+          mensagem_id?: string | null
+          observacao_revisao?: string | null
+          origem?: string
+          pergunta_original?: string | null
+          resposta_ia?: string | null
+          revisado_em?: string | null
+          revisado_por?: string | null
+          status?: string
+          titulo_sugerido?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fala_fetely_sugestoes_conhecimento_conhecimento_gerado_id_fkey"
+            columns: ["conhecimento_gerado_id"]
+            isOneToOne: false
+            referencedRelation: "fala_fetely_conhecimento"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fala_fetely_sugestoes_conhecimento_mensagem_id_fkey"
+            columns: ["mensagem_id"]
+            isOneToOne: false
+            referencedRelation: "fala_fetely_mensagens"
             referencedColumns: ["id"]
           },
         ]
