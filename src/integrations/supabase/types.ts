@@ -2946,6 +2946,7 @@ export type Database = {
           granted: boolean
           id: string
           module: string
+          nivel_minimo: Database["public"]["Enums"]["nivel_cargo"] | null
           permission: string
           role_name: string
           updated_at: string
@@ -2956,6 +2957,7 @@ export type Database = {
           granted?: boolean
           id?: string
           module: string
+          nivel_minimo?: Database["public"]["Enums"]["nivel_cargo"] | null
           permission: string
           role_name: string
           updated_at?: string
@@ -2966,6 +2968,7 @@ export type Database = {
           granted?: boolean
           id?: string
           module?: string
+          nivel_minimo?: Database["public"]["Enums"]["nivel_cargo"] | null
           permission?: string
           role_name?: string
           updated_at?: string
@@ -3853,6 +3856,7 @@ export type Database = {
           atribuido_manualmente: boolean
           created_at: string
           id: string
+          nivel: Database["public"]["Enums"]["nivel_cargo"] | null
           revogado_em: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
@@ -3861,6 +3865,7 @@ export type Database = {
           atribuido_manualmente?: boolean
           created_at?: string
           id?: string
+          nivel?: Database["public"]["Enums"]["nivel_cargo"] | null
           revogado_em?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
@@ -3869,6 +3874,7 @@ export type Database = {
           atribuido_manualmente?: boolean
           created_at?: string
           id?: string
+          nivel?: Database["public"]["Enums"]["nivel_cargo"] | null
           revogado_em?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
@@ -4097,6 +4103,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_role_with_level: {
+        Args: {
+          _nivel_minimo?: Database["public"]["Enums"]["nivel_cargo"]
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -4131,6 +4145,19 @@ export type Database = {
         | "fiscal"
         | "operacional"
         | "recrutador"
+        | "rh"
+        | "administrativo"
+        | "ti"
+        | "recrutamento"
+        | "gestao_direta"
+        | "estagiario"
+      nivel_cargo:
+        | "estagio"
+        | "assistente"
+        | "analista"
+        | "coordenador"
+        | "gerente"
+        | "diretor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4269,6 +4296,20 @@ export const Constants = {
         "fiscal",
         "operacional",
         "recrutador",
+        "rh",
+        "administrativo",
+        "ti",
+        "recrutamento",
+        "gestao_direta",
+        "estagiario",
+      ],
+      nivel_cargo: [
+        "estagio",
+        "assistente",
+        "analista",
+        "coordenador",
+        "gerente",
+        "diretor",
       ],
     },
   },

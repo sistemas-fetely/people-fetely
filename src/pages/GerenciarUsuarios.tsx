@@ -47,6 +47,12 @@ const ROLE_LABELS: Record<AppRole, string> = {
   fiscal: "Fiscal",
   operacional: "Operacional",
   recrutador: "Recrutador",
+  rh: "RH",
+  administrativo: "Administrativo",
+  ti: "TI",
+  recrutamento: "Recrutamento",
+  gestao_direta: "Gestão Direta",
+  estagiario: "Estagiário",
 };
 
 const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
@@ -60,6 +66,12 @@ const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
   fiscal: "NF-e e integração ERP. Subconjunto do financeiro. (Integração ERP — em breve)",
   operacional: "Ponto, turnos e NRs da unidade fabril. (Unidade Fabril — em breve)",
   recrutador: "Gestão completa de recrutamento e seleção. Sem acesso a dados financeiros ou configurações do sistema.",
+  rh: "Recursos Humanos — área unificada (substitui admin_rh/gestor_rh em fase futura).",
+  administrativo: "Administrativo geral.",
+  ti: "Tecnologia da Informação — área unificada (substitui admin_ti em fase futura).",
+  recrutamento: "Área de Recrutamento (substitui recrutador em fase futura).",
+  gestao_direta: "Liderança de time (substitui gestor_direto em fase futura).",
+  estagiario: "Estagiário de qualquer área. Permissões reduzidas conforme nível.",
 };
 
 const ACTIVE_ROLES: AppRole[] = [

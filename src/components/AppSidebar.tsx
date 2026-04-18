@@ -31,6 +31,12 @@ const roleLabels: Record<AppRole, string> = {
   fiscal: "Fiscal",
   operacional: "Operacional",
   recrutador: "Recrutador",
+  rh: "RH",
+  administrativo: "Administrativo",
+  ti: "TI",
+  recrutamento: "Recrutamento",
+  gestao_direta: "Gestão Direta",
+  estagiario: "Estagiário",
 };
 
 const ROLE_PRIORITY: AppRole[] = [
