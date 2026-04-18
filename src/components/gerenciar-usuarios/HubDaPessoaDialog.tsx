@@ -20,7 +20,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Shield, MapPin, Loader2, AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Shield, MapPin, Loader2, AlertCircle, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import { usePerfisV2 } from "@/hooks/usePerfisV2";
 import { useUnidades } from "@/hooks/useUnidades";
@@ -65,6 +66,39 @@ export function HubDaPessoaDialog({
     },
     staleTime: 0,
   });
+
+  const { data: origensAtrib } = useQuery({
+    queryKey: ["atribuicao-origem", userId],
+    enabled: !!userId && open,
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data: atribs } = await supabase
+        .from("user_atribuicoes")
+        .select("id")
+        .eq("user_id", userId);
+      if (!atribs || atribs.length === 0) return [];
+      const { data, error } = await supabase
+        .from("atribuicao_origem")
+        .select("atribuicao_id, template_id, origem")
+        .in("atribuicao_id", atribs.map((a) => a.id));
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const perfisDeTemplate = useMemo(() => {
+    const perfilIds = new Set<string>();
+    if (!atribuicoesAtuais || !origensAtrib) return perfilIds;
+    const ids = new Set(
+      origensAtrib
+        .filter((o) => o.origem === "template")
+        .map((o) => o.atribuicao_id)
+    );
+    for (const a of atribuicoesAtuais) {
+      if (ids.has(a.id)) perfilIds.add(a.perfil_id);
+    }
+    return perfilIds;
+  }, [atribuicoesAtuais, origensAtrib]);
 
   const transversais = useMemo(
     () => (perfis || []).filter((p) => p.tipo === "transversal"),
@@ -308,9 +342,20 @@ export function HubDaPessoaDialog({
                         className="mt-0.5"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold leading-tight">
-                          {p.nome}
-                        </p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="text-sm font-semibold leading-tight">
+                            {p.nome}
+                          </p>
+                          {perfisDeTemplate.has(p.id) && (
+                            <Badge
+                              variant="outline"
+                              className="text-[9px] py-0 px-1.5 h-4 gap-0.5 font-normal"
+                            >
+                              <ClipboardList className="h-2.5 w-2.5" />
+                              do template
+                            </Badge>
+                          )}
+                        </div>
                         {p.descricao && (
                           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
                             {p.descricao}
@@ -361,9 +406,20 @@ export function HubDaPessoaDialog({
                           className="text-left w-full"
                           onClick={() => toggleArea(p.id)}
                         >
-                          <p className="text-sm font-semibold leading-tight">
-                            {p.nome}
-                          </p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="text-sm font-semibold leading-tight">
+                              {p.nome}
+                            </p>
+                            {perfisDeTemplate.has(p.id) && (
+                              <Badge
+                                variant="outline"
+                                className="text-[9px] py-0 px-1.5 h-4 gap-0.5 font-normal"
+                              >
+                                <ClipboardList className="h-2.5 w-2.5" />
+                                do template
+                              </Badge>
+                            )}
+                          </div>
                           {p.descricao && (
                             <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
                               {p.descricao}

@@ -29,14 +29,16 @@ import {
 import {
   CheckCircle2, XCircle, UserCheck, UserX, Users, UserPlus,
   Shield, ShieldCheck, ShieldAlert, Pencil, Trash2, Link2, LinkIcon, Unlink,
-  ChevronDown, ChevronRight,
+  ChevronDown, ChevronRight, FileText, Sparkles, Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmacaoDupla } from "@/components/ConfirmacaoDupla";
 import { DrawerUsuario } from "@/components/DrawerUsuario";
 import { HubDaPessoaDialog } from "@/components/gerenciar-usuarios/HubDaPessoaDialog";
+import { TemplatesTab } from "@/components/gerenciar-usuarios/TemplatesTab";
 import { usePerfisV2 } from "@/hooks/usePerfisV2";
 import { useUnidades } from "@/hooks/useUnidades";
+import { useTemplates, usePreviewTemplate } from "@/hooks/useTemplates";
 import { NIVEL_LABELS_V2 } from "@/types/permissoes-v2";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -192,6 +194,17 @@ export default function GerenciarUsuarios() {
   const [linkColaboradorId, setLinkColaboradorId] = useState("");
   const [linkContratoPjId, setLinkContratoPjId] = useState("");
   const [drawerUsuarioId, setDrawerUsuarioId] = useState<string | null>(null);
+
+  // V2 — Template / Área / Unidade para Novo Usuário
+  const [templateId, setTemplateId] = useState<string>("");
+  const [areaCodigo, setAreaCodigo] = useState<string>("");
+  const [unidadeIdNovo, setUnidadeIdNovo] = useState<string>("");
+  const { data: templates } = useTemplates();
+  const { data: previewPerfis } = usePreviewTemplate(
+    templateId || null,
+    areaCodigo || null,
+    unidadeIdNovo || null
+  );
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["admin-profiles"],
     queryFn: async () => {
@@ -297,13 +310,31 @@ export default function GerenciarUsuarios() {
 
   const createUser = useMutation({
     mutationFn: async () => {
-      await callManageUser("create_user_standalone", {
+      const result = await callManageUser("create_user_standalone", {
         email: newUser.email,
         full_name: newUser.full_name,
-        roles: newUser.roles,
+        roles: [], // V2: roles legados não são mais usados — perfis vêm via template
         colaborador_id: newUser.tipo_acesso === "vinculado" && newUser.colaborador_id ? newUser.colaborador_id : undefined,
         colaborador_tipo: newUser.tipo_acesso === "vinculado" ? newUser.colaborador_tipo : "all",
       });
+
+      const novoUserId = result?.user_id;
+      if (novoUserId && templateId) {
+        const { data: authData } = await supabase.auth.getUser();
+        const { error: errTemplate } = await supabase.rpc("aplicar_template_cargo", {
+          _user_id: novoUserId,
+          _template_id: templateId,
+          _area_perfil_codigo: areaCodigo || null,
+          _unidade_id: unidadeIdNovo || null,
+          _atribuidor: authData?.user?.id || null,
+        });
+        if (errTemplate) {
+          toast.warning(
+            "Usuário criado, mas falha ao aplicar template: " + errTemplate.message
+          );
+        }
+      }
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
@@ -311,9 +342,13 @@ export default function GerenciarUsuarios() {
       queryClient.invalidateQueries({ queryKey: ["admin-auth-users"] });
       queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
       queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
+      queryClient.invalidateQueries({ queryKey: ["atribuicoes-todas-v2"] });
       toast.success("Usuário criado! Um e-mail com link de acesso foi enviado.");
       setCreateOpen(false);
       setNewUser({ email: "", full_name: "", roles: ["colaborador"], tipo_acesso: "externo", colaborador_id: "", colaborador_tipo: "" });
+      setTemplateId("");
+      setAreaCodigo("");
+      setUnidadeIdNovo("");
     },
     onError: (err: Error) => toast.error(err.message || "Erro ao criar usuário"),
   });
@@ -560,28 +595,102 @@ export default function GerenciarUsuarios() {
                 </div>
               )}
               <div className="space-y-2">
-                <Label>Perfis de Acesso</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {ACTIVE_ROLES.filter((role) => isSuperAdmin || role !== "super_admin").map((role) => (
-                    <label key={role} className="flex items-center gap-2 rounded-md border p-2 cursor-pointer hover:bg-muted/50">
-                      <Checkbox
-                        checked={newUser.roles.includes(role)}
-                        onCheckedChange={() => toggleNewUserRole(role)}
-                      />
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{ROLE_LABELS[role]}</span>
-                        <p className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
-                      </div>
-                    </label>
-                  ))}
+                <Label className="flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                  Template de cargo *
+                </Label>
+                <Select value={templateId} onValueChange={setTemplateId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Escolha o template (define os perfis padrão)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(templates || []).map((t) => (
+                      <SelectItem key={t.id} value={t.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{t.nome}</span>
+                          {t.descricao && (
+                            <span className="text-[10px] text-muted-foreground leading-tight">
+                              {t.descricao}
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  O template já vem com os perfis padrão. Você pode ajustar depois no Hub da Pessoa.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Área de atuação *</Label>
+                  <Select value={areaCodigo} onValueChange={setAreaCodigo}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha a área" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(perfisV2 || []).filter((p) => p.tipo === "area").map((a) => (
+                        <SelectItem key={a.id} value={a.codigo}>{a.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Unidade *</Label>
+                  <Select value={unidadeIdNovo} onValueChange={setUnidadeIdNovo}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Escolha a unidade" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(unidadesV2 || []).map((u) => (
+                        <SelectItem key={u.id} value={u.id}>{u.nome}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+
+              {templateId && previewPerfis && previewPerfis.length > 0 && (
+                <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Ao criar, esta pessoa vai receber:
+                  </div>
+                  <ul className="space-y-1">
+                    {previewPerfis.map((p, i: number) => (
+                      <li key={i} className="flex items-start gap-1.5 text-xs">
+                        <Check className="h-3 w-3 text-primary mt-0.5 shrink-0" />
+                        <span>
+                          <span className="font-medium">{p.perfil_nome}</span>
+                          {p.nivel && (
+                            <span className="text-muted-foreground">
+                              {" "}· {(NIVEL_LABELS_V2 as Record<string, string>)[p.nivel] || p.nivel}
+                            </span>
+                          )}
+                          {p.unidade_nome && (
+                            <span className="text-muted-foreground"> · {p.unidade_nome}</span>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancelar</Button>
               <Button
                 onClick={() => createUser.mutate()}
-                disabled={!newUser.email || !newUser.full_name || createUser.isPending}
+                disabled={
+                  !newUser.email ||
+                  !newUser.full_name ||
+                  !templateId ||
+                  !areaCodigo ||
+                  !unidadeIdNovo ||
+                  createUser.isPending
+                }
               >
                 {createUser.isPending ? "Criando..." : "Criar Usuário"}
               </Button>
@@ -635,6 +744,9 @@ export default function GerenciarUsuarios() {
           <TabsTrigger value="grupos" className="gap-2"><ShieldCheck className="h-4 w-4" /> Grupos de Acesso</TabsTrigger>
           {(isSuperAdmin || isAdminRH) && (
             <TabsTrigger value="matriz" className="gap-2"><ShieldCheck className="h-4 w-4" /> Matriz de Permissões</TabsTrigger>
+          )}
+          {isSuperAdmin && (
+            <TabsTrigger value="templates" className="gap-2"><FileText className="h-4 w-4" /> Templates</TabsTrigger>
           )}
         </TabsList>
 
@@ -855,6 +967,12 @@ export default function GerenciarUsuarios() {
         {(isSuperAdmin || isAdminRH) && (
           <TabsContent value="matriz" className="mt-4">
             <MatrizPermissoes />
+          </TabsContent>
+        )}
+
+        {isSuperAdmin && (
+          <TabsContent value="templates" className="mt-4">
+            <TemplatesTab />
           </TabsContent>
         )}
       </Tabs>
