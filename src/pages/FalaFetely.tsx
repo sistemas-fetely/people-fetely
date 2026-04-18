@@ -333,7 +333,7 @@ export default function FalaFetely() {
               acumulado += delta;
               setMensagens((prev) =>
                 prev.map((m) =>
-                  m.id === assistantMsg.id ? { ...m, conteudo: acumulado, pendente: false } : m
+                  m.id === assistantMsg.id ? { ...m, conteudo: acumulado } : m
                 )
               );
             }
