@@ -82,7 +82,15 @@ Deno.serve(async (req) => {
       conteudo: pergunta,
     });
 
-    // 3) Coletar contexto do usuário + conhecimento + histórico (paralelo)
+    // 3a) Buscar roles do usuário primeiro (para condicionar a busca de documentação)
+    const { data: rolesData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    const roles: string[] = (rolesData || []).map((r: any) => r.role);
+    const ehAdmin = roles.includes("super_admin") || roles.includes("admin_rh");
+
+    // 3b) Coletar contexto do usuário + conhecimento + histórico (paralelo)
     const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, templatesRes, tarefasTemplateRes, extensoesRes, tarefasExtensoesRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, conhecimentosRes, memoriasRes, historicoRes] = await Promise.all([
       supabase.from("profiles").select("full_name, colaborador_tipo").eq("user_id", user.id).maybeSingle(),
       supabase.from("colaboradores_clt").select("id, cargo, departamento, nome_completo").eq("user_id", user.id).maybeSingle(),
