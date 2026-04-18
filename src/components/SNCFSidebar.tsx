@@ -8,6 +8,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { getHighestRoleLabel } from "@/lib/user-role";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -56,6 +58,21 @@ export function SNCFSidebar() {
   const displayName = profile?.full_name || user?.email || "Usuário";
   const primaryRole = getHighestRoleLabel(roles);
 
+  const isAdminRHOrSuper = roles.some((r) => ["super_admin", "admin_rh"].includes(r));
+
+  const { data: qtdSugestoesPendentes = 0 } = useQuery({
+    queryKey: ["sugestoes-conhecimento-pendentes"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("fala_fetely_sugestoes_conhecimento")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pendente");
+      return count || 0;
+    },
+    enabled: isAdminRHOrSuper,
+    refetchInterval: 30000,
+  });
+
   const isItemActive = (url: string, end?: boolean) =>
     end ? location.pathname === url : location.pathname.startsWith(url);
 
@@ -68,7 +85,7 @@ export function SNCFSidebar() {
       return roles.some((r) => ["gestor_direto", "super_admin", "admin_rh", "gestor_rh"].includes(r));
     }
     if (req === "admin_rh_or_super") {
-      return roles.some((r) => ["super_admin", "admin_rh"].includes(r));
+      return isAdminRHOrSuper;
     }
     return true;
   };
@@ -103,11 +120,18 @@ export function SNCFSidebar() {
                       {!collapsed && (
                         <span className="flex-1 flex items-center justify-between gap-2">
                           <span>{item.title}</span>
-                          {item.badge && (
-                            <Badge className="text-[9px] px-1.5 py-0 h-4 border-0" style={{ backgroundColor: "#E91E63", color: "white" }}>
-                              {item.badge}
-                            </Badge>
-                          )}
+                          <span className="flex items-center gap-1">
+                            {item.badge && (
+                              <Badge className="text-[9px] px-1.5 py-0 h-4 border-0" style={{ backgroundColor: "#E91E63", color: "white" }}>
+                                {item.badge}
+                              </Badge>
+                            )}
+                            {item.url === "/fala-fetely/conhecimento" && qtdSugestoesPendentes > 0 && (
+                              <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4">
+                                {qtdSugestoesPendentes}
+                              </Badge>
+                            )}
+                          </span>
                         </span>
                       )}
                     </NavLink>

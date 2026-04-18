@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ArrowLeft, Plus, Search, BookOpen, Edit2, EyeOff, X, Loader2,
+  ArrowLeft, Plus, Search, BookOpen, Edit2, EyeOff, X, Loader2, GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,14 @@ import {
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { SugestoesPendentes, type SugestaoPendente } from "@/components/fala-fetely/SugestoesPendentes";
 
 type Categoria = "politica" | "regra" | "diretriz" | "faq" | "conceito" | "manifesto" | "mercado";
 
@@ -101,6 +103,7 @@ export default function Conhecimento() {
   const { user } = useAuth();
   const { isSuperAdmin, isAdminRH, isLoading } = usePermissions();
   const [itens, setItens] = useState<Conhecimento[]>([]);
+  const [sugestoes, setSugestoes] = useState<SugestaoPendente[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState<string>("todas");
@@ -108,6 +111,7 @@ export default function Conhecimento() {
   const [salvando, setSalvando] = useState(false);
   const [form, setForm] = useState<FormState>(FORM_INICIAL);
   const [tagInput, setTagInput] = useState("");
+  const [aprovandoSugestao, setAprovandoSugestao] = useState<SugestaoPendente | null>(null);
 
   const [cargos, setCargos] = useState<string[]>([]);
   const [departamentos, setDepartamentos] = useState<string[]>([]);
@@ -123,9 +127,19 @@ export default function Conhecimento() {
   useEffect(() => {
     if (podeAcessar) {
       void carregar();
+      void carregarSugestoes();
       void carregarMetadados();
     }
   }, [podeAcessar]);
+
+  async function carregarSugestoes() {
+    const { data } = await supabase
+      .from("fala_fetely_sugestoes_conhecimento")
+      .select("*")
+      .eq("status", "pendente")
+      .order("created_at", { ascending: false });
+    setSugestoes((data || []) as SugestaoPendente[]);
+  }
 
   async function carregar() {
     setLoading(true);
@@ -209,17 +223,59 @@ export default function Conhecimento() {
       fonte: form.fonte.trim() || null,
       criado_por: user?.id ?? null,
     };
-    const { error } = form.id
-      ? await supabase.from("fala_fetely_conhecimento").update(payload).eq("id", form.id)
-      : await supabase.from("fala_fetely_conhecimento").insert(payload);
-    setSalvando(false);
-    if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+    let novoId: string | undefined;
+    let erroFinal: any = null;
+    if (form.id) {
+      const { error } = await supabase.from("fala_fetely_conhecimento").update(payload).eq("id", form.id);
+      erroFinal = error;
+    } else {
+      const { data, error } = await supabase
+        .from("fala_fetely_conhecimento")
+        .insert(payload)
+        .select("id")
+        .single();
+      erroFinal = error;
+      novoId = data?.id;
+    }
+    if (erroFinal) {
+      setSalvando(false);
+      toast({ title: "Erro ao salvar", description: erroFinal.message, variant: "destructive" });
       return;
     }
+    // Se veio de uma sugestão, marcar como convertida
+    if (aprovandoSugestao && novoId) {
+      await supabase
+        .from("fala_fetely_sugestoes_conhecimento")
+        .update({
+          status: "convertida",
+          revisado_por: user?.id ?? null,
+          revisado_em: new Date().toISOString(),
+          conhecimento_gerado_id: novoId,
+        })
+        .eq("id", aprovandoSugestao.id);
+      setAprovandoSugestao(null);
+    }
+    setSalvando(false);
     toast({ title: form.id ? "Atualizado ✨" : "Conhecimento criado 💚" });
     setShowForm(false);
     void carregar();
+    void carregarSugestoes();
+  }
+
+  function abrirAprovarSugestao(s: SugestaoPendente) {
+    setAprovandoSugestao(s);
+    setForm({
+      categoria: (s.categoria_sugerida as Categoria) || "faq",
+      titulo: s.titulo_sugerido || s.correcao_sugerida.slice(0, 60),
+      conteudo: s.correcao_sugerida,
+      publico_alvo: "todos",
+      cargos_aplicaveis: [],
+      departamentos_aplicaveis: [],
+      niveis_aplicaveis: [],
+      tags: [],
+      fonte: s.pergunta_original ? `Sugerido a partir de pergunta: "${s.pergunta_original.slice(0, 100)}"` : "",
+    });
+    setShowForm(true);
   }
 
   async function desativar(item: Conhecimento) {
@@ -305,75 +361,101 @@ export default function Conhecimento() {
           </div>
         </Card>
 
-        {/* Lista */}
-        {loading ? (
-          <div className="text-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
-          </div>
-        ) : filtrados.length === 0 ? (
-          <Card className="p-12 text-center">
-            <BookOpen className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-muted-foreground">
-              {itens.length === 0 ? "Nenhum conhecimento ainda. Crie o primeiro!" : "Nada encontrado com esses filtros."}
-            </p>
-          </Card>
-        ) : (
-          <div className="grid gap-3">
-            {filtrados.map((item) => {
-              const cat = getCategoriaStyle(item.categoria);
-              return (
-                <Card key={item.id} className="p-5 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge style={{ backgroundColor: cat.bg, color: cat.color, border: 0 }} className="text-[10px] uppercase tracking-wide">
-                          {cat.label}
-                        </Badge>
-                        {item.publico_alvo !== "todos" && (
-                          <Badge variant="outline" className="text-[10px]">
-                            👥 {PUBLICOS.find((p) => p.value === item.publico_alvo)?.label || item.publico_alvo}
-                          </Badge>
-                        )}
-                        {item.niveis_aplicaveis.length > 0 && (
-                          <Badge variant="outline" className="text-[10px]">
-                            {item.niveis_aplicaveis.length} nível(is)
-                          </Badge>
-                        )}
-                        {item.cargos_aplicaveis.length > 0 && (
-                          <Badge variant="outline" className="text-[10px]">
-                            {item.cargos_aplicaveis.length} cargo(s)
-                          </Badge>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-base">{item.titulo}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {item.conteudo.length > 220 ? item.conteudo.slice(0, 220) + "..." : item.conteudo}
-                      </p>
-                      {item.tags.length > 0 && (
-                        <div className="flex gap-1 flex-wrap">
-                          {item.tags.map((t) => (
-                            <span key={t} className="text-[10px] bg-muted px-2 py-0.5 rounded-full">#{t}</span>
-                          ))}
+        {/* Tabs: Base ativa + Sugestões pendentes */}
+        <Tabs defaultValue="base" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="base" className="gap-2">
+              📚 Base Ativa ({itens.filter((i) => i.ativo).length})
+            </TabsTrigger>
+            <TabsTrigger value="sugestoes" className="gap-2">
+              <GraduationCap className="h-3.5 w-3.5" /> Sugestões Pendentes
+              {sugestoes.length > 0 && (
+                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
+                  {sugestoes.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="base">
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+              </div>
+            ) : filtrados.length === 0 ? (
+              <Card className="p-12 text-center">
+                <BookOpen className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-muted-foreground">
+                  {itens.length === 0 ? "Nenhum conhecimento ainda. Crie o primeiro!" : "Nada encontrado com esses filtros."}
+                </p>
+              </Card>
+            ) : (
+              <div className="grid gap-3">
+                {filtrados.map((item) => {
+                  const cat = getCategoriaStyle(item.categoria);
+                  return (
+                    <Card key={item.id} className="p-5 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge style={{ backgroundColor: cat.bg, color: cat.color, border: 0 }} className="text-[10px] uppercase tracking-wide">
+                              {cat.label}
+                            </Badge>
+                            {item.publico_alvo !== "todos" && (
+                              <Badge variant="outline" className="text-[10px]">
+                                👥 {PUBLICOS.find((p) => p.value === item.publico_alvo)?.label || item.publico_alvo}
+                              </Badge>
+                            )}
+                            {item.niveis_aplicaveis.length > 0 && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {item.niveis_aplicaveis.length} nível(is)
+                              </Badge>
+                            )}
+                            {item.cargos_aplicaveis.length > 0 && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {item.cargos_aplicaveis.length} cargo(s)
+                              </Badge>
+                            )}
+                          </div>
+                          <h3 className="font-semibold text-base">{item.titulo}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {item.conteudo.length > 220 ? item.conteudo.slice(0, 220) + "..." : item.conteudo}
+                          </p>
+                          {item.tags.length > 0 && (
+                            <div className="flex gap-1 flex-wrap">
+                              {item.tags.map((t) => (
+                                <span key={t} className="text-[10px] bg-muted px-2 py-0.5 rounded-full">#{t}</span>
+                              ))}
+                            </div>
+                          )}
+                          {item.fonte && (
+                            <p className="text-[10px] text-muted-foreground italic">Fonte: {item.fonte}</p>
+                          )}
                         </div>
-                      )}
-                      {item.fonte && (
-                        <p className="text-[10px] text-muted-foreground italic">Fonte: {item.fonte}</p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <Button variant="ghost" size="sm" onClick={() => abrirEditar(item)} className="gap-1">
-                        <Edit2 className="h-3.5 w-3.5" /> Editar
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => void desativar(item)} className="gap-1 text-muted-foreground hover:text-destructive">
-                        <EyeOff className="h-3.5 w-3.5" /> Desativar
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+                        <div className="flex flex-col gap-1 shrink-0">
+                          <Button variant="ghost" size="sm" onClick={() => abrirEditar(item)} className="gap-1">
+                            <Edit2 className="h-3.5 w-3.5" /> Editar
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => void desativar(item)} className="gap-1 text-muted-foreground hover:text-destructive">
+                            <EyeOff className="h-3.5 w-3.5" /> Desativar
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sugestoes">
+            <SugestoesPendentes
+              sugestoes={sugestoes}
+              onAprovar={abrirAprovarSugestao}
+              onAtualizar={() => void carregarSugestoes()}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialog formulário */}
