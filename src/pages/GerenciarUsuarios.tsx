@@ -34,6 +34,10 @@ import {
 import { toast } from "sonner";
 import { ConfirmacaoDupla } from "@/components/ConfirmacaoDupla";
 import { DrawerUsuario } from "@/components/DrawerUsuario";
+import { HubDaPessoaDialog } from "@/components/gerenciar-usuarios/HubDaPessoaDialog";
+import { usePerfisV2 } from "@/hooks/usePerfisV2";
+import { useUnidades } from "@/hooks/useUnidades";
+import { NIVEL_LABELS_V2 } from "@/types/permissoes-v2";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
