@@ -312,23 +312,29 @@ export default function ConfigurarPerfisTab() {
     },
   });
 
+  const savedNiveisRef = useRef<Map<string, string | null>>(new Map());
+  const [localNiveis, setLocalNiveis] = useState<Map<string, string | null>>(new Map());
+
   const loadRolePermissions = useCallback((roleName: string) => {
     const map = new Map<string, boolean>();
+    const niveis = new Map<string, string | null>();
     permissions
       .filter((p) => p.role_name === roleName)
-      .forEach((p) => map.set(`${p.module}:${p.permission}:${p.colaborador_tipo}`, p.granted));
+      .forEach((p) => {
+        const k = `${p.module}:${p.permission}:${p.colaborador_tipo}`;
+        map.set(k, p.granted);
+        niveis.set(k, (p as any).nivel_minimo ?? null);
+      });
     setLocalPermissions(map);
+    setLocalNiveis(niveis);
     savedPermissionsRef.current = new Map(map);
+    savedNiveisRef.current = new Map(niveis);
     setIsDirty(false);
   }, [permissions]);
 
   const selectRole = (roleName: string) => {
     if (isDirty && selectedRole && selectedRole !== roleName) {
       setDiscardTarget(roleName);
-      return;
-    }
-    if (isFutureRole(roleName)) {
-      toast.info(`Este perfil será ativado quando o ${FUTURE_ROLE_MODULES[roleName] || "módulo"} estiver disponível`);
       return;
     }
     setSelectedRole(roleName);
@@ -351,8 +357,17 @@ export default function ConfigurarPerfisTab() {
     setIsDirty(true);
   };
 
+  const setNivelMinimo = (module: string, permission: string, tipo: string, nivel: string | null) => {
+    const key = `${module}:${permission}:${tipo}`;
+    const newMap = new Map(localNiveis);
+    newMap.set(key, nivel);
+    setLocalNiveis(newMap);
+    setIsDirty(true);
+  };
+
   const resetToSaved = () => {
     setLocalPermissions(new Map(savedPermissionsRef.current));
+    setLocalNiveis(new Map(savedNiveisRef.current));
     setIsDirty(false);
     setResetConfirm(false);
     toast.success("Permissões restauradas para o estado salvo");
@@ -363,7 +378,8 @@ export default function ConfigurarPerfisTab() {
       if (!selectedRole) return;
       const updates = Array.from(localPermissions.entries()).map(([key, granted]) => {
         const [module, permission, colaborador_tipo] = key.split(":");
-        return { role_name: selectedRole, module, permission, granted, colaborador_tipo };
+        const nivel_minimo = localNiveis.get(key) ?? null;
+        return { role_name: selectedRole, module, permission, granted, colaborador_tipo, nivel_minimo };
       });
 
       for (const u of updates) {
@@ -371,11 +387,12 @@ export default function ConfigurarPerfisTab() {
           .from("role_permissions")
           .upsert(
             {
-              role_name: u.role_name,
+              role_name: u.role_name as any,
               module: u.module,
               permission: u.permission,
               granted: u.granted,
               colaborador_tipo: u.colaborador_tipo,
+              nivel_minimo: u.nivel_minimo as any,
             },
             { onConflict: "role_name,module,permission,colaborador_tipo" }
           );
@@ -385,6 +402,7 @@ export default function ConfigurarPerfisTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["role-permissions-config"] });
       savedPermissionsRef.current = new Map(localPermissions);
+      savedNiveisRef.current = new Map(localNiveis);
       setIsDirty(false);
       toast.success("Permissões salvas com sucesso!");
     },
