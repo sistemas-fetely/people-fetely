@@ -361,75 +361,101 @@ export default function Conhecimento() {
           </div>
         </Card>
 
-        {/* Lista */}
-        {loading ? (
-          <div className="text-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
-          </div>
-        ) : filtrados.length === 0 ? (
-          <Card className="p-12 text-center">
-            <BookOpen className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-muted-foreground">
-              {itens.length === 0 ? "Nenhum conhecimento ainda. Crie o primeiro!" : "Nada encontrado com esses filtros."}
-            </p>
-          </Card>
-        ) : (
-          <div className="grid gap-3">
-            {filtrados.map((item) => {
-              const cat = getCategoriaStyle(item.categoria);
-              return (
-                <Card key={item.id} className="p-5 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge style={{ backgroundColor: cat.bg, color: cat.color, border: 0 }} className="text-[10px] uppercase tracking-wide">
-                          {cat.label}
-                        </Badge>
-                        {item.publico_alvo !== "todos" && (
-                          <Badge variant="outline" className="text-[10px]">
-                            👥 {PUBLICOS.find((p) => p.value === item.publico_alvo)?.label || item.publico_alvo}
-                          </Badge>
-                        )}
-                        {item.niveis_aplicaveis.length > 0 && (
-                          <Badge variant="outline" className="text-[10px]">
-                            {item.niveis_aplicaveis.length} nível(is)
-                          </Badge>
-                        )}
-                        {item.cargos_aplicaveis.length > 0 && (
-                          <Badge variant="outline" className="text-[10px]">
-                            {item.cargos_aplicaveis.length} cargo(s)
-                          </Badge>
-                        )}
-                      </div>
-                      <h3 className="font-semibold text-base">{item.titulo}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {item.conteudo.length > 220 ? item.conteudo.slice(0, 220) + "..." : item.conteudo}
-                      </p>
-                      {item.tags.length > 0 && (
-                        <div className="flex gap-1 flex-wrap">
-                          {item.tags.map((t) => (
-                            <span key={t} className="text-[10px] bg-muted px-2 py-0.5 rounded-full">#{t}</span>
-                          ))}
+        {/* Tabs: Base ativa + Sugestões pendentes */}
+        <Tabs defaultValue="base" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="base" className="gap-2">
+              📚 Base Ativa ({itens.filter((i) => i.ativo).length})
+            </TabsTrigger>
+            <TabsTrigger value="sugestoes" className="gap-2">
+              <GraduationCap className="h-3.5 w-3.5" /> Sugestões Pendentes
+              {sugestoes.length > 0 && (
+                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
+                  {sugestoes.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="base">
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto" />
+              </div>
+            ) : filtrados.length === 0 ? (
+              <Card className="p-12 text-center">
+                <BookOpen className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+                <p className="text-muted-foreground">
+                  {itens.length === 0 ? "Nenhum conhecimento ainda. Crie o primeiro!" : "Nada encontrado com esses filtros."}
+                </p>
+              </Card>
+            ) : (
+              <div className="grid gap-3">
+                {filtrados.map((item) => {
+                  const cat = getCategoriaStyle(item.categoria);
+                  return (
+                    <Card key={item.id} className="p-5 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge style={{ backgroundColor: cat.bg, color: cat.color, border: 0 }} className="text-[10px] uppercase tracking-wide">
+                              {cat.label}
+                            </Badge>
+                            {item.publico_alvo !== "todos" && (
+                              <Badge variant="outline" className="text-[10px]">
+                                👥 {PUBLICOS.find((p) => p.value === item.publico_alvo)?.label || item.publico_alvo}
+                              </Badge>
+                            )}
+                            {item.niveis_aplicaveis.length > 0 && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {item.niveis_aplicaveis.length} nível(is)
+                              </Badge>
+                            )}
+                            {item.cargos_aplicaveis.length > 0 && (
+                              <Badge variant="outline" className="text-[10px]">
+                                {item.cargos_aplicaveis.length} cargo(s)
+                              </Badge>
+                            )}
+                          </div>
+                          <h3 className="font-semibold text-base">{item.titulo}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {item.conteudo.length > 220 ? item.conteudo.slice(0, 220) + "..." : item.conteudo}
+                          </p>
+                          {item.tags.length > 0 && (
+                            <div className="flex gap-1 flex-wrap">
+                              {item.tags.map((t) => (
+                                <span key={t} className="text-[10px] bg-muted px-2 py-0.5 rounded-full">#{t}</span>
+                              ))}
+                            </div>
+                          )}
+                          {item.fonte && (
+                            <p className="text-[10px] text-muted-foreground italic">Fonte: {item.fonte}</p>
+                          )}
                         </div>
-                      )}
-                      {item.fonte && (
-                        <p className="text-[10px] text-muted-foreground italic">Fonte: {item.fonte}</p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <Button variant="ghost" size="sm" onClick={() => abrirEditar(item)} className="gap-1">
-                        <Edit2 className="h-3.5 w-3.5" /> Editar
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => void desativar(item)} className="gap-1 text-muted-foreground hover:text-destructive">
-                        <EyeOff className="h-3.5 w-3.5" /> Desativar
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+                        <div className="flex flex-col gap-1 shrink-0">
+                          <Button variant="ghost" size="sm" onClick={() => abrirEditar(item)} className="gap-1">
+                            <Edit2 className="h-3.5 w-3.5" /> Editar
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => void desativar(item)} className="gap-1 text-muted-foreground hover:text-destructive">
+                            <EyeOff className="h-3.5 w-3.5" /> Desativar
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="sugestoes">
+            <SugestoesPendentes
+              sugestoes={sugestoes}
+              onAprovar={abrirAprovarSugestao}
+              onAtualizar={() => void carregarSugestoes()}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialog formulário */}
