@@ -185,137 +185,117 @@ function PermissionDot({
   );
 }
 
-// ─── Permission Matrix Table ────────────────────────────────
-function PermissionMatrix({
-  modules,
+// ─── Permission Cell (toggle + nivel select) ──────────────
+function PermissionCell({
+  granted,
+  nivel,
+  locked,
+  showNivel,
+  onToggle,
+  onNivelChange,
+}: {
+  granted: boolean;
+  nivel: string | null;
+  locked?: boolean;
+  showNivel: boolean;
+  onToggle: (v: boolean) => void;
+  onNivelChange: (n: string | null) => void;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <Switch
+        checked={granted}
+        disabled={locked}
+        onCheckedChange={onToggle}
+        className="scale-75"
+      />
+      {granted && showNivel && !locked && (
+        <Select
+          value={nivel ?? "any"}
+          onValueChange={(v) => onNivelChange(v === "any" ? null : v)}
+        >
+          <SelectTrigger className="h-6 w-[92px] text-[10px] px-1.5 gap-1">
+            {nivel && <Zap className="h-2.5 w-2.5 text-amber-500 shrink-0" />}
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any" className="text-xs">Qualquer</SelectItem>
+            <SelectItem value="estagio" className="text-xs">Estágio+</SelectItem>
+            <SelectItem value="assistente" className="text-xs">Assistente+</SelectItem>
+            <SelectItem value="analista" className="text-xs">Analista+</SelectItem>
+            <SelectItem value="coordenador" className="text-xs">Coord.+</SelectItem>
+            <SelectItem value="gerente" className="text-xs">Gerente+</SelectItem>
+            <SelectItem value="diretor" className="text-xs">Diretor</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+    </div>
+  );
+}
+
+// ─── Module Row (one expanded line per module) ─────────────
+function ModuleRow({
+  mod,
   tipo,
   localPermissions,
   localNiveis,
   togglePermission,
   setNivelMinimo,
   isSuperAdminRole,
-  showNivelColumn,
+  showNivel,
 }: {
-  modules: typeof MODULES[number][];
+  mod: typeof MODULES[number];
   tipo: string;
   localPermissions: Map<string, boolean>;
   localNiveis: Map<string, string | null>;
   togglePermission: (mod: string, perm: string, tipo: string) => void;
   setNivelMinimo: (mod: string, perm: string, tipo: string, nivel: string | null) => void;
   isSuperAdminRole: boolean;
-  showNivelColumn: boolean;
+  showNivel: boolean;
 }) {
-  const allSpecialPerms = new Map<string, string>();
-  modules.forEach((mod) => {
-    SPECIAL_PERMISSIONS
-      .filter((sp) => sp.module === mod.key)
-      .forEach((sp) => allSpecialPerms.set(sp.key, sp.label));
-  });
-  const uniqueSpecialKeys = Array.from(allSpecialPerms.keys());
+  const acoes = getAcoesDoModulo(mod.key);
+  const sensivel = MODULOS_SENSIVEIS.has(mod.key);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b">
-            <th className="text-left py-2 pr-4 font-semibold text-xs uppercase text-muted-foreground">Módulo</th>
-            {CRUD_PERMISSIONS.map((p) => (
-              <th key={p.key} className="text-center py-2 px-1">
-                <TooltipProvider delayDuration={200}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center">{PERMISSION_ICONS[p.key]}</div>
-                    </TooltipTrigger>
-                    <TooltipContent><p className="text-xs">{p.label}</p></TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </th>
-            ))}
-            {uniqueSpecialKeys.map((key) => (
-              <th key={key} className="text-center py-2 px-1">
-                <TooltipProvider delayDuration={200}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center justify-center">{PERMISSION_ICONS[key] || <span className="text-xs">⭐</span>}</div>
-                    </TooltipTrigger>
-                    <TooltipContent><p className="text-xs">{allSpecialPerms.get(key)}</p></TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </th>
-            ))}
-            {showNivelColumn && (
-              <th className="text-center py-2 px-2 text-[10px] uppercase text-muted-foreground font-semibold min-w-[140px]">
-                Nível mín. (edit)
-              </th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {modules.map((mod) => {
-            const modSpecialPerms = SPECIAL_PERMISSIONS.filter((sp) => sp.module === mod.key);
-            const editKey = `${mod.key}:edit:${tipo}`;
-            const currentNivel = localNiveis.get(editKey) ?? null;
+    <div className="border rounded-lg overflow-hidden bg-card">
+      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] items-stretch">
+        {/* Module name */}
+        <div className="p-3 bg-muted/30 border-b md:border-b-0 md:border-r flex flex-col justify-center gap-1.5">
+          <p className="text-sm font-medium leading-tight">{mod.label}</p>
+          {sensivel && (
+            <Badge variant="outline" className="w-fit text-[9px] px-1.5 py-0 border-amber-300 text-amber-700 bg-amber-50">
+              🔐 Sensível
+            </Badge>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="p-3 flex flex-wrap gap-x-4 gap-y-3">
+          {acoes.map((acao) => {
+            const key = `${mod.key}:${acao}:${tipo}`;
+            const granted = localPermissions.get(key) || false;
+            const nivel = localNiveis.get(key) ?? null;
             return (
-              <tr key={mod.key} className="border-b last:border-b-0 hover:bg-muted/30">
-                <td className="py-1.5 pr-4">
-                  <span className="font-medium text-sm">{mod.label}</span>
-                </td>
-                {CRUD_PERMISSIONS.map((p) => {
-                  const key = `${mod.key}:${p.key}:${tipo}`;
-                  const granted = localPermissions.get(key) || false;
-                  const nivel = localNiveis.get(key);
-                  return (
-                    <td key={p.key} className="text-center py-1.5">
-                      <PermissionDot
-                        granted={granted}
-                        locked={isSuperAdminRole}
-                        onClick={isSuperAdminRole ? undefined : () => togglePermission(mod.key, p.key, tipo)}
-                        label={`${mod.label}: ${p.label}${nivel ? ` (mín. ${nivel})` : ""}`}
-                      />
-                    </td>
-                  );
-                })}
-                {uniqueSpecialKeys.map((spKey) => {
-                  const hasThis = modSpecialPerms.some((sp) => sp.key === spKey);
-                  if (!hasThis) {
-                    return <td key={spKey} className="text-center py-1.5"><div className="w-7 h-7" /></td>;
-                  }
-                  const permKey = `${mod.key}:${spKey}:${tipo}`;
-                  const granted = localPermissions.get(permKey) || false;
-                  return (
-                    <td key={spKey} className="text-center py-1.5">
-                      <PermissionDot
-                        granted={granted}
-                        locked={isSuperAdminRole}
-                        onClick={isSuperAdminRole ? undefined : () => togglePermission(mod.key, spKey, tipo)}
-                        label={`${mod.label}: ${PERMISSION_SHORT[spKey]}`}
-                      />
-                    </td>
-                  );
-                })}
-                {showNivelColumn && (
-                  <td className="text-center py-1.5 px-2">
-                    <Select
-                      value={currentNivel ?? "any"}
-                      onValueChange={(v) => setNivelMinimo(mod.key, "edit", tipo, v === "any" ? null : v)}
-                      disabled={isSuperAdminRole}
-                    >
-                      <SelectTrigger className="h-7 text-xs">
-                        <SelectValue placeholder="Qualquer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {NIVEIS.map((n) => (
-                          <SelectItem key={n.value} value={n.value} className="text-xs">{n.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </td>
-                )}
-              </tr>
+              <div key={acao} className="flex flex-col items-center gap-1 min-w-[92px]">
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
+                  {ACAO_ICONES[acao]} {ACAO_LABELS[acao]}
+                </div>
+                <PermissionCell
+                  granted={granted}
+                  nivel={nivel}
+                  locked={isSuperAdminRole}
+                  showNivel={showNivel}
+                  onToggle={(v) => {
+                    togglePermission(mod.key, acao, tipo);
+                    if (!v) setNivelMinimo(mod.key, acao, tipo, null);
+                  }}
+                  onNivelChange={(n) => setNivelMinimo(mod.key, acao, tipo, n)}
+                />
+              </div>
             );
           })}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
   );
 }
