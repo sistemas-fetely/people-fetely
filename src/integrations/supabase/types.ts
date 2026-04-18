@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      acesso_dados_log: {
+        Row: {
+          alvo_nome: string | null
+          alvo_user_id: string | null
+          contexto: string | null
+          created_at: string
+          id: string
+          ip_origem: string | null
+          registro_id: string | null
+          tabela_origem: string | null
+          tipo_dado: string
+          user_id: string | null
+          user_nome: string | null
+        }
+        Insert: {
+          alvo_nome?: string | null
+          alvo_user_id?: string | null
+          contexto?: string | null
+          created_at?: string
+          id?: string
+          ip_origem?: string | null
+          registro_id?: string | null
+          tabela_origem?: string | null
+          tipo_dado: string
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Update: {
+          alvo_nome?: string | null
+          alvo_user_id?: string | null
+          contexto?: string | null
+          created_at?: string
+          id?: string
+          ip_origem?: string | null
+          registro_id?: string | null
+          tabela_origem?: string | null
+          tipo_dado?: string
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Relationships: []
+      }
       alertas_agendados: {
         Row: {
           colaborador_id: string | null
@@ -86,6 +128,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      audit_log: {
+        Row: {
+          acao: string
+          created_at: string
+          dados_antes: Json | null
+          dados_depois: Json | null
+          id: string
+          ip_origem: string | null
+          justificativa: string | null
+          registro_id: string | null
+          tabela: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+          user_nome: string | null
+        }
+        Insert: {
+          acao: string
+          created_at?: string
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          id?: string
+          ip_origem?: string | null
+          justificativa?: string | null
+          registro_id?: string | null
+          tabela: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Update: {
+          acao?: string
+          created_at?: string
+          dados_antes?: Json | null
+          dados_depois?: Json | null
+          id?: string
+          ip_origem?: string | null
+          justificativa?: string | null
+          registro_id?: string | null
+          tabela?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_nome?: string | null
+        }
+        Relationships: []
       }
       beneficios_catalogo: {
         Row: {
@@ -553,6 +643,33 @@ export type Database = {
         }
         Relationships: []
       }
+      classificacao_dados: {
+        Row: {
+          base_legal: string | null
+          descricao: string | null
+          id: string
+          politica: string
+          retencao_anos: number | null
+          tabela: string
+        }
+        Insert: {
+          base_legal?: string | null
+          descricao?: string | null
+          id?: string
+          politica: string
+          retencao_anos?: number | null
+          tabela: string
+        }
+        Update: {
+          base_legal?: string | null
+          descricao?: string | null
+          id?: string
+          politica?: string
+          retencao_anos?: number | null
+          tabela?: string
+        }
+        Relationships: []
+      }
       colaborador_acessos_sistemas: {
         Row: {
           colaborador_id: string
@@ -693,6 +810,7 @@ export type Database = {
       }
       colaboradores_clt: {
         Row: {
+          acesso_revogado_em: string | null
           agencia: string | null
           bairro: string | null
           banco_codigo: string | null
@@ -759,6 +877,7 @@ export type Database = {
           zona_eleitoral: string | null
         }
         Insert: {
+          acesso_revogado_em?: string | null
           agencia?: string | null
           bairro?: string | null
           banco_codigo?: string | null
@@ -825,6 +944,7 @@ export type Database = {
           zona_eleitoral?: string | null
         }
         Update: {
+          acesso_revogado_em?: string | null
           agencia?: string | null
           bairro?: string | null
           banco_codigo?: string | null
@@ -906,6 +1026,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      consentimentos_lgpd: {
+        Row: {
+          aceito: boolean
+          criado_em: string
+          id: string
+          ip_origem: string | null
+          revogado_em: string | null
+          texto_versao: string
+          tipo: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          aceito: boolean
+          criado_em?: string
+          id?: string
+          ip_origem?: string | null
+          revogado_em?: string | null
+          texto_versao: string
+          tipo: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          aceito?: boolean
+          criado_em?: string
+          id?: string
+          ip_origem?: string | null
+          revogado_em?: string | null
+          texto_versao?: string
+          tipo?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       contrato_pj_acessos_sistemas: {
         Row: {
@@ -1012,6 +1168,7 @@ export type Database = {
       }
       contratos_pj: {
         Row: {
+          acesso_revogado_em: string | null
           agencia: string | null
           bairro: string | null
           banco_codigo: string | null
@@ -1069,6 +1226,7 @@ export type Database = {
           valor_mensal: number
         }
         Insert: {
+          acesso_revogado_em?: string | null
           agencia?: string | null
           bairro?: string | null
           banco_codigo?: string | null
@@ -1126,6 +1284,7 @@ export type Database = {
           valor_mensal: number
         }
         Update: {
+          acesso_revogado_em?: string | null
           agencia?: string | null
           bairro?: string | null
           banco_codigo?: string | null
@@ -1342,6 +1501,45 @@ export type Database = {
           is_system?: boolean
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      delegacoes_gestao: {
+        Row: {
+          ativa: boolean
+          criado_em: string
+          criado_por: string | null
+          data_fim: string
+          data_inicio: string
+          gestor_original_id: string
+          id: string
+          motivo: string
+          observacao: string | null
+          substituto_id: string
+        }
+        Insert: {
+          ativa?: boolean
+          criado_em?: string
+          criado_por?: string | null
+          data_fim: string
+          data_inicio: string
+          gestor_original_id: string
+          id?: string
+          motivo: string
+          observacao?: string | null
+          substituto_id: string
+        }
+        Update: {
+          ativa?: boolean
+          criado_em?: string
+          criado_por?: string | null
+          data_fim?: string
+          data_inicio?: string
+          gestor_original_id?: string
+          id?: string
+          motivo?: string
+          observacao?: string | null
+          substituto_id?: string
         }
         Relationships: []
       }
@@ -2909,6 +3107,51 @@ export type Database = {
         }
         Relationships: []
       }
+      remuneracoes: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          criado_por: string | null
+          data_vigencia_fim: string | null
+          data_vigencia_inicio: string
+          id: string
+          moeda: string
+          natureza: string
+          observacao: string | null
+          periodicidade: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          data_vigencia_fim?: string | null
+          data_vigencia_inicio: string
+          id?: string
+          moeda?: string
+          natureza: string
+          observacao?: string | null
+          periodicidade?: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          criado_por?: string | null
+          data_vigencia_fim?: string | null
+          data_vigencia_inicio?: string
+          id?: string
+          moeda?: string
+          natureza?: string
+          observacao?: string | null
+          periodicidade?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       responsabilidades_catalogo: {
         Row: {
           area: string
@@ -4053,6 +4296,10 @@ export type Database = {
         Args: { _dados: Json; _token: string }
         Returns: boolean
       }
+      delegacao_ativa_entre: {
+        Args: { _gestor: string; _substituto: string }
+        Returns: boolean
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -4128,8 +4375,33 @@ export type Database = {
           read_ct: number
         }[]
       }
+      registrar_acesso_dado: {
+        Args: {
+          _alvo_user_id: string
+          _contexto?: string
+          _registro_id?: string
+          _tabela_origem?: string
+          _tipo_dado: string
+        }
+        Returns: undefined
+      }
+      registrar_audit: {
+        Args: {
+          _acao: string
+          _dados_antes?: Json
+          _dados_depois?: Json
+          _justificativa?: string
+          _registro_id: string
+          _tabela: string
+        }
+        Returns: string
+      }
       submit_convite_cadastro: {
         Args: { _dados: Json; _token: string }
+        Returns: boolean
+      }
+      tem_consentimento_ativo: {
+        Args: { _tipo: string; _user_id: string }
         Returns: boolean
       }
     }
