@@ -189,10 +189,10 @@ export default function MeusDados() {
     try {
       const userId = user.id;
 
-      const safe = async (p: Promise<any>) => {
+      const safe = async <T,>(builder: any): Promise<T | null> => {
         try {
-          const r = await p;
-          return r.data ?? null;
+          const r = await builder;
+          return (r?.data ?? null) as T | null;
         } catch {
           return null;
         }
