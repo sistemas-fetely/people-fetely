@@ -70,13 +70,25 @@ function formatRelativo(iso: string) {
 export default function FalaFetely() {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { isSuperAdmin, isAdminRH, userRoles } = usePermissions();
   const [conversas, setConversas] = useState<Conversa[]>([]);
   const [conversaAtiva, setConversaAtiva] = useState<Conversa | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [input, setInput] = useState("");
   const [pensando, setPensando] = useState(false);
   const [estadoPensando, setEstadoPensando] = useState(FRASES_PENSANDO[0]);
+  const [mensagemEnsinando, setMensagemEnsinando] = useState<Mensagem | null>(null);
+  const [feedbackNegativo, setFeedbackNegativo] = useState<Mensagem | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const podeEnsinar = useMemo(
+    () =>
+      isSuperAdmin ||
+      isAdminRH ||
+      (userRoles as string[]).includes("gestor_rh") ||
+      (userRoles as string[]).includes("gestor_direto"),
+    [isSuperAdmin, isAdminRH, userRoles]
+  );
 
   const fraseMotivacional = useMemo(
     () => FRASES_MOTIVACIONAIS[Math.floor(Math.random() * FRASES_MOTIVACIONAIS.length)],
@@ -87,6 +99,15 @@ export default function FalaFetely() {
     const name = profile?.full_name || user?.email || "??";
     return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
   }, [profile, user]);
+
+  function getPerguntaAnterior(msg: Mensagem): string {
+    const idx = mensagens.findIndex((m) => m.id === msg.id);
+    if (idx <= 0) return "";
+    for (let i = idx - 1; i >= 0; i--) {
+      if (mensagens[i].papel === "user") return mensagens[i].conteudo;
+    }
+    return "";
+  }
 
   // Carrega conversas
   useEffect(() => {
@@ -291,14 +312,19 @@ export default function FalaFetely() {
 
   async function feedback(mensagemId: string, util: boolean) {
     if (!user || mensagemId.startsWith("tmp-")) return;
-    const { error } = await supabase
-      .from("fala_fetely_feedback")
-      .upsert({ mensagem_id: mensagemId, user_id: user.id, util }, { onConflict: "mensagem_id,user_id" });
-    if (error) {
-      toast({ title: "Não consegui registrar", description: error.message, variant: "destructive" });
-      return;
+    if (util) {
+      const { error } = await supabase
+        .from("fala_fetely_feedback")
+        .upsert({ mensagem_id: mensagemId, user_id: user.id, util: true }, { onConflict: "mensagem_id,user_id" });
+      if (error) {
+        toast({ title: "Não consegui registrar", description: error.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: "Valeu! 💚", description: "Vou seguir nessa linha" });
+    } else {
+      const msg = mensagens.find((m) => m.id === mensagemId);
+      if (msg) setFeedbackNegativo(msg);
     }
-    toast({ title: util ? "Valeu! 💚" : "Obrigado pelo aviso 🌱", description: util ? "Vou seguir nessa linha" : "Vou tentar melhorar" });
   }
 
   function copiar(texto: string) {
@@ -459,15 +485,24 @@ export default function FalaFetely() {
                       </div>
                       {msg.papel === "assistant" && !msg.pendente && msg.conteudo && (
                         <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                          <button onClick={() => void feedback(msg.id, true)} className="hover:text-emerald-600 transition-colors p-1">
+                          <button onClick={() => void feedback(msg.id, true)} className="hover:text-emerald-600 transition-colors p-1" title="Útil">
                             <ThumbsUp className="h-3 w-3" />
                           </button>
-                          <button onClick={() => void feedback(msg.id, false)} className="hover:text-red-600 transition-colors p-1">
+                          <button onClick={() => void feedback(msg.id, false)} className="hover:text-red-600 transition-colors p-1" title="Não útil">
                             <ThumbsDown className="h-3 w-3" />
                           </button>
-                          <button onClick={() => copiar(msg.conteudo)} className="hover:text-foreground transition-colors p-1">
+                          <button onClick={() => copiar(msg.conteudo)} className="hover:text-foreground transition-colors p-1" title="Copiar">
                             <Copy className="h-3 w-3" />
                           </button>
+                          {podeEnsinar && (
+                            <button
+                              onClick={() => setMensagemEnsinando(msg)}
+                              className="hover:text-[#1A4A3A] transition-colors p-1"
+                              title="Ensinar Fala Fetely"
+                            >
+                              <GraduationCap className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
