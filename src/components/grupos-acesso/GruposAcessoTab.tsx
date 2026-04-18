@@ -117,13 +117,14 @@ export function GruposAcessoTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, full_name")
+        .select("user_id, full_name, department, position")
         .order("full_name");
       if (error) throw error;
       return (data || []).map((p) => ({
         user_id: p.user_id,
         full_name: p.full_name || "Sem nome",
-        email: "",
+        department: p.department,
+        position: p.position,
       }));
     },
     staleTime: 60 * 1000,
