@@ -120,12 +120,13 @@ function parseSistemaMeta(descricao: string | null): { url: string; tipo_licenca
 }
 
 function ParametroForm({
-  open, onClose, parametro, categoria,
+  open, onClose, parametro, categoria, paiValor,
 }: {
   open: boolean;
   onClose: () => void;
   parametro: Parametro | null;
   categoria: string;
+  paiValor: string | null;
 }) {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
