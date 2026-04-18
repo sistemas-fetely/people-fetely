@@ -283,6 +283,34 @@ export default function ConviteDetalhe() {
     }
 
     setCriando(true);
+
+    // Validar integridade do convite antes de importar (V3-G)
+    if (!convite.cargo_id) {
+      toast.error(
+        "Este convite não tem cargo válido vinculado (texto livre legado). Edite o convite e selecione um cargo cadastrado antes de importar."
+      );
+      setCriando(false);
+      return;
+    }
+    if (!convite.unidade_id) {
+      toast.error("Este convite não tem unidade definida. Edite o convite e escolha a unidade.");
+      setCriando(false);
+      return;
+    }
+    // Verificar se o cargo ainda existe e está ativo
+    const { data: cargoAtivo } = await supabase
+      .from("cargos")
+      .select("id, nome, ativo")
+      .eq("id", convite.cargo_id)
+      .maybeSingle();
+    if (!cargoAtivo || !cargoAtivo.ativo) {
+      toast.error(
+        `O cargo vinculado a este convite ("${convite.cargo}") não existe mais ou foi inativado. Edite o convite e escolha outro cargo.`
+      );
+      setCriando(false);
+      return;
+    }
+
     try {
       const dc = (convite as any).dados_contratacao || {};
 
@@ -329,7 +357,10 @@ export default function ConviteDetalhe() {
           tipo_conta: rest.tipo_conta || "corrente",
           chave_pix: rest.chave_pix || null,
           cargo: convite.cargo || rest.cargo || null,
+          cargo_id: convite.cargo_id,
           departamento: convite.departamento || rest.departamento || null,
+          departamento_id: convite.departamento_id,
+          unidade_id: convite.unidade_id,
           data_admissao: (convite as any).data_inicio_prevista || rest.data_admissao || new Date().toISOString().split("T")[0],
           salario_base: Number((convite as any).salario_previsto || rest.salario_base || 0),
           tipo_contrato: dc.tipo_contrato_clt || rest.tipo_contrato || "indeterminado",
@@ -547,7 +578,10 @@ export default function ConviteDetalhe() {
           tipo_conta: rest.tipo_conta || "corrente",
           chave_pix: rest.chave_pix || null,
           tipo_servico: convite.cargo || rest.tipo_servico || null,
+          cargo_id: convite.cargo_id,
           departamento: convite.departamento || rest.departamento || null,
+          departamento_id: convite.departamento_id,
+          unidade_id: convite.unidade_id,
           valor_mensal: Number((convite as any).salario_previsto || rest.valor_mensal || 0),
           data_inicio: (convite as any).data_inicio_prevista || rest.data_inicio || new Date().toISOString().split("T")[0],
           forma_pagamento: rest.forma_pagamento || "transferencia",
