@@ -442,7 +442,18 @@ function AtribuirDialog({
       setUnidadeId("");
       setNivel("");
     } catch (e: any) {
-      toast.error(e.message || "Erro ao atribuir");
+      const msg = e?.message || "";
+      if (
+        msg.includes("unique") ||
+        msg.includes("duplicate") ||
+        msg.includes("user_atribuicoes_user_id_perfil_id_unidade_id_key")
+      ) {
+        toast.error("Essa pessoa já tem esse perfil nesse contexto");
+      } else if (msg.includes("Regra 19") || msg.includes("Escopo obrigatório")) {
+        toast.error("Essa pessoa precisa ter unidade definida (Regra 19)");
+      } else {
+        toast.error(msg || "Erro ao atribuir");
+      }
     } finally {
       setSalvando(false);
     }
