@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
@@ -21,7 +24,7 @@ import {
 import {
   Shield, ShieldCheck, Plus, Save, Trash2, Settings2,
   Eye, FilePlus, Pencil, Trash, Mail, CheckCircle, Lock, FileDown, Send,
-  Users, Building2, RotateCcw, AlertTriangle,
+  RotateCcw, AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -56,26 +59,44 @@ interface CustomRole {
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
-  admin_rh: "Admin RH",
-  admin_ti: "Admin TI",
-  gestor_rh: "Gestor RH",
-  gestor_direto: "Gestor Direto",
+  admin_rh: "Admin RH (legado)",
+  rh: "RH",
+  admin_ti: "Admin TI (legado)",
+  ti: "TI",
+  gestor_rh: "Gestor RH (legado)",
+  gestor_direto: "Gestor Direto (legado)",
+  gestao_direta: "Gestão Direta",
   colaborador: "Colaborador",
   financeiro: "Financeiro",
-  fiscal: "Fiscal",
+  administrativo: "Administrativo",
   operacional: "Operacional",
-  recrutador: "Recrutador",
+  fiscal: "Fiscal",
+  recrutador: "Recrutador (legado)",
+  recrutamento: "Recrutamento",
+  estagiario: "Estagiário",
 };
 
-const FUTURE_ROLES = ["admin_ti", "recrutador", "fiscal", "operacional"];
-const FUTURE_ROLE_MODULES: Record<string, string> = {
-  admin_ti: "Módulo TI",
-  recrutador: "Módulo Recrutamento",
-  fiscal: "Integração ERP",
-  operacional: "Unidade Fabril",
+const NIVEIS = [
+  { value: "any", label: "Qualquer nível" },
+  { value: "estagio", label: "Estágio" },
+  { value: "assistente", label: "Assistente" },
+  { value: "analista", label: "Analista" },
+  { value: "coordenador", label: "Coordenador" },
+  { value: "gerente", label: "Gerente" },
+  { value: "diretor", label: "Diretor" },
+];
+
+const NIVEL_SHORT: Record<string, string> = {
+  estagio: "EST", assistente: "ASS", analista: "ANA",
+  coordenador: "COO", gerente: "GER", diretor: "DIR",
 };
 
-const isFutureRole = (name: string) => FUTURE_ROLES.includes(name);
+// Roles que aceitam níveis (não faz sentido para super_admin / colaborador comum)
+const ROLES_COM_NIVEIS = new Set([
+  "rh", "ti", "financeiro", "administrativo", "operacional", "fiscal",
+  "recrutamento", "gestao_direta", "estagiario",
+]);
+
 
 // ─── Matrix Cell ────────────────────────────────────────────
 function PermissionDot({
@@ -122,14 +143,20 @@ function PermissionMatrix({
   modules,
   tipo,
   localPermissions,
+  localNiveis,
   togglePermission,
+  setNivelMinimo,
   isSuperAdminRole,
+  showNivelColumn,
 }: {
   modules: typeof MODULES[number][];
   tipo: string;
   localPermissions: Map<string, boolean>;
+  localNiveis: Map<string, string | null>;
   togglePermission: (mod: string, perm: string, tipo: string) => void;
+  setNivelMinimo: (mod: string, perm: string, tipo: string, nivel: string | null) => void;
   isSuperAdminRole: boolean;
+  showNivelColumn: boolean;
 }) {
   const allSpecialPerms = new Map<string, string>();
   modules.forEach((mod) => {
@@ -169,11 +196,18 @@ function PermissionMatrix({
                 </TooltipProvider>
               </th>
             ))}
+            {showNivelColumn && (
+              <th className="text-center py-2 px-2 text-[10px] uppercase text-muted-foreground font-semibold min-w-[140px]">
+                Nível mín. (edit)
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
           {modules.map((mod) => {
             const modSpecialPerms = SPECIAL_PERMISSIONS.filter((sp) => sp.module === mod.key);
+            const editKey = `${mod.key}:edit:${tipo}`;
+            const currentNivel = localNiveis.get(editKey) ?? null;
             return (
               <tr key={mod.key} className="border-b last:border-b-0 hover:bg-muted/30">
                 <td className="py-1.5 pr-4">
@@ -182,13 +216,14 @@ function PermissionMatrix({
                 {CRUD_PERMISSIONS.map((p) => {
                   const key = `${mod.key}:${p.key}:${tipo}`;
                   const granted = localPermissions.get(key) || false;
+                  const nivel = localNiveis.get(key);
                   return (
                     <td key={p.key} className="text-center py-1.5">
                       <PermissionDot
                         granted={granted}
                         locked={isSuperAdminRole}
                         onClick={isSuperAdminRole ? undefined : () => togglePermission(mod.key, p.key, tipo)}
-                        label={`${mod.label}: ${p.label}`}
+                        label={`${mod.label}: ${p.label}${nivel ? ` (mín. ${nivel})` : ""}`}
                       />
                     </td>
                   );
@@ -211,6 +246,24 @@ function PermissionMatrix({
                     </td>
                   );
                 })}
+                {showNivelColumn && (
+                  <td className="text-center py-1.5 px-2">
+                    <Select
+                      value={currentNivel ?? "any"}
+                      onValueChange={(v) => setNivelMinimo(mod.key, "edit", tipo, v === "any" ? null : v)}
+                      disabled={isSuperAdminRole}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder="Qualquer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {NIVEIS.map((n) => (
+                          <SelectItem key={n.value} value={n.value} className="text-xs">{n.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                )}
               </tr>
             );
           })}
@@ -259,23 +312,29 @@ export default function ConfigurarPerfisTab() {
     },
   });
 
+  const savedNiveisRef = useRef<Map<string, string | null>>(new Map());
+  const [localNiveis, setLocalNiveis] = useState<Map<string, string | null>>(new Map());
+
   const loadRolePermissions = useCallback((roleName: string) => {
     const map = new Map<string, boolean>();
+    const niveis = new Map<string, string | null>();
     permissions
       .filter((p) => p.role_name === roleName)
-      .forEach((p) => map.set(`${p.module}:${p.permission}:${p.colaborador_tipo}`, p.granted));
+      .forEach((p) => {
+        const k = `${p.module}:${p.permission}:${p.colaborador_tipo}`;
+        map.set(k, p.granted);
+        niveis.set(k, (p as any).nivel_minimo ?? null);
+      });
     setLocalPermissions(map);
+    setLocalNiveis(niveis);
     savedPermissionsRef.current = new Map(map);
+    savedNiveisRef.current = new Map(niveis);
     setIsDirty(false);
   }, [permissions]);
 
   const selectRole = (roleName: string) => {
     if (isDirty && selectedRole && selectedRole !== roleName) {
       setDiscardTarget(roleName);
-      return;
-    }
-    if (isFutureRole(roleName)) {
-      toast.info(`Este perfil será ativado quando o ${FUTURE_ROLE_MODULES[roleName] || "módulo"} estiver disponível`);
       return;
     }
     setSelectedRole(roleName);
@@ -298,8 +357,17 @@ export default function ConfigurarPerfisTab() {
     setIsDirty(true);
   };
 
+  const setNivelMinimo = (module: string, permission: string, tipo: string, nivel: string | null) => {
+    const key = `${module}:${permission}:${tipo}`;
+    const newMap = new Map(localNiveis);
+    newMap.set(key, nivel);
+    setLocalNiveis(newMap);
+    setIsDirty(true);
+  };
+
   const resetToSaved = () => {
     setLocalPermissions(new Map(savedPermissionsRef.current));
+    setLocalNiveis(new Map(savedNiveisRef.current));
     setIsDirty(false);
     setResetConfirm(false);
     toast.success("Permissões restauradas para o estado salvo");
@@ -310,7 +378,8 @@ export default function ConfigurarPerfisTab() {
       if (!selectedRole) return;
       const updates = Array.from(localPermissions.entries()).map(([key, granted]) => {
         const [module, permission, colaborador_tipo] = key.split(":");
-        return { role_name: selectedRole, module, permission, granted, colaborador_tipo };
+        const nivel_minimo = localNiveis.get(key) ?? null;
+        return { role_name: selectedRole, module, permission, granted, colaborador_tipo, nivel_minimo };
       });
 
       for (const u of updates) {
@@ -318,11 +387,12 @@ export default function ConfigurarPerfisTab() {
           .from("role_permissions")
           .upsert(
             {
-              role_name: u.role_name,
+              role_name: u.role_name as any,
               module: u.module,
               permission: u.permission,
               granted: u.granted,
               colaborador_tipo: u.colaborador_tipo,
+              nivel_minimo: u.nivel_minimo as any,
             },
             { onConflict: "role_name,module,permission,colaborador_tipo" }
           );
@@ -332,6 +402,7 @@ export default function ConfigurarPerfisTab() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["role-permissions-config"] });
       savedPermissionsRef.current = new Map(localPermissions);
+      savedNiveisRef.current = new Map(localNiveis);
       setIsDirty(false);
       toast.success("Permissões salvas com sucesso!");
     },

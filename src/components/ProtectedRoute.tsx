@@ -38,9 +38,14 @@ export function ProtectedRoute({ children, allowedRoles, permModule, permAction 
     return <Navigate to="/aguardando-aprovacao" replace />;
   }
 
+  // Super Admin bypasses ALL permission checks (global)
+  if (isSuperAdmin) {
+    return <>{children}</>;
+  }
+
   // Permission-based check (preferred)
   if (permModule) {
-    if (!isSuperAdmin && !hasPermission(permModule, permAction)) {
+    if (!hasPermission(permModule, permAction)) {
       return <Navigate to="/sem-permissao" replace />;
     }
     return <>{children}</>;

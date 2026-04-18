@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,77 +10,53 @@ import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Database } from "@/integrations/supabase/types";
+import { MODULES, MODULE_CATEGORIES } from "@/hooks/usePermissions";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 const ROLE_COLORS: Record<string, string> = {
   super_admin: "bg-purple-100 text-purple-700 border-purple-200",
   admin_rh: "bg-blue-100 text-blue-700 border-blue-200",
+  rh: "bg-blue-100 text-blue-700 border-blue-200",
   gestor_rh: "bg-cyan-100 text-cyan-700 border-cyan-200",
   gestor_direto: "bg-teal-100 text-teal-700 border-teal-200",
+  gestao_direta: "bg-teal-100 text-teal-700 border-teal-200",
   financeiro: "bg-amber-100 text-amber-700 border-amber-200",
+  administrativo: "bg-slate-100 text-slate-700 border-slate-200",
+  operacional: "bg-orange-100 text-orange-700 border-orange-200",
+  ti: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  recrutamento: "bg-pink-100 text-pink-700 border-pink-200",
+  recrutador: "bg-pink-100 text-pink-700 border-pink-200",
+  fiscal: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  estagiario: "bg-violet-100 text-violet-700 border-violet-200",
   colaborador: "bg-slate-100 text-slate-700 border-slate-200",
 };
 
-const MATRIX_ROLES: { role: AppRole; label: string; shortLabel: string }[] = [
+const NIVEL_LABELS: Record<string, string> = {
+  estagio: "estágio",
+  assistente: "assistente",
+  analista: "analista",
+  coordenador: "coordenador",
+  gerente: "gerente",
+  diretor: "diretor",
+};
+
+const MATRIX_ROLES: { role: AppRole; label: string; shortLabel: string; isNew?: boolean; isLegacy?: boolean }[] = [
   { role: "super_admin", label: "Super Admin", shortLabel: "S.Admin" },
-  { role: "admin_rh", label: "Admin RH", shortLabel: "Admin RH" },
-  { role: "gestor_rh", label: "Gestor RH", shortLabel: "Gestor RH" },
-  { role: "gestor_direto", label: "Gestor Direto", shortLabel: "G.Direto" },
-  { role: "financeiro", label: "Financeiro", shortLabel: "Financeiro" },
+  { role: "admin_rh", label: "Admin RH (legado)", shortLabel: "Admin RH", isLegacy: true },
+  { role: "rh", label: "RH", shortLabel: "RH", isNew: true },
+  { role: "gestor_rh", label: "Gestor RH (legado)", shortLabel: "G.RH", isLegacy: true },
+  { role: "gestor_direto", label: "Gestor Direto (legado)", shortLabel: "G.Direto", isLegacy: true },
+  { role: "gestao_direta", label: "Gestão Direta", shortLabel: "Gestão", isNew: true },
+  { role: "financeiro", label: "Financeiro", shortLabel: "Financ." },
+  { role: "administrativo", label: "Administrativo", shortLabel: "Admin.", isNew: true },
+  { role: "operacional", label: "Operacional", shortLabel: "Operac.", isNew: true },
+  { role: "ti", label: "TI", shortLabel: "TI", isNew: true },
+  { role: "recrutamento", label: "Recrutamento", shortLabel: "Recrut.", isNew: true },
+  { role: "recrutador", label: "Recrutador (legado)", shortLabel: "Recr.L", isLegacy: true },
+  { role: "fiscal", label: "Fiscal", shortLabel: "Fiscal" },
+  { role: "estagiario", label: "Estagiário", shortLabel: "Estag.", isNew: true },
   { role: "colaborador", label: "Colaborador", shortLabel: "Colab." },
-];
-
-interface ModuleGroup {
-  group: string;
-  modules: { value: string; label: string }[];
-}
-
-const MODULE_GROUPS: ModuleGroup[] = [
-  {
-    group: "Gestão de Pessoas",
-    modules: [
-      { value: "dashboard", label: "Dashboard" },
-      { value: "pessoas", label: "Pessoas" },
-      { value: "colaboradores", label: "Colaboradores CLT" },
-      { value: "contratos_pj", label: "Contratos PJ" },
-      { value: "organograma", label: "Organograma" },
-    ],
-  },
-  {
-    group: "Operações RH",
-    modules: [
-      { value: "convites", label: "Convites" },
-      { value: "onboarding", label: "Onboarding" },
-      { value: "ferias", label: "Férias" },
-      { value: "beneficios", label: "Benefícios" },
-      { value: "movimentacoes", label: "Movimentações" },
-    ],
-  },
-  {
-    group: "Financeiro",
-    modules: [
-      { value: "folha_pagamento", label: "Folha de Pagamento" },
-      { value: "notas_fiscais", label: "Notas Fiscais" },
-      { value: "pagamentos_pj", label: "Pagamentos PJ" },
-    ],
-  },
-  {
-    group: "Administração",
-    modules: [
-      { value: "parametros", label: "Parâmetros" },
-      { value: "usuarios", label: "Usuários" },
-    ],
-  },
-  {
-    group: "Futuros",
-    modules: [
-      { value: "recrutamento", label: "Recrutamento" },
-      { value: "avaliacoes", label: "Avaliações" },
-      { value: "treinamentos", label: "Treinamentos" },
-      { value: "relatorios", label: "Relatórios" },
-    ],
-  },
 ];
 
 const ALL_PERMISSIONS = ["view", "create", "edit", "delete", "aprovar", "enviar", "exportar", "fechar", "enviar_email"];
@@ -107,11 +83,12 @@ function getDot(level: PermLevel) {
   }
 }
 
-interface RolePermission {
+interface RolePermissionRow {
   role_name: string;
   module: string;
   permission: string;
   granted: boolean;
+  nivel_minimo: string | null;
 }
 
 interface MatrizPermissoesProps {
@@ -129,11 +106,11 @@ export default function MatrizPermissoes({ onNavigateToPerfis }: MatrizPermissoe
     queryFn: async () => {
       const { data, error } = await supabase
         .from("role_permissions")
-        .select("role_name, module, permission, granted")
+        .select("role_name, module, permission, granted, nivel_minimo")
         .eq("granted", true);
       if (error) throw error;
       setLastUpdated(new Date());
-      return (data || []) as RolePermission[];
+      return (data || []) as RolePermissionRow[];
     },
     refetchInterval: 30000,
   });
@@ -190,14 +167,26 @@ export default function MatrizPermissoes({ onNavigateToPerfis }: MatrizPermissoe
     const modulePerms = getModulePerms(roleName, moduleName);
     const allPermsForModule = getAllModulePermNames(moduleName);
     if (allPermsForModule.length === 0) return `${roleLabel}: Sem permissões definidas para ${moduleLabel}`;
-    const grantedSet = new Set(modulePerms.map((p) => p.permission));
-    const lines = allPermsForModule.map(
-      (p) => `${PERMISSION_LABELS[p] || p} ${grantedSet.has(p) ? "✓" : "✗"}`
-    );
-    return `${roleLabel} em ${moduleLabel}:\n${lines.join(" | ")}`;
+    const grantedMap = new Map<string, string | null>();
+    modulePerms.forEach((p) => grantedMap.set(p.permission, p.nivel_minimo));
+    const lines = allPermsForModule.map((p) => {
+      const has = grantedMap.has(p);
+      const nivel = has ? grantedMap.get(p) : null;
+      const suffix = nivel ? ` (mín. ${NIVEL_LABELS[nivel] || nivel})` : "";
+      return `${PERMISSION_LABELS[p] || p} ${has ? "✓" : "✗"}${suffix}`;
+    });
+    return `${roleLabel} em ${moduleLabel}:\n${lines.join("\n")}`;
   };
 
   const formattedTime = lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+  // Group MODULES by category preserving MODULE_CATEGORIES order
+  const moduleGroups = MODULE_CATEGORIES
+    .map((cat) => ({
+      category: cat,
+      modules: MODULES.filter((m) => m.category === cat.key),
+    }))
+    .filter((g) => g.modules.length > 0);
 
   return (
     <Card>
@@ -247,13 +236,18 @@ export default function MatrizPermissoes({ onNavigateToPerfis }: MatrizPermissoe
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-2 pr-4 font-medium text-muted-foreground min-w-[180px]">Módulo</th>
+                  <th className="text-left py-2 pr-4 font-medium text-muted-foreground min-w-[200px] sticky left-0 bg-background z-10">Módulo</th>
                   {MATRIX_ROLES.map((r) => (
                     <th key={r.role} className="text-center py-2 px-2 font-medium min-w-[90px]">
                       <div className="flex flex-col items-center gap-1">
                         <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${ROLE_COLORS[r.role] || ""}`}>
                           {r.shortLabel}
                         </Badge>
+                        {r.isNew && (
+                          <Badge variant="outline" className="text-[8px] px-1 py-0 border-emerald-400 text-emerald-700">
+                            Nova
+                          </Badge>
+                        )}
                         <span className="text-[10px] text-muted-foreground">
                           {roleCounts?.[r.role] ?? 0} {(roleCounts?.[r.role] ?? 0) === 1 ? "usuário" : "usuários"}
                         </span>
@@ -263,28 +257,28 @@ export default function MatrizPermissoes({ onNavigateToPerfis }: MatrizPermissoe
                 </tr>
               </thead>
               <tbody>
-                {MODULE_GROUPS.map((group) => (
-                  <>
-                    <tr key={`group-${group.group}`}>
-                      <td colSpan={MATRIX_ROLES.length + 1} className="pt-4 pb-1">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                          {group.group}
+                {moduleGroups.map((group) => (
+                  <Fragment key={`group-${group.category.key}`}>
+                    <tr>
+                      <td colSpan={MATRIX_ROLES.length + 1} className="pt-4 pb-1 sticky left-0 bg-background">
+                        <span className={`text-xs font-semibold uppercase tracking-wider ${group.category.color}`}>
+                          {group.category.label}
                         </span>
                       </td>
                     </tr>
                     {group.modules.map((mod) => (
-                      <tr key={mod.value} className="border-b border-muted/50 hover:bg-muted/30 transition-colors">
-                        <td className="py-2.5 pr-4 font-medium">{mod.label}</td>
+                      <tr key={mod.key} className="border-b border-muted/50 hover:bg-muted/30 transition-colors">
+                        <td className="py-2.5 pr-4 font-medium sticky left-0 bg-background">{mod.label}</td>
                         {MATRIX_ROLES.map((r) => {
-                          const level = getLevel(r.role, mod.value);
-                          const tip = getTooltipContent(r.role, mod.value, r.label, mod.label);
+                          const level = getLevel(r.role, mod.key);
+                          const tip = getTooltipContent(r.role, mod.key, r.label, mod.label);
                           return (
                             <td key={r.role} className="text-center py-2.5 px-2">
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className={`inline-block h-3.5 w-3.5 rounded-full cursor-default ${getDot(level)}`} />
                                 </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-[280px] whitespace-pre-line text-xs">
+                                <TooltipContent side="top" className="max-w-[320px] whitespace-pre-line text-xs">
                                   {tip}
                                 </TooltipContent>
                               </Tooltip>
@@ -293,7 +287,7 @@ export default function MatrizPermissoes({ onNavigateToPerfis }: MatrizPermissoe
                         })}
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
                 ))}
               </tbody>
             </table>
