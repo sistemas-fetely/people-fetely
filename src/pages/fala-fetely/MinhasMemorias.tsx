@@ -237,9 +237,16 @@ export default function MinhasMemorias() {
               Tudo que o Fala Fetely lembra de você. Você pode editar ou esquecer qualquer memória a qualquer momento.
             </p>
           </div>
-          <Button onClick={abrirNova} style={{ backgroundColor: "#1A4A3A" }} className="text-white hover:opacity-90 gap-2">
-            <Plus className="h-4 w-4" /> Adicionar memória
-          </Button>
+          <div className="flex items-center gap-2">
+            {isSuperAdmin && (
+              <Button variant="outline" onClick={() => setAcessarOutroOpen(true)} className="gap-2">
+                <ShieldAlert className="h-4 w-4" /> Ver memórias de outro usuário
+              </Button>
+            )}
+            <Button onClick={abrirNova} style={{ backgroundColor: "#1A4A3A" }} className="text-white hover:opacity-90 gap-2">
+              <Plus className="h-4 w-4" /> Adicionar memória
+            </Button>
+          </div>
         </div>
 
         {/* Filtros */}
