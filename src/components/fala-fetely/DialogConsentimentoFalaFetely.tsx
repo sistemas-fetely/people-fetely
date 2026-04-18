@@ -72,11 +72,9 @@ export function DialogConsentimentoFalaFetely({ open, onAceite }: Props) {
   return (
     <Dialog open={open} onOpenChange={() => { /* não-fechável */ }}>
       <DialogContent
-        className="max-w-lg"
+        className="max-w-lg [&>button.absolute]:hidden"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-        // Esconde o X de fechar
-        showCloseButton={false as never}
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

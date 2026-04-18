@@ -38,6 +38,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { DialogConsentimentoFalaFetely } from "@/components/fala-fetely/DialogConsentimentoFalaFetely";
 
 interface Conversa {
   id: string;
@@ -107,7 +108,29 @@ export default function FalaFetely() {
   const [conversaParaExcluir, setConversaParaExcluir] = useState<Conversa | null>(null);
   const [showPrivacidade, setShowPrivacidade] = useState(false);
   const [confirmarLimparTudo, setConfirmarLimparTudo] = useState(false);
+  const [precisaConsentimento, setPrecisaConsentimento] = useState<boolean | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Regra 11 — Consentimento bloqueante no primeiro acesso
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    async function verificar() {
+      const { data, error } = await supabase.rpc("tem_consentimento_ativo", {
+        _user_id: user.id,
+        _tipo: "fala_fetely_conversas",
+      });
+      if (cancelled) return;
+      if (error) {
+        // Em caso de erro, assume sem consentimento pra ser seguro
+        setPrecisaConsentimento(true);
+        return;
+      }
+      setPrecisaConsentimento(!data);
+    }
+    void verificar();
+    return () => { cancelled = true; };
+  }, [user]);
 
   const podeEnsinar = useMemo(
     () =>
