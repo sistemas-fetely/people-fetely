@@ -675,10 +675,16 @@ export default function ConfigurarPerfisTab() {
               )}
 
               {/* Legend */}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-emerald-500 ring-1 ring-emerald-200" /> Ativo</span>
-                <span className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full border-2 border-muted-foreground/30" /> Inativo</span>
-                <span className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-purple-500" /> Bloqueado</span>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
+                <span className="flex items-center gap-1.5">
+                  <Switch checked className="scale-75 pointer-events-none" /> Permitido
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Switch checked={false} className="scale-75 pointer-events-none" /> Sem acesso
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Zap className="h-3 w-3 text-amber-500" /> Com nível mínimo
+                </span>
               </div>
 
               {/* Render module categories dynamically */}
