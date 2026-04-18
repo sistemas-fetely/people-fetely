@@ -223,17 +223,59 @@ export default function Conhecimento() {
       fonte: form.fonte.trim() || null,
       criado_por: user?.id ?? null,
     };
-    const { error } = form.id
-      ? await supabase.from("fala_fetely_conhecimento").update(payload).eq("id", form.id)
-      : await supabase.from("fala_fetely_conhecimento").insert(payload);
-    setSalvando(false);
-    if (error) {
-      toast({ title: "Erro ao salvar", description: error.message, variant: "destructive" });
+    let novoId: string | undefined;
+    let erroFinal: any = null;
+    if (form.id) {
+      const { error } = await supabase.from("fala_fetely_conhecimento").update(payload).eq("id", form.id);
+      erroFinal = error;
+    } else {
+      const { data, error } = await supabase
+        .from("fala_fetely_conhecimento")
+        .insert(payload)
+        .select("id")
+        .single();
+      erroFinal = error;
+      novoId = data?.id;
+    }
+    if (erroFinal) {
+      setSalvando(false);
+      toast({ title: "Erro ao salvar", description: erroFinal.message, variant: "destructive" });
       return;
     }
+    // Se veio de uma sugestão, marcar como convertida
+    if (aprovandoSugestao && novoId) {
+      await supabase
+        .from("fala_fetely_sugestoes_conhecimento")
+        .update({
+          status: "convertida",
+          revisado_por: user?.id ?? null,
+          revisado_em: new Date().toISOString(),
+          conhecimento_gerado_id: novoId,
+        })
+        .eq("id", aprovandoSugestao.id);
+      setAprovandoSugestao(null);
+    }
+    setSalvando(false);
     toast({ title: form.id ? "Atualizado ✨" : "Conhecimento criado 💚" });
     setShowForm(false);
     void carregar();
+    void carregarSugestoes();
+  }
+
+  function abrirAprovarSugestao(s: SugestaoPendente) {
+    setAprovandoSugestao(s);
+    setForm({
+      categoria: (s.categoria_sugerida as Categoria) || "faq",
+      titulo: s.titulo_sugerido || s.correcao_sugerida.slice(0, 60),
+      conteudo: s.correcao_sugerida,
+      publico_alvo: "todos",
+      cargos_aplicaveis: [],
+      departamentos_aplicaveis: [],
+      niveis_aplicaveis: [],
+      tags: [],
+      fonte: s.pergunta_original ? `Sugerido a partir de pergunta: "${s.pergunta_original.slice(0, 100)}"` : "",
+    });
+    setShowForm(true);
   }
 
   async function desativar(item: Conhecimento) {
