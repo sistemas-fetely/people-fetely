@@ -788,16 +788,41 @@ function ModoMatrizCompleta({ perms, roleCounts, podeEditar }: SharedCtx) {
                     {MATRIX_ROLES.map((r) => {
                       const level = getLevel(perms, r.role, mod.key);
                       const tip = getTooltipContent(r.role, mod.key, r.label, mod.label);
+                      const dotEl = (
+                        <span className={`inline-block h-3.5 w-3.5 rounded-full ${podeEditar && r.role !== "super_admin" ? "cursor-pointer" : "cursor-default"} ${getDot(level)}`} />
+                      );
+                      const tooltipEl = (
+                        <Tooltip>
+                          <TooltipTrigger asChild>{dotEl}</TooltipTrigger>
+                          <TooltipContent side="top" className="max-w-[320px] whitespace-pre-line text-xs">
+                            {tip}
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                      if (!podeEditar || r.role === "super_admin") {
+                        return (
+                          <td key={r.role} className="text-center py-2.5 px-2">
+                            {tooltipEl}
+                          </td>
+                        );
+                      }
+                      const acoesDoModulo = getAcoesDoModulo(mod.key);
                       return (
                         <td key={r.role} className="text-center py-2.5 px-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className={`inline-block h-3.5 w-3.5 rounded-full cursor-default ${getDot(level)}`} />
-                            </TooltipTrigger>
-                            <TooltipContent side="top" className="max-w-[320px] whitespace-pre-line text-xs">
-                              {tip}
-                            </TooltipContent>
-                          </Tooltip>
+                          <CelulaPermissaoEditavel
+                            roleName={r.role}
+                            roleLabel={r.label}
+                            moduleName={mod.key}
+                            moduleLabel={mod.label}
+                            granted={false}
+                            nivelMinimo={null}
+                            usuariosAfetados={roleCounts[r.role] ?? 0}
+                            multiAction
+                            acoesDisponiveis={acoesDoModulo.map((a) => ({ key: a, label: PERMISSION_LABELS[a] || a }))}
+                            getPermissaoForAction={(acao) => getPermissao(perms, r.role, mod.key, acao)}
+                          >
+                            {tooltipEl}
+                          </CelulaPermissaoEditavel>
                         </td>
                       );
                     })}
