@@ -110,17 +110,18 @@ export function CelulaPermissaoEditavel({
     setSalvando(true);
     try {
       const acaoFinal = multiAction ? selectedAction : action!;
+      const nivelFinal = localGranted && localNivel !== "qualquer" ? localNivel : null;
       const { error } = await supabase
         .from("role_permissions")
         .upsert(
-          {
+          [{
             role_name: roleName,
             module: moduleName,
             permission: acaoFinal,
             granted: localGranted,
-            nivel_minimo: localGranted && localNivel !== "qualquer" ? localNivel : null,
+            nivel_minimo: nivelFinal as "analista" | "assistente" | "coordenador" | "diretor" | "estagio" | "gerente" | null,
             colaborador_tipo: colaboradorTipo || "all",
-          },
+          }],
           { onConflict: "role_name,module,permission,colaborador_tipo" }
         );
 
