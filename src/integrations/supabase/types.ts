@@ -4724,6 +4724,21 @@ export type Database = {
           unidade_nome: string
         }[]
       }
+      aplicar_template_cargo_v3: {
+        Args: {
+          _atribuidor?: string
+          _departamento_id: string
+          _template_id: string
+          _unidade_id: string
+          _user_id: string
+        }
+        Returns: {
+          atribuicao_id: string
+          nivel: string
+          perfil_nome: string
+          unidade_nome: string
+        }[]
+      }
       autosave_convite_cadastro: {
         Args: { _dados: Json; _token: string }
         Returns: boolean
