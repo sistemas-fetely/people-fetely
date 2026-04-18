@@ -277,7 +277,7 @@ function ModoPerfilUnico({ perms, roleCounts, podeEditar }: SharedCtx) {
             </CardHeader>
             <CardContent className="pt-0">
               {modulesComAcesso.map((m) => {
-                const acoes = ["view", "create", "edit", "delete"];
+                const acoes = getAcoesDoModulo(m.key);
                 return (
                   <div key={m.key} className="flex items-center justify-between py-2 border-b last:border-0 gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
@@ -294,28 +294,44 @@ function ModoPerfilUnico({ perms, roleCounts, podeEditar }: SharedCtx) {
                     <div className="flex gap-1 flex-wrap">
                       {acoes.map((action) => {
                         const perm = getPermissao(perms, roleSelecionada, m.key, action);
-                        return (
+                        const actionLabel = PERMISSION_LABELS[action] || action;
+                        const pill = (
+                          <Badge
+                            variant={perm.granted ? "default" : "outline"}
+                            className={`text-[10px] ${podeEditar ? "cursor-pointer" : "cursor-default"} ${!perm.granted ? "opacity-50" : ""}`}
+                          >
+                            {action}
+                            {perm.nivel_minimo && " ⚡"}
+                          </Badge>
+                        );
+                        const tooltipBody = (
                           <Tooltip key={action}>
                             <TooltipTrigger asChild>
-                              <Badge
-                                variant={perm.granted ? "default" : "outline"}
-                                className={`text-[10px] cursor-default ${!perm.granted ? "opacity-50" : ""}`}
-                              >
-                                {action}
-                                {perm.nivel_minimo && " ⚡"}
-                              </Badge>
+                              <span>{pill}</span>
                             </TooltipTrigger>
-                            {perm.nivel_minimo && (
-                              <TooltipContent className="text-xs">
-                                Requer nível mínimo: {NIVEL_LABELS[perm.nivel_minimo] || perm.nivel_minimo}
-                              </TooltipContent>
-                            )}
-                            {!perm.nivel_minimo && (
-                              <TooltipContent className="text-xs">
-                                {perm.granted ? "Permitido" : "Sem permissão"}
-                              </TooltipContent>
-                            )}
+                            <TooltipContent className="text-xs">
+                              {perm.nivel_minimo
+                                ? `Requer nível mínimo: ${NIVEL_LABELS[perm.nivel_minimo] || perm.nivel_minimo}`
+                                : perm.granted ? "Permitido" : "Sem permissão"}
+                            </TooltipContent>
                           </Tooltip>
+                        );
+                        if (!podeEditar) return tooltipBody;
+                        return (
+                          <CelulaPermissaoEditavel
+                            key={action}
+                            roleName={roleSelecionada}
+                            roleLabel={roleInfo.label}
+                            moduleName={m.key}
+                            moduleLabel={m.label}
+                            action={action}
+                            actionLabel={actionLabel}
+                            granted={perm.granted}
+                            nivelMinimo={perm.nivel_minimo}
+                            usuariosAfetados={userCount}
+                          >
+                            {tooltipBody}
+                          </CelulaPermissaoEditavel>
                         );
                       })}
                     </div>
