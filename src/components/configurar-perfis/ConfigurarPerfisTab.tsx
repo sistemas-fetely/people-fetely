@@ -489,10 +489,7 @@ export default function ConfigurarPerfisTab() {
     );
   }
 
-  const geralModules = MODULES.filter((m) => m.category === "geral");
-  const cltModules = MODULES.filter((m) => m.category === "clt");
-  const pjModules = MODULES.filter((m) => m.category === "pj");
-  const adminModules = MODULES.filter((m) => m.category === "admin");
+  const showNivelColumn = ROLES_COM_NIVEIS.has(selectedRole ?? "");
 
   return (
     <>
@@ -512,7 +509,7 @@ export default function ConfigurarPerfisTab() {
         {/* Left: Role list */}
         <div className="w-[280px] border-r shrink-0 overflow-y-auto p-4 space-y-2 max-h-[calc(100vh-20rem)]">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-2">Perfis Ativos</p>
-          {roles.filter((r) => !isFutureRole(r.name)).map((role) => (
+          {roles.map((role) => (
             <Card
               key={role.id}
               className={`cursor-pointer transition-all hover:shadow-md ${
@@ -552,34 +549,6 @@ export default function ConfigurarPerfisTab() {
               </CardContent>
             </Card>
           ))}
-
-          {/* Future roles */}
-          {roles.filter((r) => isFutureRole(r.name)).length > 0 && (
-            <>
-              <Separator className="my-3" />
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-2">Perfis Futuros</p>
-              {roles.filter((r) => isFutureRole(r.name)).map((role) => (
-                <Card
-                  key={role.id}
-                  className="opacity-60 border-dashed cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => selectRole(role.name)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-medium truncate">{ROLE_LABELS[role.name] || role.name}</p>
-                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-400 text-amber-600">Em breve</Badge>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground truncate">{role.description || "—"}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </>
-          )}
         </div>
 
         {/* Right: Permission editor */}
@@ -658,93 +627,33 @@ export default function ConfigurarPerfisTab() {
                 <span className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-purple-500" /> Bloqueado</span>
               </div>
 
-              {/* Geral */}
-              {geralModules.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">Geral</h3>
-                    <Separator className="flex-1" />
+              {/* Render module categories dynamically */}
+              {MODULE_CATEGORIES.map((cat) => {
+                const catModules = MODULES.filter((m) => m.category === cat.key);
+                if (catModules.length === 0) return null;
+                return (
+                  <div key={cat.key}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <h3 className={`text-sm font-bold uppercase tracking-wider ${cat.color}`}>{cat.label}</h3>
+                      <Separator className="flex-1" />
+                    </div>
+                    <Card>
+                      <CardContent className="p-4">
+                        <PermissionMatrix
+                          modules={catModules}
+                          tipo="all"
+                          localPermissions={localPermissions}
+                          togglePermission={togglePermission}
+                          isSuperAdminRole={isSuperAdminRole}
+                          localNiveis={localNiveis}
+                          setNivelMinimo={setNivelMinimo}
+                          showNivelColumn={showNivelColumn}
+                        />
+                      </CardContent>
+                    </Card>
                   </div>
-                  <Card>
-                    <CardContent className="p-4">
-                      <PermissionMatrix
-                        modules={geralModules}
-                        tipo="all"
-                        localPermissions={localPermissions}
-                        togglePermission={togglePermission}
-                        isSuperAdminRole={isSuperAdminRole}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-
-              {/* CLT + PJ side by side */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">Por Tipo de Colaborador</h3>
-                  <Separator className="flex-1" />
-                </div>
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4 text-blue-600" />
-                        <CardTitle className="text-sm text-blue-700 dark:text-blue-400">CLT</CardTitle>
-                        <Badge variant="secondary" className="text-[9px] ml-auto">Colaboradores CLT</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <PermissionMatrix
-                        modules={cltModules}
-                        tipo="clt"
-                        localPermissions={localPermissions}
-                        togglePermission={togglePermission}
-                        isSuperAdminRole={isSuperAdminRole}
-                      />
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4 text-emerald-600" />
-                        <CardTitle className="text-sm text-emerald-700 dark:text-emerald-400">PJ</CardTitle>
-                        <Badge variant="secondary" className="text-[9px] ml-auto">Prestadores PJ</Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <PermissionMatrix
-                        modules={pjModules}
-                        tipo="pj"
-                        localPermissions={localPermissions}
-                        togglePermission={togglePermission}
-                        isSuperAdminRole={isSuperAdminRole}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-
-              {/* Admin */}
-              {adminModules.length > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Administração</h3>
-                    <Separator className="flex-1" />
-                  </div>
-                  <Card>
-                    <CardContent className="p-4">
-                      <PermissionMatrix
-                        modules={adminModules}
-                        tipo="all"
-                        localPermissions={localPermissions}
-                        togglePermission={togglePermission}
-                        isSuperAdminRole={isSuperAdminRole}
-                      />
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
+                );
+              })}
             </div>
           ) : (
             <div className="flex items-center justify-center h-full">
