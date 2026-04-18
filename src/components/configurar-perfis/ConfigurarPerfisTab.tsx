@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -24,13 +25,59 @@ import {
 import {
   Shield, ShieldCheck, Plus, Save, Trash2, Settings2,
   Eye, FilePlus, Pencil, Trash, Mail, CheckCircle, Lock, FileDown, Send,
-  RotateCcw, AlertTriangle,
+  RotateCcw, AlertTriangle, Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   MODULES, MODULE_CATEGORIES, CRUD_PERMISSIONS, SPECIAL_PERMISSIONS,
   getColaboradorTipoForCategory, type RolePermission,
 } from "@/hooks/usePermissions";
+
+// ─── Action metadata ────────────────────────────────────────
+const ACOES_ESPECIAIS_POR_MODULO: Record<string, string[]> = {
+  ferias: ["aprovar"],
+  notas_fiscais: ["aprovar", "enviar_email"],
+  folha_pagamento: ["fechar", "exportar"],
+  pagamentos_pj: ["aprovar", "exportar"],
+  convites: ["enviar"],
+  relatorios: ["exportar"],
+};
+
+const ACAO_LABELS: Record<string, string> = {
+  view: "Ver",
+  create: "Criar",
+  edit: "Editar",
+  delete: "Excluir",
+  aprovar: "Aprovar",
+  fechar: "Fechar",
+  exportar: "Exportar",
+  enviar: "Enviar",
+  enviar_email: "E-mail",
+};
+
+const ACAO_ICONES: Record<string, React.ReactNode> = {
+  view: <Eye className="h-3 w-3" />,
+  create: <FilePlus className="h-3 w-3" />,
+  edit: <Pencil className="h-3 w-3" />,
+  delete: <Trash className="h-3 w-3" />,
+  aprovar: <CheckCircle className="h-3 w-3" />,
+  fechar: <Lock className="h-3 w-3" />,
+  exportar: <FileDown className="h-3 w-3" />,
+  enviar: <Send className="h-3 w-3" />,
+  enviar_email: <Mail className="h-3 w-3" />,
+};
+
+function getAcoesDoModulo(moduleKey: string): string[] {
+  const base = ["view", "create", "edit", "delete"];
+  const especiais = ACOES_ESPECIAIS_POR_MODULO[moduleKey] || [];
+  return [...base, ...especiais];
+}
+
+// Módulos sensíveis (mesma referência usada na Matriz)
+const MODULOS_SENSIVEIS = new Set([
+  "folha_pagamento", "pagamentos_pj", "notas_fiscais",
+  "colaboradores", "contratos_pj", "usuarios",
+]);
 
 // ─── Constants ──────────────────────────────────────────────
 const PERMISSION_ICONS: Record<string, React.ReactNode> = {
