@@ -409,17 +409,41 @@ export default function Parametros() {
   const openNew = (cat: string) => {
     setEditParam(null);
     setFormCategoria(cat);
+    setFormPaiValor(null);
     setFormOpen(true);
   };
 
   const openEdit = (param: Parametro) => {
     setEditParam(param);
     setFormCategoria(param.categoria);
+    setFormPaiValor(param.pai_valor || null);
+    setFormOpen(true);
+  };
+
+  const openNewDepartamento = (areaValor: string) => {
+    setEditParam(null);
+    setFormCategoria("departamento");
+    setFormPaiValor(areaValor);
     setFormOpen(true);
   };
 
   const estadosEquipamento = useMemo(() => {
     return (allParams || []).filter((p) => p.categoria === "estado_equipamento" && p.ativo);
+  }, [allParams]);
+
+  const departamentosPorArea = useMemo(() => {
+    const map: Record<string, Parametro[]> = {};
+    (allParams || [])
+      .filter((p) => p.categoria === "departamento")
+      .forEach((p) => {
+        const chave = p.pai_valor || "__sem_area__";
+        if (!map[chave]) map[chave] = [];
+        map[chave].push(p);
+      });
+    Object.keys(map).forEach((k) => {
+      map[k].sort((a, b) => a.ordem - b.ordem);
+    });
+    return map;
   }, [allParams]);
 
   const grouped = useMemo(() => {
