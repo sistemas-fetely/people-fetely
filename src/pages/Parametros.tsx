@@ -671,6 +671,64 @@ export default function Parametros() {
                                                 </Collapsible>
                                               </div>
                                             )}
+                                            {param.categoria === "area_negocio" && (
+                                              <div className="mt-2 pt-2 border-t">
+                                                <div className="flex flex-wrap gap-1 mb-1">
+                                                  {(departamentosPorArea[param.valor] || []).length > 0 ? (
+                                                    (departamentosPorArea[param.valor] || []).map((d) => (
+                                                      <span
+                                                        key={d.id}
+                                                        className={`text-xs px-2 py-0.5 rounded-full ${
+                                                          d.ativo ? "bg-muted" : "bg-muted/40 text-muted-foreground line-through"
+                                                        }`}
+                                                      >
+                                                        {d.label}
+                                                      </span>
+                                                    ))
+                                                  ) : (
+                                                    <span className="text-xs text-muted-foreground">
+                                                      Nenhum departamento cadastrado nesta área
+                                                    </span>
+                                                  )}
+                                                </div>
+                                                <Collapsible>
+                                                  <CollapsibleTrigger asChild>
+                                                    <Button variant="ghost" size="sm" className="h-6 px-2 text-xs gap-1 text-muted-foreground">
+                                                      <ChevronDown className="h-3 w-3" />
+                                                      Gerenciar departamentos
+                                                    </Button>
+                                                  </CollapsibleTrigger>
+                                                  <CollapsibleContent className="mt-2 space-y-1">
+                                                    {(departamentosPorArea[param.valor] || []).map((d) => (
+                                                      <div key={d.id} className="flex items-center justify-between rounded px-2 py-1 bg-muted/50">
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                          <Switch checked={d.ativo} onCheckedChange={() => handleToggleAtivo(d)} />
+                                                          <span className={`text-xs ${!d.ativo && "text-muted-foreground line-through"}`}>
+                                                            {d.label}
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex gap-1">
+                                                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEdit(d)}>
+                                                            <Pencil className="h-3 w-3" />
+                                                          </Button>
+                                                          <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:text-destructive" onClick={() => setDeleteTarget(d)}>
+                                                            <Trash2 className="h-3 w-3" />
+                                                          </Button>
+                                                        </div>
+                                                      </div>
+                                                    ))}
+                                                    <Button
+                                                      variant="outline"
+                                                      size="sm"
+                                                      className="h-7 text-xs gap-1 w-full"
+                                                      onClick={() => openNewDepartamento(param.valor)}
+                                                    >
+                                                      <Plus className="h-3 w-3" /> Adicionar departamento nesta área
+                                                    </Button>
+                                                  </CollapsibleContent>
+                                                </Collapsible>
+                                              </div>
+                                            )}
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-2 ml-2">
