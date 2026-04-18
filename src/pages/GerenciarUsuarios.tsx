@@ -32,6 +32,7 @@ import {
   ChevronDown, ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmacaoDupla } from "@/components/ConfirmacaoDupla";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -115,6 +116,9 @@ export default function GerenciarUsuarios() {
     colaborador_id: "", colaborador_tipo: ""
   });
   const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; name: string } | null>(null);
+  const [removeSuperAdminConfirm, setRemoveSuperAdminConfirm] = useState<
+    { userId: string; name: string; mode: "ban" | "delete" } | null
+  >(null);
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [linkUser, setLinkUser] = useState<{ userId: string; name: string } | null>(null);
   const [linkColaboradorId, setLinkColaboradorId] = useState("");
