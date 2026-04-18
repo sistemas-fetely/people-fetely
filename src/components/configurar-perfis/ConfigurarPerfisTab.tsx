@@ -509,7 +509,7 @@ export default function ConfigurarPerfisTab() {
         {/* Left: Role list */}
         <div className="w-[280px] border-r shrink-0 overflow-y-auto p-4 space-y-2 max-h-[calc(100vh-20rem)]">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-2">Perfis Ativos</p>
-          {roles.filter((r) => !isFutureRole(r.name)).map((role) => (
+          {roles.map((role) => (
             <Card
               key={role.id}
               className={`cursor-pointer transition-all hover:shadow-md ${
@@ -549,34 +549,6 @@ export default function ConfigurarPerfisTab() {
               </CardContent>
             </Card>
           ))}
-
-          {/* Future roles */}
-          {roles.filter((r) => isFutureRole(r.name)).length > 0 && (
-            <>
-              <Separator className="my-3" />
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground px-1 mb-2">Perfis Futuros</p>
-              {roles.filter((r) => isFutureRole(r.name)).map((role) => (
-                <Card
-                  key={role.id}
-                  className="opacity-60 border-dashed cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => selectRole(role.name)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-medium truncate">{ROLE_LABELS[role.name] || role.name}</p>
-                          <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-amber-400 text-amber-600">Em breve</Badge>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground truncate">{role.description || "—"}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </>
-          )}
         </div>
 
         {/* Right: Permission editor */}
