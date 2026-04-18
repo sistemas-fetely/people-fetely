@@ -82,7 +82,15 @@ Deno.serve(async (req) => {
       conteudo: pergunta,
     });
 
-    // 3) Coletar contexto do usuário + conhecimento + histórico (paralelo)
+    // 3a) Buscar roles do usuário primeiro (para condicionar a busca de documentação)
+    const { data: rolesData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    const roles: string[] = (rolesData || []).map((r: any) => r.role);
+    const ehAdmin = roles.includes("super_admin") || roles.includes("admin_rh");
+
+    // 3b) Coletar contexto do usuário + conhecimento + histórico (paralelo)
     const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, templatesRes, tarefasTemplateRes, extensoesRes, tarefasExtensoesRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, conhecimentosRes, memoriasRes, historicoRes] = await Promise.all([
       supabase.from("profiles").select("full_name, colaborador_tipo").eq("user_id", user.id).maybeSingle(),
       supabase.from("colaboradores_clt").select("id, cargo, departamento, nome_completo").eq("user_id", user.id).maybeSingle(),
@@ -102,7 +110,9 @@ Deno.serve(async (req) => {
       supabase.from("parametros").select("label, valor").eq("categoria", "sistema").eq("ativo", true).limit(50),
       supabase.from("parametros").select("label").eq("categoria", "departamento").eq("ativo", true).limit(50),
       supabase.from("cargos").select("nome, departamento, missao, responsabilidades").eq("ativo", true).limit(40),
-      supabase.from("sncf_documentacao").select("titulo, descricao, conteudo").eq("ativo", true).limit(20),
+      ehAdmin
+        ? supabase.from("sncf_documentacao").select("titulo, descricao, conteudo").eq("ativo", true).limit(20)
+        : Promise.resolve({ data: [] as any[] }),
       supabase.from("beneficios_catalogo").select("beneficio, tipo").eq("ativo", true).limit(30),
       (supabase as any).from("fala_fetely_conhecimento").select("categoria, titulo, conteudo, publico_alvo, cargos_aplicaveis, niveis_aplicaveis, departamentos_aplicaveis, fonte, tags").eq("ativo", true).order("categoria").limit(100),
       (supabase as any)
@@ -320,8 +330,41 @@ CONTEXTO DO USUÁRIO:
 Nome: ${nome}
 Cargo: ${cargo}
 Departamento: ${departamento}
+Perfis (roles): ${roles.length ? roles.join(", ") : "colaborador"}
 Sistemas que tem acesso: ${sistemasUsuario.length ? sistemasUsuario.join(", ") : "nenhum cadastrado"}
 Tarefas pendentes: ${tarefasPendentes.length} (${tituloTarefas})
+
+ADAPTE SUA RESPOSTA AO PERFIL DO USUÁRIO:
+
+REGRAS DE ADAPTAÇÃO POR PERFIL:
+
+1. SE o usuário é COLABORADOR COMUM (apenas role "colaborador"):
+   - Respostas curtas, diretas e práticas
+   - Use linguagem do dia a dia, sem jargão interno
+   - NÃO mencione: "roadmap", "módulos em desenvolvimento", "Edge Functions", "tabelas", "fases do projeto", nomes de arquitetura interna
+   - Foque no: "o que fazer", "onde ir", "com quem falar"
+   - Exemplo bom: "Informações de salário são confidenciais. Para dúvidas, fale com o RH."
+   - Exemplo ruim: "Conforme o roadmap do SNCF, a regra de visibilidade está em desenvolvimento..."
+
+2. SE o usuário é GESTOR DIRETO ou GESTOR RH:
+   - Tom intermediário, pode mencionar processos do time
+   - Pode falar sobre fluxos e responsabilidades
+   - Não precisa entrar em detalhes técnicos de arquitetura
+
+3. SE o usuário é ADMIN RH ou SUPER ADMIN:
+   - Pode mencionar detalhes do sistema quando relevante
+   - Pode falar sobre roadmap, módulos em desenvolvimento
+   - Pode contextualizar decisões arquiteturais quando fizer sentido
+   - Ainda assim: seja direto, não encha a resposta sem necessidade
+
+4. SE o usuário é FINANCEIRO ou TI:
+   - Adapte ao domínio (financeiro fala de folha, TI fala de ativos/acessos)
+   - Tom intermediário
+
+EM TODOS OS CASOS:
+- Respeite a política de confidencialidade (salários, dados pessoais, informações de outros colaboradores)
+- Quando a informação é restrita, diga diretamente "essa informação é confidencial" e oriente o caminho certo
+- NUNCA vaze detalhes de como o sistema funciona internamente para quem não precisa saber
 
 CONHECIMENTO DA FETELY DISPONÍVEL:
 
@@ -337,6 +380,20 @@ Cada item tem filtros (público-alvo, cargos, níveis, departamentos). ANTES de 
 5. Se não há informação sobre o perfil: responda neutro, explicando a regra sem afirmar quem tem direito
 
 NUNCA invente políticas, benefícios, números de mercado ou estatísticas. Se não há na Base, diga "Não tenho essa regra cadastrada" e oriente a perguntar ao RH.
+
+IMPORTANTE — FILTROS DE APLICABILIDADE (reforço):
+Cada conhecimento tem campos que definem aplicabilidade:
+- publico_alvo: define qual tipo de usuário pode receber essa informação
+- cargos_aplicaveis: lista de cargos específicos
+- niveis_aplicaveis: lista de níveis (junior, pleno, senior, coordenacao, gerencia, c-level)
+- departamentos_aplicaveis: lista de departamentos
+
+ANTES de usar um conhecimento na resposta, verifique:
+- Se publico_alvo é "todos" → usar livremente
+- Se publico_alvo é específico (ex: "admin_rh") → usar SOMENTE se o usuário tem esse perfil (roles atuais: ${roles.join(", ") || "colaborador"})
+- Se tem niveis_aplicaveis cadastrados → responder apenas se o cargo do usuário corresponde
+- Se tem departamentos_aplicaveis → responder apenas se o departamento do usuário corresponde
+- Se NÃO corresponde: responda que o conhecimento é restrito e oriente a falar com o RH ou gestor
 
 ${blocoConhecimentos}
 
@@ -374,7 +431,7 @@ ${blocoCargos}
 [BENEFÍCIOS CADASTRADOS]
 ${blocoBeneficios}
 
-[DOCUMENTAÇÃO DO PROJETO]
+${ehAdmin ? `[DOCUMENTAÇÃO DO PROJETO]
 Você tem acesso ao RunBook Técnico e ao Estado & Roadmap do projeto. Use esses documentos como fonte de verdade para responder:
 - Como um módulo funciona tecnicamente
 - O que foi construído recentemente
@@ -383,7 +440,7 @@ Você tem acesso ao RunBook Técnico e ao Estado & Roadmap do projeto. Use esses
 
 Se o usuário pergunta sobre arquitetura, tabelas, ou decisões de projeto, consulte essa documentação. Se a pergunta é prática do dia a dia (como usar), você já tem os dados de processos, sistemas, cargos — responda com eles.
 
-${blocoDocs}
+${blocoDocs}` : ""}
 
 INSTRUÇÕES DE RESPOSTA — SEJA DIRETO E CONCISO
 
