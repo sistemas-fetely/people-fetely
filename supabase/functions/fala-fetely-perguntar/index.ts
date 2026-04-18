@@ -528,6 +528,16 @@ Próximo e profissional, sem ser robotizado. Levemente caloroso, NÃO efusivo. V
               .update({ updated_at: new Date().toISOString() })
               .eq("id", conversa_id);
 
+            // Marca último uso das memórias usadas (background, fire-and-forget)
+            if (memoriasIds.length > 0) {
+              (supabase as any)
+                .from("fala_fetely_memoria")
+                .update({ ultimo_uso: new Date().toISOString() })
+                .in("id", memoriasIds)
+                .then(() => {})
+                .catch((err: any) => console.error("Erro atualizando ultimo_uso:", err));
+            }
+
             // Envia evento final com mensagem_id
             const finalMeta = JSON.stringify({ mensagem_id: msgInserida?.id });
             controller.enqueue(encoder.encode(`event: end\ndata: ${finalMeta}\n\n`));
