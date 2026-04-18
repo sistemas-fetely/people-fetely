@@ -55,6 +55,16 @@ interface Memoria {
   ultimo_uso: string | null;
 }
 
+interface MemoriaOutro {
+  id: string;
+  resumo: string;
+  conteudo_completo: string | null;
+  tipo: string;
+  ativo: boolean;
+  created_at: string;
+  user_id: string;
+}
+
 const TIPO_LABELS: Record<TipoMemoria, string> = {
   decisao: "Decisão",
   preferencia: "Preferência",
@@ -90,7 +100,7 @@ export default function MinhasMemorias() {
 
   // Regra 5 — Super Admin acessando memórias de OUTRO usuário (com log formal)
   const [acessarOutroOpen, setAcessarOutroOpen] = useState(false);
-  const [memoriasOutro, setMemoriasOutro] = useState<Memoria[] | null>(null);
+  const [memoriasOutro, setMemoriasOutro] = useState<MemoriaOutro[] | null>(null);
   const [titularOutro, setTitularOutro] = useState<{ user_id: string; full_name: string | null } | null>(null);
 
 
@@ -478,7 +488,7 @@ export default function MinhasMemorias() {
         open={acessarOutroOpen}
         onOpenChange={setAcessarOutroOpen}
         onAcessoAprovado={(mems, titular) => {
-          setMemoriasOutro(mems as Memoria[]);
+          setMemoriasOutro(mems as MemoriaOutro[]);
           setTitularOutro(titular);
         }}
       />
