@@ -143,14 +143,20 @@ function PermissionMatrix({
   modules,
   tipo,
   localPermissions,
+  localNiveis,
   togglePermission,
+  setNivelMinimo,
   isSuperAdminRole,
+  showNivelColumn,
 }: {
   modules: typeof MODULES[number][];
   tipo: string;
   localPermissions: Map<string, boolean>;
+  localNiveis: Map<string, string | null>;
   togglePermission: (mod: string, perm: string, tipo: string) => void;
+  setNivelMinimo: (mod: string, perm: string, tipo: string, nivel: string | null) => void;
   isSuperAdminRole: boolean;
+  showNivelColumn: boolean;
 }) {
   const allSpecialPerms = new Map<string, string>();
   modules.forEach((mod) => {
@@ -190,11 +196,18 @@ function PermissionMatrix({
                 </TooltipProvider>
               </th>
             ))}
+            {showNivelColumn && (
+              <th className="text-center py-2 px-2 text-[10px] uppercase text-muted-foreground font-semibold min-w-[140px]">
+                Nível mín. (edit)
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
           {modules.map((mod) => {
             const modSpecialPerms = SPECIAL_PERMISSIONS.filter((sp) => sp.module === mod.key);
+            const editKey = `${mod.key}:edit:${tipo}`;
+            const currentNivel = localNiveis.get(editKey) ?? null;
             return (
               <tr key={mod.key} className="border-b last:border-b-0 hover:bg-muted/30">
                 <td className="py-1.5 pr-4">
@@ -203,13 +216,14 @@ function PermissionMatrix({
                 {CRUD_PERMISSIONS.map((p) => {
                   const key = `${mod.key}:${p.key}:${tipo}`;
                   const granted = localPermissions.get(key) || false;
+                  const nivel = localNiveis.get(key);
                   return (
                     <td key={p.key} className="text-center py-1.5">
                       <PermissionDot
                         granted={granted}
                         locked={isSuperAdminRole}
                         onClick={isSuperAdminRole ? undefined : () => togglePermission(mod.key, p.key, tipo)}
-                        label={`${mod.label}: ${p.label}`}
+                        label={`${mod.label}: ${p.label}${nivel ? ` (mín. ${nivel})` : ""}`}
                       />
                     </td>
                   );
@@ -232,6 +246,24 @@ function PermissionMatrix({
                     </td>
                   );
                 })}
+                {showNivelColumn && (
+                  <td className="text-center py-1.5 px-2">
+                    <Select
+                      value={currentNivel ?? "any"}
+                      onValueChange={(v) => setNivelMinimo(mod.key, "edit", tipo, v === "any" ? null : v)}
+                      disabled={isSuperAdminRole}
+                    >
+                      <SelectTrigger className="h-7 text-xs">
+                        <SelectValue placeholder="Qualquer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {NIVEIS.map((n) => (
+                          <SelectItem key={n.value} value={n.value} className="text-xs">{n.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </td>
+                )}
               </tr>
             );
           })}
