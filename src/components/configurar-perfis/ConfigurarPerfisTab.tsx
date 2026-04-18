@@ -59,21 +59,17 @@ interface CustomRole {
 
 const ROLE_LABELS: Record<string, string> = {
   super_admin: "Super Admin",
-  admin_rh: "Admin RH (legado)",
+  diretoria_executiva: "Diretoria Executiva",
   rh: "RH",
-  admin_ti: "Admin TI (legado)",
-  ti: "TI",
-  gestor_rh: "Gestor RH (legado)",
-  gestor_direto: "Gestor Direto (legado)",
   gestao_direta: "Gestão Direta",
-  colaborador: "Colaborador",
   financeiro: "Financeiro",
   administrativo: "Administrativo",
   operacional: "Operacional",
-  fiscal: "Fiscal",
-  recrutador: "Recrutador (legado)",
+  ti: "TI",
   recrutamento: "Recrutamento",
+  fiscal: "Fiscal",
   estagiario: "Estagiário",
+  colaborador: "Colaborador",
 };
 
 const NIVEIS = [
@@ -97,14 +93,9 @@ const ROLES_COM_NIVEIS = new Set([
   "recrutamento", "gestao_direta",
 ]);
 
-// Roles novas (substituem as legadas) e roles legadas (mantidas por compat)
-const NEW_ROLES = new Set([
-  "rh", "gestao_direta", "administrativo", "operacional",
-  "ti", "recrutamento", "estagiario",
-]);
-const LEGACY_ROLES = new Set([
-  "admin_rh", "gestor_rh", "gestor_direto", "admin_ti", "recrutador",
-]);
+// (Roles legadas foram aposentadas. Mantemos sets vazios para compat de código.)
+const NEW_ROLES = new Set<string>();
+const LEGACY_ROLES = new Set<string>();
 
 
 // ─── Matrix Cell ────────────────────────────────────────────
@@ -303,7 +294,7 @@ export default function ConfigurarPerfisTab() {
       const { data, error } = await supabase
         .from("custom_roles")
         .select("*")
-        .order("is_system", { ascending: false })
+        .eq("is_system", true)
         .order("name");
       if (error) throw error;
       return data as CustomRole[];
