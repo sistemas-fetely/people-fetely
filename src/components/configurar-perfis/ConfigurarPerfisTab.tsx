@@ -691,20 +691,21 @@ export default function ConfigurarPerfisTab() {
                       <h3 className={`text-sm font-bold uppercase tracking-wider ${cat.color}`}>{cat.label}</h3>
                       <Separator className="flex-1" />
                     </div>
-                    <Card>
-                      <CardContent className="p-4">
-                        <PermissionMatrix
-                          modules={catModules}
+                    <div className="space-y-2">
+                      {catModules.map((mod) => (
+                        <ModuleRow
+                          key={mod.key}
+                          mod={mod}
                           tipo="all"
                           localPermissions={localPermissions}
-                          togglePermission={togglePermission}
-                          isSuperAdminRole={isSuperAdminRole}
                           localNiveis={localNiveis}
+                          togglePermission={togglePermission}
                           setNivelMinimo={setNivelMinimo}
-                          showNivelColumn={showNivelColumn}
+                          isSuperAdminRole={isSuperAdminRole}
+                          showNivel={showNivelColumn}
                         />
-                      </CardContent>
-                    </Card>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
