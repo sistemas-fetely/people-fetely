@@ -342,6 +342,7 @@ export default function Parametros() {
   const [editParam, setEditParam] = useState<Parametro | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formCategoria, setFormCategoria] = useState("");
+  const [formPaiValor, setFormPaiValor] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Parametro | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [clevelConfirm, setClevelConfirm] = useState<{ param: Parametro; enabling: boolean } | null>(null);
