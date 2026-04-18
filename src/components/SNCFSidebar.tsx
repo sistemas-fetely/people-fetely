@@ -58,6 +58,21 @@ export function SNCFSidebar() {
   const displayName = profile?.full_name || user?.email || "Usuário";
   const primaryRole = getHighestRoleLabel(roles);
 
+  const isAdminRHOrSuper = roles.some((r) => ["super_admin", "admin_rh"].includes(r));
+
+  const { data: qtdSugestoesPendentes = 0 } = useQuery({
+    queryKey: ["sugestoes-conhecimento-pendentes"],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("fala_fetely_sugestoes_conhecimento")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pendente");
+      return count || 0;
+    },
+    enabled: isAdminRHOrSuper,
+    refetchInterval: 30000,
+  });
+
   const isItemActive = (url: string, end?: boolean) =>
     end ? location.pathname === url : location.pathname.startsWith(url);
 
@@ -70,7 +85,7 @@ export function SNCFSidebar() {
       return roles.some((r) => ["gestor_direto", "super_admin", "admin_rh", "gestor_rh"].includes(r));
     }
     if (req === "admin_rh_or_super") {
-      return roles.some((r) => ["super_admin", "admin_rh"].includes(r));
+      return isAdminRHOrSuper;
     }
     return true;
   };

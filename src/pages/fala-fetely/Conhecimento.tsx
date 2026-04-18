@@ -103,6 +103,7 @@ export default function Conhecimento() {
   const { user } = useAuth();
   const { isSuperAdmin, isAdminRH, isLoading } = usePermissions();
   const [itens, setItens] = useState<Conhecimento[]>([]);
+  const [sugestoes, setSugestoes] = useState<SugestaoPendente[]>([]);
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState<string>("todas");
@@ -110,6 +111,7 @@ export default function Conhecimento() {
   const [salvando, setSalvando] = useState(false);
   const [form, setForm] = useState<FormState>(FORM_INICIAL);
   const [tagInput, setTagInput] = useState("");
+  const [aprovandoSugestao, setAprovandoSugestao] = useState<SugestaoPendente | null>(null);
 
   const [cargos, setCargos] = useState<string[]>([]);
   const [departamentos, setDepartamentos] = useState<string[]>([]);
@@ -125,9 +127,19 @@ export default function Conhecimento() {
   useEffect(() => {
     if (podeAcessar) {
       void carregar();
+      void carregarSugestoes();
       void carregarMetadados();
     }
   }, [podeAcessar]);
+
+  async function carregarSugestoes() {
+    const { data } = await supabase
+      .from("fala_fetely_sugestoes_conhecimento")
+      .select("*")
+      .eq("status", "pendente")
+      .order("created_at", { ascending: false });
+    setSugestoes((data || []) as SugestaoPendente[]);
+  }
 
   async function carregar() {
     setLoading(true);
