@@ -33,6 +33,7 @@ import { useCargos } from "@/hooks/useCargos";
 import { toast } from "sonner";
 import { format, parseISO } from "date-fns";
 import { Loader2 } from "lucide-react";
+import { SalarioMasked } from "@/components/SalarioMasked";
 
 const statusMap: Record<string, string> = {
   rascunho: "Rascunho",
@@ -79,6 +80,7 @@ interface ContratoPJ {
   observacoes: string | null;
   created_at: string;
   foto_url: string | null;
+  user_id: string | null;
 }
 
 function ContratoPJForm({
@@ -589,7 +591,11 @@ export default function ContratosPJ() {
                       </TableCell>
                       <TableCell className="text-sm hidden lg:table-cell">{c.departamento}</TableCell>
                       <TableCell className="text-sm font-medium">
-                        R$ {Number(c.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                        <SalarioMasked
+                          valor={Number(c.valor_mensal)}
+                          userId={c.user_id}
+                          contexto={`Listagem de contratos PJ — ${c.razao_social}`}
+                        />
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={statusStyles[c.status] || ""}>
@@ -680,7 +686,7 @@ export default function ContratosPJ() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div><p className="text-xs text-muted-foreground">Cargo</p><p className="text-sm font-medium">{viewContrato.tipo_servico}</p></div>
                   <div><p className="text-xs text-muted-foreground">Departamento</p><p className="text-sm font-medium">{viewContrato.departamento}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Valor Mensal</p><p className="text-sm font-medium">R$ {Number(viewContrato.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Valor Mensal</p><p className="text-sm font-medium"><SalarioMasked valor={Number(viewContrato.valor_mensal)} userId={viewContrato.user_id} contexto={`Detalhe contrato PJ — ${viewContrato.razao_social}`} /></p></div>
                   <div><p className="text-xs text-muted-foreground">Forma de Pagamento</p><p className="text-sm font-medium">{viewContrato.forma_pagamento}</p></div>
                   <div><p className="text-xs text-muted-foreground">Dia Vencimento</p><p className="text-sm font-medium">{viewContrato.dia_vencimento}</p></div>
                   <div><p className="text-xs text-muted-foreground">Status</p><Badge variant="outline" className={statusStyles[viewContrato.status] || ""}>{statusMap[viewContrato.status] || viewContrato.status}</Badge></div>
