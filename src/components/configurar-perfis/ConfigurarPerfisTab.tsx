@@ -489,10 +489,7 @@ export default function ConfigurarPerfisTab() {
     );
   }
 
-  const geralModules = MODULES.filter((m) => m.category === "geral");
-  const cltModules = MODULES.filter((m) => m.category === "clt");
-  const pjModules = MODULES.filter((m) => m.category === "pj");
-  const adminModules = MODULES.filter((m) => m.category === "admin");
+  const showNivelColumn = ROLES_COM_NIVEIS.has(selectedRole ?? "");
 
   return (
     <>
