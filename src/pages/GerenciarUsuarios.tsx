@@ -194,6 +194,17 @@ export default function GerenciarUsuarios() {
   const [linkColaboradorId, setLinkColaboradorId] = useState("");
   const [linkContratoPjId, setLinkContratoPjId] = useState("");
   const [drawerUsuarioId, setDrawerUsuarioId] = useState<string | null>(null);
+
+  // V2 — Template / Área / Unidade para Novo Usuário
+  const [templateId, setTemplateId] = useState<string>("");
+  const [areaCodigo, setAreaCodigo] = useState<string>("");
+  const [unidadeIdNovo, setUnidadeIdNovo] = useState<string>("");
+  const { data: templates } = useTemplates();
+  const { data: previewPerfis } = usePreviewTemplate(
+    templateId || null,
+    areaCodigo || null,
+    unidadeIdNovo || null
+  );
   const { data: profiles = [], isLoading } = useQuery({
     queryKey: ["admin-profiles"],
     queryFn: async () => {
@@ -299,13 +310,31 @@ export default function GerenciarUsuarios() {
 
   const createUser = useMutation({
     mutationFn: async () => {
-      await callManageUser("create_user_standalone", {
+      const result = await callManageUser("create_user_standalone", {
         email: newUser.email,
         full_name: newUser.full_name,
-        roles: newUser.roles,
+        roles: [], // V2: roles legados não são mais usados — perfis vêm via template
         colaborador_id: newUser.tipo_acesso === "vinculado" && newUser.colaborador_id ? newUser.colaborador_id : undefined,
         colaborador_tipo: newUser.tipo_acesso === "vinculado" ? newUser.colaborador_tipo : "all",
       });
+
+      const novoUserId = result?.user_id;
+      if (novoUserId && templateId) {
+        const { data: authData } = await supabase.auth.getUser();
+        const { error: errTemplate } = await supabase.rpc("aplicar_template_cargo", {
+          _user_id: novoUserId,
+          _template_id: templateId,
+          _area_perfil_codigo: areaCodigo || null,
+          _unidade_id: unidadeIdNovo || null,
+          _atribuidor: authData?.user?.id || null,
+        });
+        if (errTemplate) {
+          toast.warning(
+            "Usuário criado, mas falha ao aplicar template: " + errTemplate.message
+          );
+        }
+      }
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
@@ -313,9 +342,13 @@ export default function GerenciarUsuarios() {
       queryClient.invalidateQueries({ queryKey: ["admin-auth-users"] });
       queryClient.invalidateQueries({ queryKey: ["unlinked-clt"] });
       queryClient.invalidateQueries({ queryKey: ["unlinked-pj"] });
+      queryClient.invalidateQueries({ queryKey: ["atribuicoes-todas-v2"] });
       toast.success("Usuário criado! Um e-mail com link de acesso foi enviado.");
       setCreateOpen(false);
       setNewUser({ email: "", full_name: "", roles: ["colaborador"], tipo_acesso: "externo", colaborador_id: "", colaborador_tipo: "" });
+      setTemplateId("");
+      setAreaCodigo("");
+      setUnidadeIdNovo("");
     },
     onError: (err: Error) => toast.error(err.message || "Erro ao criar usuário"),
   });
