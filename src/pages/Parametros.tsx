@@ -788,6 +788,7 @@ export default function Parametros() {
           onClose={() => setFormOpen(false)}
           parametro={editParam}
           categoria={formCategoria}
+          paiValor={formPaiValor}
         />
       )}
 
