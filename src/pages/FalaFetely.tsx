@@ -4,13 +4,16 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
   ArrowLeft, Plus, Send, Sparkles, MessageCircle, ThumbsUp, ThumbsDown, Copy,
-  Globe, Gift, Workflow, Users, MessageCircleHeart,
+  Globe, Gift, Workflow, Users, MessageCircleHeart, GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
+import { EnsinarDialog } from "@/components/fala-fetely/EnsinarDialog";
+import { FeedbackNegativoDialog } from "@/components/fala-fetely/FeedbackNegativoDialog";
 
 interface Conversa {
   id: string;
