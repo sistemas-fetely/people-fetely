@@ -198,6 +198,11 @@ function ParametroForm({
             <Label>{isSistema ? "Nome do sistema" : "Nome"} *</Label>
             <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={isSistema ? "Ex: Google Workspace" : "Ex: Departamento"} />
           </div>
+          {categoria === "departamento" && paiValor && (
+            <div className="rounded-md border bg-muted/30 p-2 text-xs text-muted-foreground">
+              Este departamento será vinculado à área: <strong>{paiValor}</strong>
+            </div>
+          )}
           <div className="space-y-2">
             <Label>Código (valor)</Label>
             <Input value={valor} onChange={(e) => setValor(e.target.value)} placeholder="Auto-gerado se vazio" />
