@@ -666,7 +666,7 @@ function ModoCompararPerfis({ perms, roleCounts }: Omit<SharedCtx, "podeEditar">
 // ============================================================================
 // Modo 4: Matriz Completa (preserva implementação original)
 // ============================================================================
-function ModoMatrizCompleta({ perms, roleCounts }: SharedCtx) {
+function ModoMatrizCompleta({ perms, roleCounts, podeEditar }: SharedCtx) {
   const alertas = useMemo(() => calcularAlertas(perms), [perms]);
 
   const getAllModulePermNames = (moduleName: string) => {
@@ -698,6 +698,18 @@ function ModoMatrizCompleta({ perms, roleCounts }: SharedCtx) {
   return (
     <div className="space-y-4">
       <AlertasCard alertas={alertas} />
+
+      {podeEditar && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20 p-3 flex items-start gap-2">
+          <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+          <div className="text-xs text-emerald-900 dark:text-emerald-200">
+            <p className="font-semibold">🌷 Edição direta ativada</p>
+            <p className="text-emerald-800/90 dark:text-emerald-300/90 mt-0.5">
+              Clique em qualquer bolinha colorida para alterar a permissão. Módulos com 🔐 pedem confirmação extra.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-lg border border-blue-200 bg-blue-50/60 dark:border-blue-900/50 dark:bg-blue-950/20 p-3 flex items-start gap-2">
         <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
