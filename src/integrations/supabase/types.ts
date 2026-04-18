@@ -1616,6 +1616,7 @@ export type Database = {
           arquivada: boolean
           created_at: string
           id: string
+          memorias_extraidas: boolean
           titulo: string | null
           updated_at: string
           user_id: string
@@ -1624,6 +1625,7 @@ export type Database = {
           arquivada?: boolean
           created_at?: string
           id?: string
+          memorias_extraidas?: boolean
           titulo?: string | null
           updated_at?: string
           user_id: string
@@ -1632,6 +1634,7 @@ export type Database = {
           arquivada?: boolean
           created_at?: string
           id?: string
+          memorias_extraidas?: boolean
           titulo?: string | null
           updated_at?: string
           user_id?: string
@@ -1673,6 +1676,72 @@ export type Database = {
           {
             foreignKeyName: "fala_fetely_feedback_mensagem_id_fkey"
             columns: ["mensagem_id"]
+            isOneToOne: false
+            referencedRelation: "fala_fetely_mensagens"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fala_fetely_memoria: {
+        Row: {
+          ativo: boolean
+          conteudo_completo: string | null
+          conversa_origem_id: string | null
+          created_at: string
+          id: string
+          mensagem_origem_id: string | null
+          origem: string
+          relevancia: number
+          resumo: string
+          tags: string[] | null
+          tipo: string
+          ultimo_uso: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          conteudo_completo?: string | null
+          conversa_origem_id?: string | null
+          created_at?: string
+          id?: string
+          mensagem_origem_id?: string | null
+          origem?: string
+          relevancia?: number
+          resumo: string
+          tags?: string[] | null
+          tipo: string
+          ultimo_uso?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          conteudo_completo?: string | null
+          conversa_origem_id?: string | null
+          created_at?: string
+          id?: string
+          mensagem_origem_id?: string | null
+          origem?: string
+          relevancia?: number
+          resumo?: string
+          tags?: string[] | null
+          tipo?: string
+          ultimo_uso?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fala_fetely_memoria_conversa_origem_id_fkey"
+            columns: ["conversa_origem_id"]
+            isOneToOne: false
+            referencedRelation: "fala_fetely_conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fala_fetely_memoria_mensagem_origem_id_fkey"
+            columns: ["mensagem_origem_id"]
             isOneToOne: false
             referencedRelation: "fala_fetely_mensagens"
             referencedColumns: ["id"]

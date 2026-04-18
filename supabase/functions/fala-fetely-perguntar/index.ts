@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     });
 
     // 3) Coletar contexto do usuário + conhecimento + histórico (paralelo)
-    const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, templatesRes, tarefasTemplateRes, extensoesRes, tarefasExtensoesRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, conhecimentosRes, historicoRes] = await Promise.all([
+    const [profileRes, colabRes, contratoPjRes, tarefasRes, processosRes, templatesRes, tarefasTemplateRes, extensoesRes, tarefasExtensoesRes, sistemasRes, departamentosRes, cargosRes, docsRes, beneficiosRes, conhecimentosRes, memoriasRes, historicoRes] = await Promise.all([
       supabase.from("profiles").select("full_name, colaborador_tipo").eq("user_id", user.id).maybeSingle(),
       supabase.from("colaboradores_clt").select("id, cargo, departamento, nome_completo").eq("user_id", user.id).maybeSingle(),
       supabase.from("contratos_pj").select("tipo_servico, departamento, contato_nome").eq("user_id", user.id).maybeSingle(),
@@ -105,6 +105,13 @@ Deno.serve(async (req) => {
       supabase.from("sncf_documentacao").select("titulo, descricao, conteudo").eq("ativo", true).limit(20),
       supabase.from("beneficios_catalogo").select("beneficio, tipo").eq("ativo", true).limit(30),
       (supabase as any).from("fala_fetely_conhecimento").select("categoria, titulo, conteudo, publico_alvo, cargos_aplicaveis, niveis_aplicaveis, departamentos_aplicaveis, fonte, tags").eq("ativo", true).order("categoria").limit(100),
+      (supabase as any)
+        .from("fala_fetely_memoria")
+        .select("id, tipo, resumo, conteudo_completo, tags, relevancia")
+        .eq("user_id", user.id)
+        .eq("ativo", true)
+        .order("relevancia", { ascending: false })
+        .limit(20),
       conversa_id
         ? supabase
             .from("fala_fetely_mensagens")
@@ -236,6 +243,21 @@ Deno.serve(async (req) => {
       })
       .join("\n\n") || "(nenhum conhecimento cadastrado ainda)";
 
+    // Memórias do usuário (decisões, preferências, fatos, contexto pessoal)
+    const memoriasArr = ((memoriasRes as any).data || []) as Array<{
+      id: string; tipo: string; resumo: string; conteudo_completo: string | null;
+      tags: string[] | null; relevancia: number;
+    }>;
+    const memoriasIds = memoriasArr.map((m) => m.id);
+    const blocoMemorias = memoriasArr.length
+      ? memoriasArr
+          .map((m) => {
+            const det = m.relevancia >= 7 && m.conteudo_completo ? `: ${clipText(m.conteudo_completo, 500)}` : "";
+            return `- [${m.tipo}] ${m.resumo}${det}`;
+          })
+          .join("\n")
+      : "(nenhuma memória registrada ainda)";
+
     const systemPrompt = `Você é o Fala Fetely, assistente inteligente do SNCF (Sistema Nervoso Central da Fetely).
 
 A FETELY é uma marca de alegria com intenção — papelaria, utilidades e decoração com espírito comemorativo. DNA: "Celebre o que importa", "Gesto não se delega pro ChatGPT", autogestão com maturidade, tudo via sistema ou e-mail automático.
@@ -317,6 +339,25 @@ Cada item tem filtros (público-alvo, cargos, níveis, departamentos). ANTES de 
 NUNCA invente políticas, benefícios, números de mercado ou estatísticas. Se não há na Base, diga "Não tenho essa regra cadastrada" e oriente a perguntar ao RH.
 
 ${blocoConhecimentos}
+
+[MEMÓRIAS SOBRE O USUÁRIO]
+Você tem acesso a memórias de conversas passadas com este usuário específico. Use-as com DISCRIÇÃO:
+
+QUANDO USAR:
+- Para respeitar preferências conhecidas ("Já sei que você prefere respostas curtas, então...")
+- Para lembrar decisões anteriores ("Conforme você havia decidido, ...")
+- Para contextualizar quando for GENUINAMENTE relevante à pergunta atual
+
+QUANDO NÃO USAR:
+- Não mencione cada memória em toda resposta (seria cansativo)
+- Não cite memória como "eu lembro que..." de forma repetitiva
+- Se a memória não é relevante à pergunta atual, IGNORE
+
+TOM:
+- Natural, como um colega que conhece o contexto: "Sobre aquele projeto do SNCF..." em vez de "Na nossa conversa de 15/04 você disse..."
+
+Memórias ativas deste usuário (ordenadas por relevância):
+${blocoMemorias}
 
 [PROCESSOS]
 ${blocoProcessos}
@@ -486,6 +527,16 @@ Próximo e profissional, sem ser robotizado. Levemente caloroso, NÃO efusivo. V
               .from("fala_fetely_conversas")
               .update({ updated_at: new Date().toISOString() })
               .eq("id", conversa_id);
+
+            // Marca último uso das memórias usadas (background, fire-and-forget)
+            if (memoriasIds.length > 0) {
+              (supabase as any)
+                .from("fala_fetely_memoria")
+                .update({ ultimo_uso: new Date().toISOString() })
+                .in("id", memoriasIds)
+                .then(() => {})
+                .catch((err: any) => console.error("Erro atualizando ultimo_uso:", err));
+            }
 
             // Envia evento final com mensagem_id
             const finalMeta = JSON.stringify({ mensagem_id: msgInserida?.id });

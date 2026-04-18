@@ -63,6 +63,7 @@ import ProcessoEditor from "@/pages/ProcessoEditor";
 import DesligamentoDetalhe from "@/pages/DesligamentoDetalhe";
 import FalaFetely from "@/pages/FalaFetely";
 import FalaFetelyConhecimento from "@/pages/fala-fetely/Conhecimento";
+import MinhasMemorias from "@/pages/fala-fetely/MinhasMemorias";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,7 @@ const App = () => (
               <Route path="/templates/*" element={<Navigate to="/processos" replace />} />
               <Route path="/fala-fetely" element={<FalaFetely />} />
               <Route path="/fala-fetely/conhecimento" element={<FalaFetelyConhecimento />} />
+              <Route path="/fala-fetely/memorias" element={<MinhasMemorias />} />
             </Route>
 
             {/* TI Fetely */}
