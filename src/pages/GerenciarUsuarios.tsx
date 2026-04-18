@@ -161,6 +161,8 @@ function renderAtribuicoesV2(
     </div>
   );
 }
+
+export default function GerenciarUsuarios() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "usuarios";
