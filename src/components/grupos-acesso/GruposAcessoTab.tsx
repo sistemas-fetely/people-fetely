@@ -117,13 +117,14 @@ export function GruposAcessoTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, full_name")
+        .select("user_id, full_name, department, position")
         .order("full_name");
       if (error) throw error;
       return (data || []).map((p) => ({
         user_id: p.user_id,
         full_name: p.full_name || "Sem nome",
-        email: "",
+        department: p.department,
+        position: p.position,
       }));
     },
     staleTime: 60 * 1000,
@@ -362,6 +363,7 @@ export function GruposAcessoTab() {
         }
         unidades={unidades || []}
         todosUsuarios={todosUsuarios || []}
+        atribuicoesExistentes={atribuicoes || []}
         onSucesso={() => {
           queryClient.invalidateQueries({ queryKey: ["atribuicoes-com-users"] });
           queryClient.invalidateQueries({ queryKey: ["minhas-atribuicoes"] });
@@ -382,12 +384,18 @@ interface AtribuirDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   unidades: Array<{ id: string; nome: string }>;
-  todosUsuarios: Array<{ user_id: string; full_name: string; email: string }>;
+  todosUsuarios: Array<{
+    user_id: string;
+    full_name: string;
+    department?: string | null;
+    position?: string | null;
+  }>;
+  atribuicoesExistentes: AtribuicaoExpandida[];
   onSucesso: () => void;
 }
 
 function AtribuirDialog({
-  perfil, open, onOpenChange, unidades, todosUsuarios, onSucesso,
+  perfil, open, onOpenChange, unidades, todosUsuarios, atribuicoesExistentes, onSucesso,
 }: AtribuirDialogProps) {
   const [userId, setUserId] = useState("");
   const [unidadeId, setUnidadeId] = useState("");
@@ -395,6 +403,17 @@ function AtribuirDialog({
   const [salvando, setSalvando] = useState(false);
 
   const ehArea = perfil?.tipo === "area";
+
+  const idsJaAtribuidos = new Set(
+    atribuicoesExistentes
+      .filter((a) => {
+        if (!perfil) return false;
+        if (perfil.tipo === "transversal") return a.perfil_id === perfil.id;
+        // Área: considera duplicata se mesmo perfil + mesma unidade selecionada
+        return a.perfil_id === perfil.id && a.unidade_id === unidadeId;
+      })
+      .map((a) => a.user_id)
+  );
 
   async function salvar() {
     if (!perfil || !userId) return;
@@ -423,7 +442,18 @@ function AtribuirDialog({
       setUnidadeId("");
       setNivel("");
     } catch (e: any) {
-      toast.error(e.message || "Erro ao atribuir");
+      const msg = e?.message || "";
+      if (
+        msg.includes("unique") ||
+        msg.includes("duplicate") ||
+        msg.includes("user_atribuicoes_user_id_perfil_id_unidade_id_key")
+      ) {
+        toast.error("Essa pessoa já tem esse perfil nesse contexto");
+      } else if (msg.includes("Regra 19") || msg.includes("Escopo obrigatório")) {
+        toast.error("Essa pessoa precisa ter unidade definida (Regra 19)");
+      } else {
+        toast.error(msg || "Erro ao atribuir");
+      }
     } finally {
       setSalvando(false);
     }
@@ -449,11 +479,27 @@ function AtribuirDialog({
                 <SelectValue placeholder="Selecione uma pessoa..." />
               </SelectTrigger>
               <SelectContent>
-                {todosUsuarios.map((u) => (
-                  <SelectItem key={u.user_id} value={u.user_id}>
-                    {u.full_name}
-                  </SelectItem>
-                ))}
+                {todosUsuarios.map((u) => {
+                  const jaTem = idsJaAtribuidos.has(u.user_id);
+                  const subtitulo = [u.position, u.department].filter(Boolean).join(" · ");
+                  return (
+                    <SelectItem key={u.user_id} value={u.user_id} disabled={jaTem}>
+                      <div className="flex flex-col items-start gap-0.5">
+                        <div className="flex items-center gap-2">
+                          <span>{u.full_name || "Sem nome"}</span>
+                          {jaTem && (
+                            <span className="text-[10px] text-muted-foreground italic">
+                              (já atribuído)
+                            </span>
+                          )}
+                        </div>
+                        {subtitulo && (
+                          <span className="text-xs text-muted-foreground">{subtitulo}</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
