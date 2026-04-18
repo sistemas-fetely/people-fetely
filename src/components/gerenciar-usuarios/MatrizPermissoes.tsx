@@ -24,19 +24,16 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const ROLE_COLORS: Record<string, string> = {
   super_admin: "bg-purple-100 text-purple-700 border-purple-200",
-  admin_rh: "bg-blue-100 text-blue-700 border-blue-200",
+  diretoria_executiva: "bg-violet-100 text-violet-700 border-violet-200",
   rh: "bg-blue-100 text-blue-700 border-blue-200",
-  gestor_rh: "bg-cyan-100 text-cyan-700 border-cyan-200",
-  gestor_direto: "bg-teal-100 text-teal-700 border-teal-200",
   gestao_direta: "bg-teal-100 text-teal-700 border-teal-200",
   financeiro: "bg-amber-100 text-amber-700 border-amber-200",
   administrativo: "bg-slate-100 text-slate-700 border-slate-200",
   operacional: "bg-orange-100 text-orange-700 border-orange-200",
   ti: "bg-cyan-100 text-cyan-700 border-cyan-200",
   recrutamento: "bg-pink-100 text-pink-700 border-pink-200",
-  recrutador: "bg-pink-100 text-pink-700 border-pink-200",
   fiscal: "bg-yellow-100 text-yellow-700 border-yellow-200",
-  estagiario: "bg-violet-100 text-violet-700 border-violet-200",
+  estagiario: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
   colaborador: "bg-slate-100 text-slate-700 border-slate-200",
 };
 
@@ -49,22 +46,19 @@ const NIVEL_LABELS: Record<string, string> = {
   diretor: "diretor",
 };
 
-const MATRIX_ROLES: { role: AppRole; label: string; shortLabel: string; isNew?: boolean; isLegacy?: boolean }[] = [
-  { role: "super_admin", label: "Super Admin", shortLabel: "S.Admin" },
-  { role: "admin_rh", label: "Admin RH (legado)", shortLabel: "Admin RH", isLegacy: true },
-  { role: "rh", label: "RH", shortLabel: "RH", isNew: true },
-  { role: "gestor_rh", label: "Gestor RH (legado)", shortLabel: "G.RH", isLegacy: true },
-  { role: "gestor_direto", label: "Gestor Direto (legado)", shortLabel: "G.Direto", isLegacy: true },
-  { role: "gestao_direta", label: "Gestão Direta", shortLabel: "Gestão", isNew: true },
-  { role: "financeiro", label: "Financeiro", shortLabel: "Financ." },
-  { role: "administrativo", label: "Administrativo", shortLabel: "Admin.", isNew: true },
-  { role: "operacional", label: "Operacional", shortLabel: "Operac.", isNew: true },
-  { role: "ti", label: "TI", shortLabel: "TI", isNew: true },
-  { role: "recrutamento", label: "Recrutamento", shortLabel: "Recrut.", isNew: true },
-  { role: "recrutador", label: "Recrutador (legado)", shortLabel: "Recr.L", isLegacy: true },
-  { role: "fiscal", label: "Fiscal", shortLabel: "Fiscal" },
-  { role: "estagiario", label: "Estagiário", shortLabel: "Estag.", isNew: true },
-  { role: "colaborador", label: "Colaborador", shortLabel: "Colab." },
+const MATRIX_ROLES: { role: AppRole; label: string; shortLabel: string; isNew?: boolean }[] = [
+  { role: "super_admin",         label: "Super Admin",          shortLabel: "S.Admin" },
+  { role: "diretoria_executiva", label: "Diretoria Executiva",  shortLabel: "Diretoria", isNew: true },
+  { role: "rh",                  label: "RH",                   shortLabel: "RH" },
+  { role: "gestao_direta",       label: "Gestão Direta",        shortLabel: "Gestão" },
+  { role: "financeiro",          label: "Financeiro",           shortLabel: "Financ." },
+  { role: "administrativo",      label: "Administrativo",       shortLabel: "Admin." },
+  { role: "operacional",         label: "Operacional",          shortLabel: "Operac." },
+  { role: "ti",                  label: "TI",                   shortLabel: "TI" },
+  { role: "recrutamento",        label: "Recrutamento",         shortLabel: "Recrut." },
+  { role: "fiscal",              label: "Fiscal",               shortLabel: "Fiscal" },
+  { role: "estagiario",          label: "Estagiário",           shortLabel: "Estag." },
+  { role: "colaborador",         label: "Colaborador",          shortLabel: "Colab." },
 ];
 
 const ALL_PERMISSIONS = ["view", "create", "edit", "delete", "aprovar", "enviar", "exportar", "fechar", "enviar_email"];
@@ -231,7 +225,7 @@ function ModoPerfilUnico({ perms, roleCounts }: SharedCtx) {
                   <div className="flex items-center gap-2">
                     <span>{r.label}</span>
                     {r.isNew && <Badge variant="outline" className="text-[8px] px-1 py-0 border-emerald-400 text-emerald-700">Nova</Badge>}
-                    {r.isLegacy && <Badge variant="outline" className="text-[8px] px-1 py-0 border-amber-400 text-amber-700">Legado</Badge>}
+                    
                   </div>
                 </SelectItem>
               ))}
@@ -395,7 +389,7 @@ function ModoModuloUnico({ perms, roleCounts }: SharedCtx) {
                         <Badge variant="outline" className={`text-[10px] ${ROLE_COLORS[r.role] || ""}`}>{r.shortLabel}</Badge>
                         <span className="text-xs">{r.label}</span>
                         {r.isNew && <Badge variant="outline" className="text-[8px] px-1 py-0 border-emerald-400 text-emerald-700">Nova</Badge>}
-                        {r.isLegacy && <Badge variant="outline" className="text-[8px] px-1 py-0 border-amber-400 text-amber-700">Legado</Badge>}
+                        
                       </div>
                     </td>
                     <td className="p-3 text-xs">
@@ -496,7 +490,7 @@ function ModoCompararPerfis({ perms, roleCounts }: SharedCtx) {
                 >
                   {r.label}
                   {r.isNew && <span className="text-[8px] opacity-80">Nova</span>}
-                  {r.isLegacy && <span className="text-[8px] opacity-80">Legado</span>}
+                  
                 </button>
               );
             })}
@@ -536,7 +530,7 @@ function ModoCompararPerfis({ perms, roleCounts }: SharedCtx) {
                         <div className="flex flex-col items-center gap-1">
                           <Badge variant="outline" className={`text-[10px] ${ROLE_COLORS[r.role] || ""}`}>{r.shortLabel}</Badge>
                           {r.isNew && <Badge variant="outline" className="text-[8px] px-1 py-0 border-emerald-400 text-emerald-700">Nova</Badge>}
-                          {r.isLegacy && <Badge variant="outline" className="text-[8px] px-1 py-0 border-amber-400 text-amber-700">Legado</Badge>}
+                          
                         </div>
                       </th>
                     ))}
@@ -642,10 +636,10 @@ function ModoMatrizCompleta({ perms, roleCounts }: SharedCtx) {
       <div className="rounded-lg border border-blue-200 bg-blue-50/60 dark:border-blue-900/50 dark:bg-blue-950/20 p-3 flex items-start gap-2">
         <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
         <div className="text-xs text-blue-900 dark:text-blue-200 space-y-1">
-          <p className="font-semibold">Matriz com 16 perfis e 6 níveis hierárquicos</p>
+          <p className="font-semibold">Matriz com {MATRIX_ROLES.length} perfis e 6 níveis hierárquicos</p>
           <ul className="list-disc list-inside space-y-0.5 text-blue-800/90 dark:text-blue-300/90">
-            <li>Perfis marcados como <span className="font-medium">Legado</span> serão substituídos pelos novos equivalentes (rh, gestao_direta, ti, recrutamento).</li>
-            <li>Perfis <span className="font-medium">Novos</span> suportam granularidade por nível (ex.: "Fechar competência" só a partir de Coordenador).</li>
+            <li>Perfis com nível (RH, Gestão, Financeiro, etc.) suportam granularidade — ex.: "Fechar competência" só a partir de Coordenador.</li>
+            <li><span className="font-medium">Diretoria Executiva</span> tem visibilidade executiva total sem poder configurar nada.</li>
             <li>Módulos com 🔐 são sensíveis — contêm dados pessoais (LGPD).</li>
             <li>Passe o mouse nas células para ver detalhes de nível mínimo exigido.</li>
           </ul>
@@ -681,9 +675,7 @@ function ModoMatrizCompleta({ perms, roleCounts }: SharedCtx) {
                     {r.isNew && (
                       <Badge variant="outline" className="text-[8px] px-1 py-0 border-emerald-400 text-emerald-700">Nova</Badge>
                     )}
-                    {r.isLegacy && (
-                      <Badge variant="outline" className="text-[8px] px-1 py-0 border-amber-400 text-amber-700">Legado</Badge>
-                    )}
+                    {/* perfis legados removidos da matriz */}
                     <span className="text-[10px] text-muted-foreground">
                       {roleCounts?.[r.role] ?? 0} {(roleCounts?.[r.role] ?? 0) === 1 ? "usuário" : "usuários"}
                     </span>

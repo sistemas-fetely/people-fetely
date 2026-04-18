@@ -22,6 +22,7 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const roleLabels: Record<AppRole, string> = {
   super_admin: "Super Admin",
+  diretoria_executiva: "Diretoria Executiva",
   admin_rh: "Admin RH",
   admin_ti: "Admin TI",
   gestor_rh: "Gestor RH",
@@ -40,9 +41,14 @@ const roleLabels: Record<AppRole, string> = {
 };
 
 const ROLE_PRIORITY: AppRole[] = [
-  "super_admin", "admin_rh", "gestor_rh", "recrutador", "financeiro",
-  "admin_ti", "fiscal", "operacional",
-  "gestor_direto", "colaborador",
+  "super_admin", "diretoria_executiva",
+  "rh", "admin_rh", "gestor_rh",
+  "recrutamento", "recrutador",
+  "financeiro", "fiscal",
+  "ti", "admin_ti",
+  "administrativo", "operacional",
+  "gestao_direta", "gestor_direto",
+  "estagiario", "colaborador",
 ];
 
 interface MenuItem {
