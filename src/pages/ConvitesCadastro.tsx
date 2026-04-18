@@ -1011,14 +1011,10 @@ export default function ConvitesCadastro() {
                   </div>
                   <div>
                     <Label>Departamento</Label>
-                    {departamentos && departamentos.length > 0 ? (
-                      <Select value={form.departamento} onValueChange={(v) => setForm({ ...form, departamento: v })}>
-                        <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-                        <SelectContent>{departamentos.map((d) => <SelectItem key={d.valor} value={d.valor}>{d.label}</SelectItem>)}</SelectContent>
-                      </Select>
-                    ) : (
-                      <Input value={form.departamento} onChange={(e) => setForm({ ...form, departamento: e.target.value })} placeholder="Departamento" />
-                    )}
+                    <SelectDepartamentoHierarquico
+                      valueTexto={form.departamento}
+                      onChange={(dep) => setForm({ ...form, departamento: dep?.label || "" })}
+                    />
                   </div>
                 </div>
                 {form.tipo === "clt" && (
