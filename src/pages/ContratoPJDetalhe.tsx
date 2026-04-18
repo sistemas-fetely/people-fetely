@@ -42,6 +42,9 @@ import { StepDadosEmpresa } from "@/components/colaborador-clt/StepDadosEmpresa"
 import { StepDependentes } from "@/components/colaborador-clt/StepDependentes";
 import { DocumentosAnexados } from "@/components/DocumentosAnexados";
 import { CriarUsuarioAcessoButton } from "@/components/CriarUsuarioAcessoButton";
+import { SalarioMasked } from "@/components/SalarioMasked";
+import { ehCLevel } from "@/lib/clevel-protection";
+import { Shield } from "lucide-react";
 
 import type { AllPJFormData } from "@/lib/validations/contrato-pj";
 
@@ -642,7 +645,16 @@ export default function ContratoPJDetalhe() {
                 <InfoField label="Cargo / Tipo de Serviço" value={contrato.tipo_servico} />
                 <InfoField label="Departamento" value={contrato.departamento} />
                 {canSeeSalary(isCargoClevel(contrato.tipo_servico)) && (
-                  <InfoField label="Valor Mensal" value={`R$ ${Number(contrato.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                  <InfoField
+                    label="Valor Mensal"
+                    value={
+                      <SalarioMasked
+                        valor={Number(contrato.valor_mensal)}
+                        userId={(contrato as any).user_id}
+                        contexto={`Detalhe contrato PJ — ${contrato.razao_social}`}
+                      />
+                    }
+                  />
                 )}
                 <InfoField label="Forma de Pagamento" value={contrato.forma_pagamento} />
                 <InfoField label="Dia do Vencimento" value={contrato.dia_vencimento?.toString()} />

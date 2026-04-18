@@ -45,6 +45,9 @@ import { StepDependentes } from "@/components/colaborador-clt/StepDependentes";
 import { StepDadosEmpresa } from "@/components/colaborador-clt/StepDadosEmpresa";
 import { DocumentosAnexados } from "@/components/DocumentosAnexados";
 import { CriarUsuarioAcessoButton } from "@/components/CriarUsuarioAcessoButton";
+import { SalarioMasked } from "@/components/SalarioMasked";
+import { ehCLevel } from "@/lib/clevel-protection";
+import { Shield } from "lucide-react";
 
 import type {
   DadosPessoaisForm,
@@ -613,7 +616,16 @@ export default function ColaboradorDetalhe() {
                 <InfoField label="Data de Desligamento" value={(colaborador as any).data_desligamento ? safeFormatDate((colaborador as any).data_desligamento) : "—"} />
                 <InfoField label="Tipo de Contrato" value={colaborador.tipo_contrato} />
                 {canSeeSalary(isCargoClevel(colaborador.cargo)) && (
-                  <InfoField label="Salário Base" value={`R$ ${Number(colaborador.salario_base).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                  <InfoField
+                    label="Salário Base"
+                    value={
+                      <SalarioMasked
+                        valor={Number(colaborador.salario_base)}
+                        userId={colaborador.user_id}
+                        contexto={`Detalhe colaborador CLT — ${colaborador.nome_completo}`}
+                      />
+                    }
+                  />
                 )}
                 <InfoField label="Jornada Semanal" value={colaborador.jornada_semanal ? `${colaborador.jornada_semanal}h` : ""} />
                 <InfoField label="Horário de Trabalho" value={colaborador.horario_trabalho} />
