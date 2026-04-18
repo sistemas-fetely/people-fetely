@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Brain, Pencil, Trash2, Plus, RotateCcw } from "lucide-react";
+import { ArrowLeft, Brain, Pencil, Trash2, Plus, RotateCcw, ShieldAlert, X } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { AcessarMemoriasOutroDialog } from "@/components/fala-fetely/AcessarMemoriasOutroDialog";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
