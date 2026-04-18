@@ -42,6 +42,9 @@ import { StepDadosEmpresa } from "@/components/colaborador-clt/StepDadosEmpresa"
 import { StepDependentes } from "@/components/colaborador-clt/StepDependentes";
 import { DocumentosAnexados } from "@/components/DocumentosAnexados";
 import { CriarUsuarioAcessoButton } from "@/components/CriarUsuarioAcessoButton";
+import { SalarioMasked } from "@/components/SalarioMasked";
+import { ehCLevel } from "@/lib/clevel-protection";
+import { Shield } from "lucide-react";
 
 import type { AllPJFormData } from "@/lib/validations/contrato-pj";
 
@@ -89,7 +92,7 @@ export default function ContratoPJDetalhe() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { hasPermission, canSeeSalary } = usePermissions();
+  const { hasPermission, canSeeSalary, isSuperAdmin } = usePermissions();
   const { isCargoClevel } = useCLevelCargos();
   const canEditContract = hasPermission("contratos_pj", "edit");
   const [loading, setLoading] = useState(true);
@@ -551,6 +554,15 @@ export default function ContratoPJDetalhe() {
           </CardContent>
         </Card>
 
+        {ehCLevel({ cargo: contrato.tipo_servico, nivel: null }) && !isSuperAdmin && (
+          <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-sm">
+            <Shield className="h-4 w-4 mt-0.5 text-warning" />
+            <p className="text-muted-foreground">
+              Algumas informações são restritas por política de C-Level.
+            </p>
+          </div>
+        )}
+
         <Tabs defaultValue="pessoais">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="pessoais" className="gap-1"><User className="h-3.5 w-3.5" /> Dados Pessoais</TabsTrigger>
@@ -642,7 +654,16 @@ export default function ContratoPJDetalhe() {
                 <InfoField label="Cargo / Tipo de Serviço" value={contrato.tipo_servico} />
                 <InfoField label="Departamento" value={contrato.departamento} />
                 {canSeeSalary(isCargoClevel(contrato.tipo_servico)) && (
-                  <InfoField label="Valor Mensal" value={`R$ ${Number(contrato.valor_mensal).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                  <InfoField
+                    label="Valor Mensal"
+                    value={
+                      <SalarioMasked
+                        valor={Number(contrato.valor_mensal)}
+                        userId={(contrato as any).user_id}
+                        contexto={`Detalhe contrato PJ — ${contrato.razao_social}`}
+                      />
+                    }
+                  />
                 )}
                 <InfoField label="Forma de Pagamento" value={contrato.forma_pagamento} />
                 <InfoField label="Dia do Vencimento" value={contrato.dia_vencimento?.toString()} />

@@ -45,6 +45,9 @@ import { StepDependentes } from "@/components/colaborador-clt/StepDependentes";
 import { StepDadosEmpresa } from "@/components/colaborador-clt/StepDadosEmpresa";
 import { DocumentosAnexados } from "@/components/DocumentosAnexados";
 import { CriarUsuarioAcessoButton } from "@/components/CriarUsuarioAcessoButton";
+import { SalarioMasked } from "@/components/SalarioMasked";
+import { ehCLevel } from "@/lib/clevel-protection";
+import { Shield } from "lucide-react";
 
 import type {
   DadosPessoaisForm,
@@ -81,7 +84,7 @@ export default function ColaboradorDetalhe() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
-  const { canSeeSalary } = usePermissions();
+  const { canSeeSalary, isSuperAdmin } = usePermissions();
   const { isCargoClevel } = useCLevelCargos();
   const { data: sistemasParametros } = useParametros("sistema");
   const { data: tiposEquipParametros } = useParametros("tipo_equipamento");
@@ -537,6 +540,15 @@ export default function ColaboradorDetalhe() {
           </CardContent>
         </Card>
 
+        {ehCLevel({ cargo: colaborador.cargo, nivel: (colaborador as any).nivel ?? null }) && !isSuperAdmin && (
+          <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2 text-sm text-warning-foreground">
+            <Shield className="h-4 w-4 mt-0.5 text-warning" />
+            <p className="text-muted-foreground">
+              Algumas informações são restritas por política de C-Level.
+            </p>
+          </div>
+        )}
+
         <Tabs defaultValue="pessoais">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="pessoais" className="gap-1"><User className="h-3.5 w-3.5" /> Dados Pessoais</TabsTrigger>
@@ -613,7 +625,16 @@ export default function ColaboradorDetalhe() {
                 <InfoField label="Data de Desligamento" value={(colaborador as any).data_desligamento ? safeFormatDate((colaborador as any).data_desligamento) : "—"} />
                 <InfoField label="Tipo de Contrato" value={colaborador.tipo_contrato} />
                 {canSeeSalary(isCargoClevel(colaborador.cargo)) && (
-                  <InfoField label="Salário Base" value={`R$ ${Number(colaborador.salario_base).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />
+                  <InfoField
+                    label="Salário Base"
+                    value={
+                      <SalarioMasked
+                        valor={Number(colaborador.salario_base)}
+                        userId={colaborador.user_id}
+                        contexto={`Detalhe colaborador CLT — ${colaborador.nome_completo}`}
+                      />
+                    }
+                  />
                 )}
                 <InfoField label="Jornada Semanal" value={colaborador.jornada_semanal ? `${colaborador.jornada_semanal}h` : ""} />
                 <InfoField label="Horário de Trabalho" value={colaborador.horario_trabalho} />
@@ -810,11 +831,12 @@ export default function ColaboradorDetalhe() {
   );
 }
 
-function InfoField({ label, value }: { label: string; value: string | null | undefined }) {
+function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
+  const isEmpty = value === null || value === undefined || value === "";
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium">{value || "—"}</p>
+      <p className="text-sm font-medium">{isEmpty ? "—" : value}</p>
     </div>
   );
 }
