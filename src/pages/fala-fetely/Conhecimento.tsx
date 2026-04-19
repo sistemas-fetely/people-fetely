@@ -55,6 +55,7 @@ interface Conhecimento {
   categoria: Categoria;
   titulo: string;
   conteudo: string;
+  area_negocio: string | null;
   publico_alvo: string;
   cargos_aplicaveis: string[];
   departamentos_aplicaveis: string[];
