@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Users, Briefcase, Calendar, AlertTriangle, FileText, CreditCard, Gift,
   TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, Minus,
-  Building2, ClipboardList, BarChart3,
+  Building2, ClipboardList, BarChart3, Lightbulb,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DashboardOperacional } from "@/components/dashboard/DashboardOperacional";
@@ -17,6 +17,7 @@ import { useDashboardData } from "@/hooks/useDashboardData";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { SugestoesInboxDialog, type SugestaoItem } from "@/components/dashboard/SugestoesInboxDialog";
 
 const STATUS_LABELS: Record<string, string> = {
   ativo: "Ativos", inativo: "Inativos", ferias: "Férias",
@@ -91,10 +92,12 @@ function DashboardGestao() {
     statusClt, turnover, folha, nfPendentes, pagPjPendentes,
     experienciaVencendo, docsVencendo, aniversariosEmpresa, semBeneficio,
     contratosPendentes, convitesPreenchidos, custoPj, custoEvolucao, custoDept, salarioMedio,
+    sugestoesPendentes, agregadosExcluemClevel,
     mesAtualLabel,
     isLoading,
   } = useDashboardData();
   const { isSuperAdmin } = usePermissions();
+  const [sugestoesOpen, setSugestoesOpen] = useState(false);
 
   const statusData = useMemo(() => Object.entries(statusClt).map(([status, value]) => ({
     name: STATUS_LABELS[status] || status, value,
@@ -136,7 +139,14 @@ function DashboardGestao() {
   }
 
   // Alertas
-  const alertas: { titulo: string; detalhe: string; prioridade: "alta" | "media" | "baixa" }[] = [];
+  type Alerta = {
+    titulo: string;
+    detalhe: string;
+    prioridade: "alta" | "media" | "baixa";
+    tipo?: "sugestao";
+    onClick?: () => void;
+  };
+  const alertas: Alerta[] = [];
   if (ferias.periodoVencido > 0) alertas.push({ titulo: `${ferias.periodoVencido} período(s) de férias vencido(s)`, detalhe: "Saldo pendente", prioridade: "alta" });
   if (pj.vencendo > 0) alertas.push({ titulo: `${pj.vencendo} contrato(s) PJ vencendo`, detalhe: "Próximos 30 dias", prioridade: "alta" });
   if (nfPendentes > 0) alertas.push({ titulo: `${nfPendentes} nota(s) fiscal(is) pendente(s)`, detalhe: "Aguardando processamento", prioridade: "media" });
@@ -159,6 +169,16 @@ function DashboardGestao() {
   }
   if (convitesPreenchidos.length > 0) {
     alertas.push({ titulo: `${convitesPreenchidos.length} cadastro(s) preenchido(s) aguardando aprovação`, detalhe: convitesPreenchidos.slice(0, 3).map((c) => `${c.nome} (${c.tipo.toUpperCase()})`).join(", ") + (convitesPreenchidos.length > 3 ? "..." : ""), prioridade: "alta" });
+  }
+  if (sugestoesPendentes.length > 0) {
+    const primeira = sugestoesPendentes[0] as any;
+    alertas.push({
+      titulo: `${sugestoesPendentes.length} sugestão(ões) pendente(s) de avaliação`,
+      detalhe: primeira.titulo_sugerido || (primeira.descricao || "").slice(0, 80),
+      prioridade: "media",
+      tipo: "sugestao",
+      onClick: () => setSugestoesOpen(true),
+    });
   }
 
   const prioridadeStyles: Record<string, string> = {
