@@ -5,8 +5,9 @@ import remarkGfm from "remark-gfm";
 import {
   ArrowLeft, Plus, Send, Sparkles, MessageCircle, ThumbsUp, ThumbsDown, Copy,
   Globe, Gift, Workflow, Users, MessageCircleHeart, GraduationCap, Brain,
-  MoreHorizontal, Trash2, Shield,
+  MoreHorizontal, Trash2, Shield, Lightbulb,
 } from "lucide-react";
+import { SugerirProcessoDialog } from "@/components/fala-fetely/SugerirProcessoDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
