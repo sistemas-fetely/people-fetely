@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
+import { SalarioMasked } from "@/components/SalarioMasked";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
