@@ -38,14 +38,8 @@ const CATEGORIAS: { value: Categoria; label: string; color: string; bg: string }
   { value: "mercado",   label: "Mercado",   color: "#FFFFFF", bg: "#E8833A" },
 ];
 
-const PUBLICOS = [
-  { value: "todos",         label: "Todos" },
-  { value: "admin_rh",      label: "Admin RH" },
-  { value: "gestores",      label: "Gestores" },
-  { value: "colaboradores", label: "Colaboradores" },
-  { value: "financeiro",    label: "Financeiro" },
-  { value: "ti",            label: "TI" },
-];
+// "Público-alvo" antigo (perfis) ficou conceitualmente errado.
+// Substituído por "Área de negócio" carregado dinamicamente de parametros.
 
 const NIVEIS = [
   { value: "junior",       label: "Júnior" },
