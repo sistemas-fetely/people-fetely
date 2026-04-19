@@ -456,6 +456,9 @@ function DashboardGestao() {
         </Card>
       </div>
 
+      {/* Velocidade + Insights IA */}
+      <VelocidadeInsightsSection />
+
       {/* Row 5: Alerts & Birthdays */}
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         <Card className="card-shadow animate-fade-in">
