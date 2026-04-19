@@ -4860,6 +4860,7 @@ export type Database = {
         Args: { _dados: Json; _token: string }
         Returns: boolean
       }
+      contar_uso_template: { Args: { _template_id: string }; Returns: Json }
       decisao_salario: {
         Args: {
           _alvo_user_id: string
