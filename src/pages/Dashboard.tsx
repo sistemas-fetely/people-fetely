@@ -2,10 +2,9 @@ import { useMemo, useState } from "react";
 import {
   Users, Briefcase, Calendar, AlertTriangle, FileText, CreditCard, Gift,
   TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight, Minus,
-  Building2, ClipboardList, BarChart3, Lightbulb,
+  Building2, Clock,
 } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { DashboardOperacional } from "@/components/dashboard/DashboardOperacional";
+import InsightsIA from "@/components/dashboard/InsightsIA";
 import { StatCard } from "@/components/StatCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +17,8 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { SugestoesInboxDialog, type SugestaoItem } from "@/components/dashboard/SugestoesInboxDialog";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const STATUS_LABELS: Record<string, string> = {
   ativo: "Ativos", inativo: "Inativos", ferias: "Férias",
@@ -561,25 +562,11 @@ export default function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground text-sm mt-1">People Fetely</p>
+          <p className="text-muted-foreground text-sm mt-1">People Fetely · Visão de Gestão</p>
         </div>
       </div>
-      <Tabs defaultValue="operacional">
-        <TabsList>
-          <TabsTrigger value="operacional" className="gap-1.5">
-            <ClipboardList className="h-4 w-4" /> Operacional
-          </TabsTrigger>
-          <TabsTrigger value="gestao" className="gap-1.5">
-            <BarChart3 className="h-4 w-4" /> Gestão
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="operacional">
-          <DashboardOperacional />
-        </TabsContent>
-        <TabsContent value="gestao">
-          <DashboardGestao />
-        </TabsContent>
-      </Tabs>
+      <DashboardGestao />
     </div>
   );
 }
+
