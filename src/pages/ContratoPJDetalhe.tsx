@@ -317,7 +317,8 @@ export default function ContratoPJDetalhe() {
         conta: ct.conta || "",
         tipo_conta: ct.tipo_conta || "corrente",
         chave_pix: ct.chave_pix || "",
-        email_corporativo: "",
+        email_corporativo: (ct as any).email_corporativo || "",
+        telefone_corporativo: (ct as any).telefone_corporativo || "",
         ramal: "",
         data_integracao: "",
         acessos_sistemas: (acessos || []).map((a) => ({
@@ -349,12 +350,12 @@ export default function ContratoPJDetalhe() {
     try {
       const {
         dependentes, acessos_sistemas: formAcessos, equipamentos: formEquip,
-        email_corporativo, ramal, data_integracao,
+        email_corporativo, telefone_corporativo, ramal, data_integracao,
         titulo_eleitor, zona_eleitoral, secao_eleitoral,
         cnh_numero, cnh_categoria, cnh_validade, certificado_reservista,
         valor_mensal, gestor_direto_id,
         ...rest
-      } = data;
+      } = data as any;
 
       const { error } = await supabase
         .from("contratos_pj")
@@ -409,6 +410,8 @@ export default function ContratoPJDetalhe() {
           // Contact fields
           telefone: rest.telefone || null,
           email_pessoal: rest.email_pessoal || null,
+          email_corporativo: email_corporativo || null,
+          telefone_corporativo: telefone_corporativo || null,
           contato_emergencia_nome: rest.contato_emergencia_nome || null,
           contato_emergencia_telefone: rest.contato_emergencia_telefone || null,
         } as any)
