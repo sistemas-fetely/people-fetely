@@ -24,6 +24,7 @@ import Parametros from "@/pages/Parametros";
 import ContratosPJ from "@/pages/ContratosPJ";
 import ContratoPJDetalhe from "@/pages/ContratoPJDetalhe";
 import { CadastroContratoPJ } from "@/components/contrato-pj/CadastroContratoPJ";
+import { CadastroManualContratoPJ } from "@/components/contrato-pj/CadastroManualContratoPJ";
 import NotasFiscais from "@/pages/NotasFiscais";
 import NotaFiscalDetalhe from "@/pages/NotaFiscalDetalhe";
 import FolhaPagamento from "@/pages/FolhaPagamento";
@@ -192,6 +193,11 @@ const App = () => (
               <Route path="/contratos-pj/novo" element={
                 <ProtectedRoute permModule="contratos_pj" permAction="create">
                   <CadastroContratoPJ />
+                </ProtectedRoute>
+              } />
+              <Route path="/contratos-pj/novo-manual" element={
+                <ProtectedRoute permModule="contratos_pj" permAction="create">
+                  <CadastroManualContratoPJ />
                 </ProtectedRoute>
               } />
               <Route path="/contratos-pj/:id" element={
