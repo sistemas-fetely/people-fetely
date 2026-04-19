@@ -108,6 +108,18 @@ Pessoas.tsx agora prioriza `contato_nome` (pessoa física) em vez de `nome_fanta
 
 ColaboradorDetalhe e ContratoPJDetalhe aceitam `location.state.from` — quando chegada via /pessoas, voltar volta pra /pessoas; quando via /colaboradores ou /contratos-pj, mantém comportamento original. Fallback seguro garante zero regressão.
 
+### P-10 · Revogação automática de acesso D+30 (LGPD) ✅
+
+**Concluído em:** 19/04/2026  
+
+Job pg_cron diário às 03:00 UTC agendado: `revogar_acessos_ex_colaboradores_diario`. Função corrigida bônus — PJ agora usa `data_fim` (campo correto), não `data_desligamento` (bug histórico silencioso). View `revogacoes_acesso_historico` para auditoria LGPD (Dra. Renata). Execução manual feita para processar pendências acumuladas.
+
+### M-BC-01 · Conhecimento — área de negócio no lugar de perfil ✅
+
+**Concluído em:** 19/04/2026  
+
+Campo `area_negocio` adicionado em `base_conhecimento`. Tela `/fala-fetely/conhecimento` agora usa dropdown que lê `parametros` categoria `area_negocio` (regra arquitetural: dimensões via tabela). Badge 🎯 exibe área na lista. Campo antigo `publico_alvo` mantido como deprecated para compatibilidade.
+
 ---
 
 ## 🔴 ALTA PRIORIDADE
@@ -262,6 +274,34 @@ Quando criarmos novos agentes/automações que leiam conteúdo externo (PRs de t
 
 ---
 
+### DT-01 · Migração de `isSuperAdmin` inline → PermissionGate
+
+**Tipo:** 🔧 Melhoria técnica | **Prioridade:** 🟢 Baixa | **Status:** 📋 Planejado
+
+~50 usos de `isSuperAdmin` espalhados em 20+ arquivos. Nem todos são equivalentes:
+
+- Alguns são **lógica de negócio legítima** (ex: `const canSeeSalary = isSuperAdmin || ...`) e devem ficar inline
+
+- Outros são **renderização condicional** (`{isSuperAdmin && <Button />}`) e ganham clareza/consistência ao migrar pra `<PermissionGate>`
+
+- Usos em `ProtectedRoute` já são gates corretos
+
+**Por que não fazer em massa:** análise caso a caso é obrigatória. Migração automática introduz risco de regressão em vários lugares simultaneamente.
+
+**Recomendação:** quando atacar, fazer em **ondas por arquivo** (um componente por vez, validar, commitar). Não é bloqueador de nada.
+
+**Arquivos com mais usos (priorizar no futuro):**
+
+- `src/pages/GerenciarUsuarios.tsx` (8 usos)
+
+- `src/pages/ContratoPJDetalhe.tsx` (6 usos)
+
+- `src/pages/RecrutamentoDetalhe.tsx` (4 usos)
+
+- demais com 2-3 usos cada
+
+---
+
 ## 🏛 DOUTRINAS PERMANENTES (não são tarefas, são posturas)
 
 Estas regras foram estabelecidas ao longo das sessões e devem ser respeitadas em todas as construções futuras:
@@ -277,4 +317,4 @@ Estas regras foram estabelecidas ao longo das sessões e devem ser respeitadas e
 ---
 
 *Documento vivo · Fonte única de verdade do roadmap · Atualizar ao concluir item ou descobrir novo.*
-*Última atualização: 19/04/2026 — Prompt B concluído (Pessoas + Navegação)*
+*Última atualização: 19/04/2026 — MESA LIMPA: Prompts D, A, B, C concluídos. Pronto para ciclo novo (NF PJ com construção+mapeamento paralelo)*
