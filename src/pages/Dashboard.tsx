@@ -545,6 +545,12 @@ function DashboardGestao() {
           </CardContent>
         </Card>
       </div>
+
+      <SugestoesInboxDialog
+        open={sugestoesOpen}
+        onOpenChange={setSugestoesOpen}
+        sugestoes={sugestoesPendentes as SugestaoItem[]}
+      />
     </div>
   );
 }
