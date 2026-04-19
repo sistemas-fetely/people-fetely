@@ -72,7 +72,7 @@ interface FormState {
   categoria: Categoria;
   titulo: string;
   conteudo: string;
-  publico_alvo: string;
+  area_negocio: string | null;
   cargos_aplicaveis: string[];
   departamentos_aplicaveis: string[];
   niveis_aplicaveis: string[];
@@ -84,7 +84,7 @@ const FORM_INICIAL: FormState = {
   categoria: "faq",
   titulo: "",
   conteudo: "",
-  publico_alvo: "todos",
+  area_negocio: null,
   cargos_aplicaveis: [],
   departamentos_aplicaveis: [],
   niveis_aplicaveis: [],
