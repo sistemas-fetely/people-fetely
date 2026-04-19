@@ -209,7 +209,7 @@ export default function Conhecimento() {
       categoria: item.categoria,
       titulo: item.titulo,
       conteudo: item.conteudo,
-      publico_alvo: item.publico_alvo,
+      area_negocio: item.area_negocio ?? null,
       cargos_aplicaveis: item.cargos_aplicaveis,
       departamentos_aplicaveis: item.departamentos_aplicaveis,
       niveis_aplicaveis: item.niveis_aplicaveis,
